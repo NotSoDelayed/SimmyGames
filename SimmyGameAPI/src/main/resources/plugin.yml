@@ -1,0 +1,7 @@
+main: me.notsodelayed.simmygameapi.SimmyGameAPI
+name: SimmyGameAPI
+description: Simmy's Game API
+author: NotSoDelayed
+website: https://github.com/NotSoDelayed
+version: 1.0-SNAPSHOT
+api-version: '1.20'

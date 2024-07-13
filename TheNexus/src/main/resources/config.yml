@@ -1,0 +1,30 @@
+
+###########################################################################
+#  ||||||||  ||    ||  ||||||  ||    ||  ||||||  ||  ||  ||   ||   |||||  #
+#     ||     ||    ||  ||      ||||  ||  ||      ||  ||  ||   ||  ||      #
+#     ||     ||||||||  ||||    ||  ||||  ||||      ||    ||   ||   ||||   #
+#     ||     ||    ||  ||      ||    ||  ||      ||  ||  ||   ||      ||  #
+#     ||     ||    ||  ||||||  ||    ||  ||||||  ||  ||   |||||   |||||   #
+###########################################################################
+
+# The name of the lobby server, for redirecting players out.
+# Leaving this blank will instead kick players out from this server,
+# which leaves to your proxy redirecting them.
+# The latter also acts as a fallback method to when the provided server does not exist.
+lobby-server: ""
+
+# The maximum simultaneous active game instance running in this server.
+# The term "active games" refers to alive game instances where their game state is not accounted for.
+max-active-games: 1
+
+# Allow exceptions to certain tasks where ending games could be not considered for.
+# For instance, active games = 1, ending games = 1;
+# If this value is set to true, the priority of 'max-active-games' will be taken over by this,
+# allowing a new game instance to be deployed ahead, instead of waiting for any ending games to be removed from service.
+soft-exceptions-for-ending-games: true
+
+
+
+
+# !! STRICTLY, DO NOT CHANGE !!
+config-version: 1

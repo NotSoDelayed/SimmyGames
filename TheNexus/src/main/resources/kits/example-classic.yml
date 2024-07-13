@@ -1,0 +1,14 @@
+
+display-name: "Example Classic"
+display-item: "stone_sword"
+description:
+  - "This is a classic kit."
+  - "Can't get anymore classic."
+kit-type: "classic"
+# Optional
+soulbound-default: true
+# Optional
+unbreakable-default: true
+# Adds from slot index 0, up to 40
+items:
+  - "1:stone_sword:{Unbreakable:1b}"
