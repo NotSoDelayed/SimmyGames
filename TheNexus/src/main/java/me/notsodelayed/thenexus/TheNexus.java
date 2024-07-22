@@ -1,20 +1,26 @@
 package me.notsodelayed.thenexus;
 
 import java.io.File;
+import java.util.List;
 import java.util.logging.Logger;
 
+import me.notsodelayed.simmygameapi.api.registry.parser.Node;
+import me.notsodelayed.simmygameapi.api.registry.GameKitRegistry;
 import me.notsodelayed.thenexus.command.KitPromptCommand;
 import me.notsodelayed.thenexus.command.TheNexusCommand;
 import me.notsodelayed.thenexus.config.Config;
+import me.notsodelayed.thenexus.entity.NexusPlayer;
+import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.game.NexusGame;
 import me.notsodelayed.thenexus.game.NexusGameManager;
 import me.notsodelayed.thenexus.handler.internal.ServerPlayerJoinQuitHandler;
 import me.notsodelayed.thenexus.kit.NexusKit;
 import me.notsodelayed.thenexus.kit.NexusKitManager;
 import me.notsodelayed.thenexus.map.NexusMapManager;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.ApiStatus;
 
 public final class TheNexus extends JavaPlugin {
 
@@ -46,12 +52,17 @@ public final class TheNexus extends JavaPlugin {
 
         Bukkit.getPluginManager().registerEvents(new ServerPlayerJoinQuitHandler(), this);
 
+
+        // TODO remove this stupid shit in post
+        experimental();
+
+
         logger.info("Welcome onboard! Nexus can now be damaged! (took " + (System.currentTimeMillis() - start) + "ms)");
 
         // Game instance monitor
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (gameManager.getGames().size() < Config.get().MAX_ACTIVE_GAMES) {
-                NexusGame nexusGame = gameManager.createGame(1, 24, NexusMapManager.get().generateMapChoice(2));
+                NexusGame<NexusTeam, NexusPlayer> nexusGame = gameManager.createGame(1, 24, NexusMapManager.get().generateMapChoice(2));
                 nexusGame.ready();
                 TheNexus.logger.info("Nexus game deployed: " + nexusGame.getUuid());
             }
@@ -61,6 +72,37 @@ public final class TheNexus extends JavaPlugin {
     @Override
     public void onDisable() {
         logger.info("Nexus has been destroyed! Good bye...");
+    }
+
+    // TODO under testing
+    public static GameKitRegistry<NexusKit> kitRegistry;
+    private void experimental() {
+        logger.warning("!!  EXPERIMENTAL REGISTRATIONS  !!");
+        logger.info("Registering kits via " + GameKitRegistry.class + "...");
+        kitRegistry = (GameKitRegistry<NexusKit>) new GameKitRegistry<NexusKit>(instance, "thenexus")
+                .addSimpleParsing(
+                        new Node<String>("display-name")
+                                .optional(true),
+                        new Node<Material>("display-item")
+                                .getter(Material::valueOf)
+                                .defaultValue(Material.CHEST),
+                        new Node<List<String>>("description")
+                                .optional(true),
+                        new Node<String>("kit-type")
+                                .getter(kitType -> {
+                                    // check valid kit type
+                                    // TODO verify does this handles null??
+                                    if (!StringUtils.containsAny(kitType, NexusGame.getKitTypes()))
+                                        return null;
+                                    return kitType;
+                                }),
+                        new Node<Boolean>("soulbound-default")
+                                .optional(true)
+                                .defaultValue(false),
+                        new Node<Boolean>("unbreakable-default")
+                                .optional(true)
+                                .defaultValue(false)
+                );
     }
 
 }

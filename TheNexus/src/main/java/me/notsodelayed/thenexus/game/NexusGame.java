@@ -1,6 +1,9 @@
 package me.notsodelayed.thenexus.game;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -12,11 +15,15 @@ import me.notsodelayed.thenexus.entity.game.Nexus;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
 public class NexusGame<T extends NexusTeam, P extends NexusPlayer> extends TeamVsTeamGame<NexusTeam, NexusPlayer> {
 
     private final Map<NexusTeam, Nexus> teamNexusMap = new HashMap<>();
+    private static final String[] KIT_TYPES = new String[] {
+            "classic", "potion", "trigger-potion"
+    };
 
     public NexusGame(int minPlayers, int maxPlayers) {
         super(minPlayers, maxPlayers, new MapChoice(null),
@@ -54,6 +61,14 @@ public class NexusGame<T extends NexusTeam, P extends NexusPlayer> extends TeamV
 
     public Nexus getNexus(Block block) {
 
+    }
+
+    /**
+     * @return the kit types of this game mode, usually used for kit registrations
+     */
+    @ApiStatus.Internal
+    public static String[] getKitTypes() {
+        return KIT_TYPES.clone();
     }
 
     @Override

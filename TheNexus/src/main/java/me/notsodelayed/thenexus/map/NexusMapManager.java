@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// TODO rewrite this nigg
 public class NexusMapManager {
 
     private static NexusMapManager mapManager;

@@ -1,30 +1,37 @@
 package me.notsodelayed.simmygameapi.api.registry;
 
 import java.io.File;
+import java.util.Map;
 
-import me.notsodelayed.simmygameapi.api.exception.InvalidYamlException;
 import me.notsodelayed.simmygameapi.api.kit.GameKit;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.jetbrains.annotations.NotNull;
+import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.ApiStatus;
 
-/**
- * Manages {@link GameKit}, such as registrations and kit YAML parsing.
- * @param <K> the super type of your kit type
- */
-public abstract class GameKitRegistry<K extends GameKit> {
+// TODO make this shit work
+@ApiStatus.Experimental
+public class GameKitRegistry<K extends GameKit> extends Registry<K> {
 
-    /**
-     * @return the directory of where the kit YMLs houses.
-     */
-    abstract File getKitsDirectory();
+    private final File kitsDirectory;
 
     /**
-     * Registers a kit from a {@link YamlConfiguration}.
-     * @param ymlFile the yml file
-     * @return {@link K} – the registered kit
-     * @throws IllegalArgumentException if ymlFile is not a YML file, or is a disabled kit YML
-     * @throws InvalidYamlException if ymlFile is not a valid kit yml, or a half-baked kit yml
+     * @param plugin the belonging plugin of this registry
+     * @param id     the registry id
+     * @throws IllegalArgumentException if plugin has an existing registry with this id
      */
-    abstract K registerKit(@NotNull File ymlFile) throws IllegalArgumentException, InvalidYamlException;
+    public GameKitRegistry(JavaPlugin plugin, String id) throws IllegalArgumentException {
+        super(plugin, id);
+        kitsDirectory = new File(plugin.getDataFolder(), "kits");
+    }
+
+    @Override
+    public Map<String, K> parse() {
+        // TODO make this shit work
+        return null;
+    }
+
+    @Override
+    public File getDataDirectory() {
+        return kitsDirectory;
+    }
 
 }

@@ -17,6 +17,7 @@ import java.util.zip.ZipFile;
 import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTContainer;
 import de.tr7zw.changeme.nbtapi.NBTItem;
+import me.notsodelayed.simmygameapi.api.registry.Registry;
 import me.notsodelayed.simmygameapi.util.FileUtil;
 import me.notsodelayed.simmygameapi.util.MessageUtil;
 import me.notsodelayed.simmygameapi.util.Util;
@@ -26,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.Registry;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -36,8 +36,10 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+// TODO nuke this shit in future
 /**
  * Manages {@link NexusKit} registrations.
+ * @see Registry
  */
 public class NexusKitManager {
 
@@ -219,7 +221,7 @@ public class NexusKitManager {
                 throw new InvalidYamlException(kitId, "potion", "any PotionEffectType enum", "null");
 
             potionArgument = potionArgument[0].split(":", 2);
-            PotionEffectType type = Registry.EFFECT.get(new NamespacedKey("minecraft", potionArgument[0]));
+            PotionEffectType type = org.bukkit.Registry.EFFECT.get(new NamespacedKey("minecraft", potionArgument[0]));
             if (type == null)
                 throw new InvalidYamlException(kitId, "potion", "any PotionEffectType enum", potionArgument[0]);
             potionEffect = type.createEffect(PotionEffect.INFINITE_DURATION, Util.parseIntOrDefault(potionArgument[1], 1) - 1);
