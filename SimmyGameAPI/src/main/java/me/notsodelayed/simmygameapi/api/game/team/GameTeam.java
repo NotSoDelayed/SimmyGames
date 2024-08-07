@@ -3,6 +3,7 @@ package me.notsodelayed.simmygameapi.api.game.team;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
@@ -68,6 +69,20 @@ public class GameTeam implements BaseTeam {
     @Override
     public Set<? extends GamePlayer> getPlayers() {
         return Set.copyOf(players);
+    }
+
+    /**
+     * Utility method for developers to return specific type of GamePlayer
+     * @param clazz the type to return
+     * @param <P> the type which extends from GamePlayer
+     * @return an immutable set of GamePlayer of specified type
+     * @throws ClassCastException if the object is not assignable to the provided class
+     */
+    protected <P extends GamePlayer> Set<P> getPlayers(Class<P> clazz) {
+        return getPlayers().stream()
+                .map(clazz::cast)
+                .collect(Collectors.toUnmodifiableSet());
+
     }
 
     /**

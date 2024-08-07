@@ -60,6 +60,11 @@ public class NexusGame extends MapGame<NexusMap> implements KitGame<NexusKit>, T
     }
 
     @Override
+    protected boolean init() {
+        return true;
+    }
+
+    @Override
     public void tick() {
         this.getPlayers().forEach(nexusPlayer -> {
             Optional.ofNullable(nexusPlayer.getKit()).ifPresentOrElse(nexusKit -> {
@@ -71,7 +76,7 @@ public class NexusGame extends MapGame<NexusMap> implements KitGame<NexusKit>, T
 
     @Override
     public Set<NexusPlayer> getPlayers() {
-        return super.getPlayers(NexusPlayer.class);
+        return getPlayers(NexusPlayer.class);
     }
 
     /**
@@ -90,6 +95,8 @@ public class NexusGame extends MapGame<NexusMap> implements KitGame<NexusKit>, T
         // TODO make nexus worky
         return null;
     }
+
+
 
     @Override
     public GameTeamManager<NexusTeam> getTeamManager() {

@@ -240,7 +240,25 @@ public abstract class Game implements BaseGame {
     }
 
     /**
+     * @return whether this game's initialisation is successful
+     * @apiNote Called after {@link #hasMetGameRequirements()}. In event of unhandled exception occurred in this method, it will return false.
+     * @implNote Developers may implement custom initialisation tasks. Ensure this method returns <b>true</b> to allow the game start sequence to proceed.
+     */
+    protected abstract boolean init();
+
+    /**
+     * @return whether this game has its requirements met to start
+     * @apiNote Forced starts are exempted.
+     * @implNote Developers may override this to implement custom game requirements, and return <b>super</b> after.
+     * @see #start(int, GameStartCountdownEvent.StartCause, boolean)
+     */
+    public boolean hasMetGameRequirements() {
+        return hasMinimumPlayers();
+    }
+
+    /**
      * Triggers the game start sequence after verifying game requirements (i.e. minimum player count).
+     * @see #init()
      */
     public void start(GameStartCountdownEvent.StartCause startCause) {
         start(settings.startIn(), startCause, false);
@@ -250,6 +268,7 @@ public abstract class Game implements BaseGame {
      * Triggers the game start sequence.
      * <p>If <b>force</b> == true, cancelling {@link GameStartCountdownEvent} does not cancel this operation.</p>
      * @param force whether to ignore game requirements (i.e. minimum player count)
+     * @see #init()
      */
     public void start(GameStartCountdownEvent.StartCause startCause, boolean force) {
         start(settings.startIn(), startCause, force);
@@ -259,18 +278,27 @@ public abstract class Game implements BaseGame {
      * Triggers the game start sequence.
      * <p>If <b>force</b> == true, cancelling {@link GameStartCountdownEvent} does not cancel this operation.</p>
      * @param force whether to ignore game requirements (i.e. minimum player count)
+     * @see #init()
      */
     public void start(int startIn, GameStartCountdownEvent.StartCause startCause, boolean force) {
         Preconditions.checkState(gameState == GameState.WAITING_FOR_PLAYERS, "game is not in waiting state");
         LoggerUtil.verbose(this, "Game called to start (force: " + force + ")");
-        if (!force && !this.hasMinimumPlayers())
+        if (!hasMetGameRequirements() && !force) {
+            LoggerUtil.verbose(this, "Game start countdown aborted due to game requirements not met.");
             return;
-        if (!new GameStartCountdownEvent(this, startCause).callEvent() && !force) {
-            LoggerUtil.verbose(this, "Game start countdown cancelled due to event cancellation");
+        }
+        try {
+            if (!init()) {
+                LoggerUtil.verbose(this, "Game start countdown aborted due to init() returns false.");
+                return;
+            }
+        } catch (Exception ex) {
+            LoggerUtil.verbose(this, "Game start countdown aborted due to an exception occurred in init()");
             return;
         }
         this.force = force;
         gameState = GameState.STARTING;
+        new GameStartCountdownEvent(this, startCause).callEvent();
         AtomicInteger seconds = new AtomicInteger(startIn);
         Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, countdown -> {
             gameStartTask = countdown;
@@ -302,6 +330,7 @@ public abstract class Game implements BaseGame {
     public void cancelGameStartTask(@NotNull String reason) {
         if (gameStartTask != null) {
             gameStartTask.cancel();
+            this.force = false;
             this.dispatchMessage(ChatColor.RED + reason);
             this.dispatchSound(Sound.BLOCK_NOTE_BLOCK_BASS, 1.5f);
         }
@@ -360,6 +389,7 @@ public abstract class Game implements BaseGame {
      * @param clazz the type to return
      * @param <P> the type which extends from GamePlayer
      * @return an immutable set of GamePlayer of specified type
+     * @throws ClassCastException if the object is not assignable to the provided class
      */
     protected <P extends GamePlayer> Set<P> getPlayers(Class<P> clazz) {
         return this.getPlayers().stream()
@@ -397,6 +427,14 @@ public abstract class Game implements BaseGame {
      */
     public boolean hasEnded() {
         return gameState == GameState.ENDING || gameState == GameState.DELETED;
+    }
+
+    /**
+     * @return whether this game is forced to start
+     * @apiNote This method will always return <b>fasle</b> if this game has not yet started.
+     */
+    public boolean isForcedToStart() {
+        return force;
     }
 
     /**
@@ -453,7 +491,6 @@ public abstract class Game implements BaseGame {
         return settings;
     }
 
-    @Override
     public UUID getUuid() {
         return uuid;
     }

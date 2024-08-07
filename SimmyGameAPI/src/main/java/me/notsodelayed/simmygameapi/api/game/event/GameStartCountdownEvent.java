@@ -1,14 +1,13 @@
 package me.notsodelayed.simmygameapi.api.game.event;
 
 import me.notsodelayed.simmygameapi.api.game.Game;
-import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
 
 /**
  * Called when a {@link Game} begins to countdown, usually after meeting game requirements, or manually requested to start.
  */
-public class GameStartCountdownEvent extends GameEvent implements Cancellable {
+public class GameStartCountdownEvent extends GameEvent {
 
     public enum StartCause {
         /**
@@ -27,9 +26,8 @@ public class GameStartCountdownEvent extends GameEvent implements Cancellable {
         UNKNOWN
     }
 
-    private static final HandlerList HANDLER_LIST = new HandlerList();
+    private static final HandlerList HANDLERS = new HandlerList();
     private final StartCause startCause;
-    private boolean cancelled = false;
 
     public GameStartCountdownEvent(@NotNull Game game, @NotNull StartCause startCause) {
         super(game);
@@ -45,17 +43,7 @@ public class GameStartCountdownEvent extends GameEvent implements Cancellable {
 
     @Override
     public @NotNull HandlerList getHandlers() {
-        return HANDLER_LIST;
-    }
-
-    @Override
-    public boolean isCancelled() {
-        return cancelled;
-    }
-
-    @Override
-    public void setCancelled(boolean cancel) {
-        this.cancelled = cancel;
+        return HANDLERS;
     }
 
 }
