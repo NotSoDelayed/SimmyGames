@@ -1,6 +1,5 @@
 package me.notsodelayed.simmygameapi.util;
 
-import java.util.Objects;
 import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
@@ -9,6 +8,27 @@ import org.bukkit.World;
 public class Util {
 
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
+
+    /**
+     * Compares an object with many.
+     * @param subject
+     * @param values
+     * @return
+     */
+    public static boolean equalsAny(Object subject, Object... values) {
+        for (Object o : values) {
+            if (subject.equals(o))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * @return the main world of the server
+     */
+    public static World getMainWorld() {
+        return Bukkit.getWorlds().get(0);
+    }
 
     public static int getRandomInt(int max) {
         return RANDOM.nextInt(max);
@@ -28,21 +48,6 @@ public class Util {
             defaultInt = Integer.parseInt(input);
         } catch (NumberFormatException ignored) {}
         return defaultInt;
-    }
-
-    /**
-     * @return the main world of the server
-     */
-    public static World getMainWorld() {
-        return Bukkit.getWorlds().get(0);
-    }
-
-    public static boolean equalsAny(Object subject, Object... values) {
-        for (Object o : values) {
-            if (subject.equals(o))
-                return true;
-        }
-        return false;
     }
 
 }

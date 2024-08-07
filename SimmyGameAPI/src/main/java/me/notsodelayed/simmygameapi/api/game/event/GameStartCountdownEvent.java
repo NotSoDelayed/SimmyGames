@@ -1,4 +1,4 @@
-package me.notsodelayed.simmygameapi.api.event.game;
+package me.notsodelayed.simmygameapi.api.game.event;
 
 import me.notsodelayed.simmygameapi.api.game.Game;
 import org.bukkit.event.Cancellable;

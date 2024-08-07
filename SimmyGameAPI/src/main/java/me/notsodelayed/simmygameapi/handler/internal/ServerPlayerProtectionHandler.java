@@ -1,6 +1,6 @@
 package me.notsodelayed.simmygameapi.handler.internal;
 
-import me.notsodelayed.simmygameapi.api.entity.GamePlayer;
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.Util;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;

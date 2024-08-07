@@ -1,6 +1,6 @@
-package me.notsodelayed.simmygameapi.api.kit.exception;
+package me.notsodelayed.simmygameapi.api.game.kit.exception;
 
-import me.notsodelayed.simmygameapi.api.kit.GameKit;
+import me.notsodelayed.simmygameapi.api.game.kit.GameKit;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -27,7 +27,7 @@ public class KitException extends RuntimeException {
     @NotNull
     public String getKitName() {
         if (kit != null)
-            return kit.getOptionalDisplayName().orElse(kit.getId());
+            return kit.getDisplayName().orElse(kit.getId());
         return kitName;
     }
 

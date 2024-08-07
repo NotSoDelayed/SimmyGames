@@ -1,4 +1,4 @@
-package me.notsodelayed.simmygameapi.api.kit;
+package me.notsodelayed.simmygameapi.api.game.kit;
 
 import org.jetbrains.annotations.Nullable;
 

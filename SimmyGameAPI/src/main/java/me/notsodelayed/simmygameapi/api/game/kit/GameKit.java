@@ -1,4 +1,4 @@
-package me.notsodelayed.simmygameapi.api.kit;
+package me.notsodelayed.simmygameapi.api.game.kit;
 
 import java.util.List;
 import java.util.Map;
@@ -85,18 +85,11 @@ public abstract class GameKit {
     public String getId() {
         return id;
     }
-    /**
-     * @return the display name
-     */
-    @Nullable
-    public String getDisplayName() {
-        return displayName;
-    }
 
     /**
      * @return the optional display name
      */
-    public Optional<String> getOptionalDisplayName() {
+    public Optional<String> getDisplayName() {
         return Optional.ofNullable(displayName);
     }
 

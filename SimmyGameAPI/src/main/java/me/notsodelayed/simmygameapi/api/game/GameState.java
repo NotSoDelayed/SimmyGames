@@ -4,12 +4,12 @@ import net.md_5.bungee.api.ChatColor;
 
 public enum GameState {
 
-    LOADING("loading", "Loading...", ChatColor.BLACK),
-    WAITING("waiting", "Waiting", ChatColor.GREEN),
+    LOADING("loading", "Loading", ChatColor.BLACK),
+    WAITING_FOR_PLAYERS("waiting", "Waiting", ChatColor.GREEN),
     STARTING("starting", "Starting", ChatColor.GOLD),
     INGAME("ingame", "In-Game", ChatColor.RED),
     ENDING("ending", "Ending", ChatColor.DARK_PURPLE),
-    DISABLED("disabled", "Disabled", ChatColor.BLACK);
+    DELETED("deleted", "Deleted", ChatColor.BLACK);
 
 
     private final String toString, displayName;

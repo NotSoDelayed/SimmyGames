@@ -4,14 +4,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import me.notsodelayed.simmygameapi.api.entity.GamePlayer;
-import me.notsodelayed.simmygameapi.api.game.GameState;
-import me.notsodelayed.simmygameapi.api.kit.GameKit;
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.game.player.KitPlayer;
+import me.notsodelayed.simmygameapi.api.game.player.TeamPlayer;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.MessageUtil;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.thenexus.TheNexus;
+import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.game.NexusGame;
 import me.notsodelayed.thenexus.kit.NexusKit;
 import me.notsodelayed.thenexus.kit.PotionNexusKit;
@@ -24,35 +25,47 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Represents a player of {@link NexusGame}
  */
-public class NexusPlayer extends GamePlayer {
+public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, KitPlayer<NexusKit> {
 
     @Nullable
-    private NexusKit respawningKit = null;
-    private BukkitTask respawnTask = null;
+    private NexusKit queriedKit = null, kit = null;
+    private BukkitTask respawnTask;
+    private NexusTeam team;
 
-    public NexusPlayer(Player player, NexusGame game, @Nullable NexusKit kit) {
-        super(player, game, kit);
+    public NexusPlayer(Player player, NexusTeam team, NexusKit kit) {
+        super(player);
+        this.team = team;
+        this.kit = kit;
+    }
+
+    @Override
+    public NexusTeam getTeam() {
+        return team;
+    }
+
+    @Override
+    public NexusKit getKit() {
+        return kit;
+    }
+
+    @Override
+    public void setKit(NexusKit kit) {
+        this.kit = kit;
     }
 
     @Override
     public boolean applyKit() {
-        if (super.applyKit()) {
-            Player onlinePlayer = this.asBukkitPlayer().getPlayer();
+        if (KitPlayer.super.applyKit()) {
+            Player onlinePlayer = this.getBukkitPlayer().getPlayer();
             // super.applyKit() assured this; using assert to shut this mf
-            assert onlinePlayer != null && super.getKit() != null;
+            assert onlinePlayer != null && getKit() != null;
             // TPNKit potion must not be applied on player spawn
-            if (super.getKit().getClass().equals(PotionNexusKit.class)) {
-                LoggerUtil.verbose(onlinePlayer.getName() + " received potion effects: " + onlinePlayer.addPotionEffects(List.of(((PotionNexusKit) super.getKit()).getPotionEffects())));
+            if (getKit().getClass().equals(PotionNexusKit.class)) {
+                LoggerUtil.verbose(onlinePlayer.getName() + " received potion effects: " + onlinePlayer.addPotionEffects(List.of(((PotionNexusKit) getKit()).getPotionEffects())));
             }
             return true;
         }
         return false;
-    }
-
-    @Override
-    public boolean spawn() {
-        // TODO make this actually work
-        return super.spawn();
     }
 
     /**
@@ -61,20 +74,20 @@ public class NexusPlayer extends GamePlayer {
      */
     @Nullable
     public BukkitTask respawn() {
-        Player onlinePlayer = this.asBukkitPlayer().getPlayer();
+        Player onlinePlayer = this.getBukkitPlayer().getPlayer();
         if (onlinePlayer == null)
             return null;
         PlayerUtil.clean(onlinePlayer, GameMode.SPECTATOR);
         AtomicInteger seconds = new AtomicInteger(8);
         String damageSummary = StringUtil.getDamageEventSummary(onlinePlayer.getLastDamageCause());
-        MessageUtil.sendTypingTitle(this.asBukkitPlayer().getPlayer(), 1, "", damageSummary, 0, 21, 0);
+        MessageUtil.sendTypingTitle(this.getBukkitPlayer().getPlayer(), 1, "", damageSummary, 0, 21, 0);
         return Bukkit.getScheduler().runTaskTimer(TheNexus.instance, () -> {
             if (seconds.get() > 0) {
                 String display = "&6&l" + seconds.get();
                 if (seconds.get() % 2 == 0)
                     display = "&e|&r " + display + "&e |&r";
                 String finalDisplay = display; // forced
-                Optional.ofNullable(asBukkitPlayer().getPlayer()).ifPresentOrElse(p -> p.sendTitle(finalDisplay, damageSummary, 0, 21 ,10), respawnTask::cancel);
+                Optional.ofNullable(getBukkitPlayer().getPlayer()).ifPresentOrElse(p -> p.sendTitle(finalDisplay, damageSummary, 0, 21 ,10), respawnTask::cancel);
             } else {
                 this.spawn();
                 respawnTask.cancel();
@@ -90,30 +103,16 @@ public class NexusPlayer extends GamePlayer {
         return respawnTask != null;
     }
 
-    /**
-     * @return the respawning kit
-     */
+    @Override
     @Nullable
-    public NexusKit getRespawningKit() {
-        return respawningKit;
-    }
-
-    public void setRespawningKit(@Nullable NexusKit nexusKit) {
-        this.respawningKit = nexusKit;
+    public NexusKit getQueriedKit() {
+        return queriedKit;
     }
 
     @Override
-    public NexusKit getKit() {
-        return (NexusKit) super.getKit();
+    public void setQueriedKit(@Nullable NexusKit queriedKit) {
+        this.queriedKit = queriedKit;
     }
-
-    /**
-     * @deprecated in favour of {@link NexusPlayer#assignKit(NexusKit)} )}
-     * @see NexusPlayer#assignKit(NexusKit)
-     */
-    @Deprecated(forRemoval = true)
-    @Override
-    public void setKit(GameKit kit) {}
 
     /**
      * Assigns a kit to this player. This accounts for:
@@ -123,13 +122,13 @@ public class NexusPlayer extends GamePlayer {
      * @param nexusKit the kit
      */
     public void assignKit(NexusKit nexusKit) {
-        if (this.getGame().getGameState() == GameState.INGAME) {
-            this.respawningKit = nexusKit;
-            this.message(MessageUtil.successMessage("You have selected kit " + nexusKit.getOptionalDisplayName().orElse(nexusKit.getId() + " on your next respawn!")));
-            return;
-        }
-        super.setKit(nexusKit);
-        this.message(MessageUtil.successMessage("You have selected kit " + nexusKit.getOptionalDisplayName().orElse(nexusKit.getId() + "!")));
+//        if (this.getGame().getGameState() == GameState.INGAME) {
+//            this.respawningKit = nexusKit;
+//            this.message(MessageUtil.successMessage("You have selected kit " + nexusKit.getDisplayName().orElse(nexusKit.getId() + " on your next respawn!")));
+//            return;
+//        }
+//        this.setKit(nexusKit);
+//        this.message(MessageUtil.successMessage("You have selected kit " + nexusKit.getDisplayName().orElse(nexusKit.getId() + "!")));
     }
 
 }

@@ -1,18 +1,14 @@
 package me.notsodelayed.thenexus.kit;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Pattern;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 import de.tr7zw.changeme.nbtapi.NBTCompound;
 import de.tr7zw.changeme.nbtapi.NBTContainer;
@@ -85,26 +81,27 @@ public class NexusKitManager {
             kitManager.loadState = LoadState.INIT;
             TheNexus.logger.info("Registering kits...");
             File kitsDirectory = new File(plugin.getDataFolder(), "kits");
-            if (!kitsDirectory.exists()) {
-                try {
-                    ZipFile jar = new ZipFile(TheNexus.pluginFile);
-                    TheNexus.logger.info("Generating default-embedded kits...");
-                    Iterator<ZipEntry> iterator = (Iterator<ZipEntry>) jar.stream().iterator();
-                    while (iterator.hasNext()) {
-                        ZipEntry entry = iterator.next();
-                        if (entry.isDirectory())
-                            continue;
-                        if (entry.getName().startsWith("kits/") && entry.getName().endsWith(".yml")) {
-                            FileUtil.saveFromInputStream(jar.getInputStream(entry), new File(plugin.getDataFolder(), "kits" + File.separator + (entry.getName().split("/")[1])));
-                        }
-                    }
-                    jar.close();
-                } catch (IOException ex) {
-                    TheNexus.logger.warning("Unable to generate default kits! Please manually extract 'kits' folder from the jar into " + kitsDirectory.getAbsolutePath());
-                    ex.printStackTrace(System.err);
-                }
-            }
+//            if (!kitsDirectory.exists()) {
+//                try {
+//                    ZipFile jar = new ZipFile(TheNexus.pluginFile);
+//                    TheNexus.logger.info("Generating default-embedded kits...");
+//                    Iterator<ZipEntry> iterator = (Iterator<ZipEntry>) jar.stream().iterator();
+//                    while (iterator.hasNext()) {
+//                        ZipEntry entry = iterator.next();
+//                        if (entry.isDirectory())
+//                            continue;
+//                        if (entry.getName().startsWith("kits/") && entry.getName().endsWith(".yml")) {
+//                            FileUtil.saveFromInputStream(jar.getInputStream(entry), new File(plugin.getDataFolder(), "kits" + File.separator + (entry.getName().split("/")[1])));
+//                        }
+//                    }
+//                    jar.close();
+//                } catch (IOException ex) {
+//                    TheNexus.logger.warning("Unable to generate default kits! Please manually extract 'kits' folder from the jar into " + kitsDirectory.getAbsolutePath());
+//                    ex.printStackTrace(System.err);
+//                }
+//            }
             if (kitsDirectory.listFiles() != null) {
+                //noinspection DataFlowIssue
                 for (File ymlFile : kitsDirectory.listFiles()) {
                     if (ymlFile.getName().startsWith("-"))
                         continue;
@@ -119,7 +116,7 @@ public class NexusKitManager {
                         TheNexus.logger.warning(ex.getMessage());
                         continue;
                     }
-                    TheNexus.logger.info("Registered kit: " + kit.getOptionalDisplayName().orElse(kit.getId()));
+                    TheNexus.logger.info("Registered kit: " + kit.getDisplayName().orElse(kit.getId()));
                 }
                 TheNexus.logger.info("Successfully registered " + kitManager.getKits().size() + " kits!");
             }
@@ -230,7 +227,7 @@ public class NexusKitManager {
             if (kitType.equals("trigger-potion")) {
                 try {
                     triggerAction = TriggerAction.valueOf(yml.getString("trigger-action").toUpperCase(Locale.ENGLISH));
-                } catch (IllegalArgumentException ex) {
+                } catch (Exception ex) {
                     throw new InvalidYamlException(kitId, "trigger-action", StringUtils.joinWith(", ", (Object[]) validTriggerActionTypes), yml.getString("trigger-action", "null"));
                 }
             }

@@ -1,10 +1,9 @@
 package me.notsodelayed.simmygameapi.api.registry;
 
 import java.io.File;
-import java.util.List;
 import java.util.Map;
 
-import me.notsodelayed.simmygameapi.api.map.GameMap;
+import me.notsodelayed.simmygameapi.api.game.map.GameMap;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
 

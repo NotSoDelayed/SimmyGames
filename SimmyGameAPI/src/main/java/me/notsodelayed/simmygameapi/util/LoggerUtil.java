@@ -12,6 +12,20 @@ import me.notsodelayed.simmygameapi.api.game.Game;
  */
 public class LoggerUtil {
 
+    public static void debug(String text) {
+        SimmyGameAPI.logger.info("[DEBUG] " + text);
+    }
+
+    /**
+     * Logs a 2-space indented debug message containing both values with {@link Level#INFO} if values match, else {@link Level#WARNING}.
+     * @param got the received result
+     * @param expected the expected result
+     */
+    public static void expect(Object got, Object expected) {
+        Level logLevel = Objects.equals(expected, got) ? Level.INFO : Level.WARNING;
+        SimmyGameAPI.logger.log(logLevel, "  expected " + expected + ", got " + got);
+    }
+
     public static void verbose(Game game, String text) {
         verbose(game, text, Level.INFO, false);
     }
@@ -27,7 +41,7 @@ public class LoggerUtil {
     public static void verbose(Game game, String text, Level logLevel, boolean force) {
         if (!Config.get(SimmyGameAPI.instance).VERBOSE && !force)
             return;
-        SimmyGameAPI.logger.log(logLevel, "[" + game.getClass().getTypeName() + "-" + game.getDisplayUuid() + "] " + text);
+        SimmyGameAPI.logger.log(logLevel, "[" + game.getClass().getSimpleName() + "-" + game.getDisplayUuid() + "] " + text);
     }
 
     public static void verbose(String text) {
@@ -46,16 +60,6 @@ public class LoggerUtil {
         if (!Config.get(SimmyGameAPI.instance).VERBOSE && !force)
             return;
         SimmyGameAPI.logger.log(logLevel, text);
-    }
-
-    /**
-     * Logs a 2-space indented debug message containing both values with {@link Level#INFO} if values match, else {@link Level#WARNING}.
-     * @param got the received result
-     * @param expected the expected result
-     */
-    public static void expect(Object got, Object expected) {
-        Level logLevel = Objects.equals(expected, got) ? Level.INFO : Level.WARNING;
-        SimmyGameAPI.logger.log(logLevel, "  expected " + expected + ", got " + got);
     }
 
 }

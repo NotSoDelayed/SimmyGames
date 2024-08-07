@@ -1,6 +1,5 @@
 package me.notsodelayed.simmygameapi.api.exception;
 
-import me.notsodelayed.simmygameapi.api.kit.exception.KitException;
 import org.jetbrains.annotations.NotNull;
 
 /**

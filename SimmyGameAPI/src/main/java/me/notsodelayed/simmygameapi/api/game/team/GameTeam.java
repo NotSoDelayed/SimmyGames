@@ -1,41 +1,44 @@
-package me.notsodelayed.simmygameapi.api.team;
+package me.notsodelayed.simmygameapi.api.game.team;
 
 import java.util.HashSet;
-import java.util.Locale;
+import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.entity.GamePlayer;
+import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
-import org.bukkit.entity.Player;
+import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
-import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
- * Represents a team of a game.
+ * Represents a team of a {@link Game}.
  */
 @SuppressWarnings("deprecation")
-public class GameTeam {
+public class GameTeam implements BaseTeam {
 
     private final Team team;
-    private final Set<GamePlayer> players = new HashSet<>();
+    private final Set<GamePlayer> players;
+    protected final Scoreboard scoreboard;
 
-    public GameTeam(@NotNull String id, @NotNull ChatColor color) {
-        this(id, StringUtils.capitalize(id), color);
+    public GameTeam(@NotNull ChatColor color) {
+        this(color, color.asBungee().getName(), StringUtils.upperCase(color.asBungee().getName().replace('_', ' ')));
     }
 
-    public GameTeam(@NotNull String id, @Nullable String displayName, @NotNull ChatColor color) {
-        // Can't have duplicate id in Bukkit team
-        team = SimmyGameAPI.instance.getScoreboard().registerNewTeam(UUID.randomUUID() + "-" + id);
-        team.setDisplayName(displayName);
+    public GameTeam(@NotNull ChatColor color, @Nullable String displayName) {
+        this(color, color.asBungee().getName(), displayName);
+    }
+
+    private GameTeam(@NotNull ChatColor color, @NotNull String id, @Nullable String displayName) {
+        players = new HashSet<>();
+        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+        team = scoreboard.registerNewTeam(id);
+        team.setDisplayName(Optional.ofNullable(displayName).orElse(id));
         team.setColor(color);
     }
 
@@ -62,24 +65,23 @@ public class GameTeam {
     /**
      * @return an immutable set of the players
      */
+    @Override
     public Set<? extends GamePlayer> getPlayers() {
         return Set.copyOf(players);
     }
 
     /**
      * @param player the player
-     * @return whether the player is successfully added to the team
      */
-    public boolean addPlayer(GamePlayer player) {
-        return players.add(player);
+    public void addPlayer(GamePlayer player) {
+        players.add(player);
     }
 
     /**
      * @param player the player
-     * @return whether the player is successfully removed from the team
      */
-    public boolean removePlayer(GamePlayer player) {
-        return players.remove(player);
+    public void removePlayer(GamePlayer player) {
+        players.remove(player);
     }
 
     /**

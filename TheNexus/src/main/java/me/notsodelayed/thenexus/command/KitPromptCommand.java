@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import me.notsodelayed.simmygameapi.api.entity.GamePlayer;
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.MessageUtil;
 import me.notsodelayed.thenexus.entity.NexusPlayer;
 import me.notsodelayed.thenexus.kit.NexusKit;

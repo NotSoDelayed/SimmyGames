@@ -1,15 +1,10 @@
 package me.notsodelayed.thenexus.entity.game;
 
-import java.util.Set;
 import java.util.function.Consumer;
 
-import me.notsodelayed.simmygameapi.api.entity.GamePlayer;
-import me.notsodelayed.simmygameapi.util.MessageUtil;
 import me.notsodelayed.thenexus.entity.NexusPlayer;
 import me.notsodelayed.thenexus.game.NexusGame;
-import org.bukkit.Sound;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -22,7 +17,7 @@ public class Nexus {
     private final Block block;
     @Nullable
     private NexusPlayer lastDamager = null;
-    private boolean damageable = false;
+    private boolean damageable;
 
     /**
      * @param health the health
