@@ -1,14 +1,9 @@
 package me.notsodelayed.simmygameapi.util;
 
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import org.apache.commons.lang3.StringUtils;
-import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -95,16 +90,6 @@ public class MessageUtil {
     public static void sendPermissionMessage(@NotNull CommandSender recipient, @NotNull String permission, String message) {
         if (recipient.isOp() || recipient.hasPermission(permission) || recipient instanceof ConsoleCommandSender)
             recipient.sendMessage(StringUtil.color(message));
-    }
-
-    public static void sendTypingTitle(Player player, int frequency, String title, String subtitle, int fadeIn, int stay, int fadeOut) {
-        int maxLength = Math.max(title.length(), subtitle.length());
-        AtomicInteger iteration = new AtomicInteger();
-        Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, typingTask -> {
-            player.sendTitle(StringUtils.substring(title, 0, Math.min(title.length(), iteration.get())), StringUtils.substring(subtitle, 0, Math.min(subtitle.length(), iteration.get())), fadeIn, stay, fadeOut);
-            if (iteration.incrementAndGet() == maxLength)
-                typingTask.cancel();
-        }, 0, frequency);
     }
 
 }

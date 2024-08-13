@@ -2,6 +2,7 @@ package me.notsodelayed.simmygameapi.api.util;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.WeakHashMap;
 
@@ -41,8 +42,11 @@ public class Poll<T> {
         return votes.get(vote);
     }
 
-    public Map<T, Integer> computeVotes() {
-        Map<T, Integer> results = new HashMap<>();
+    /**
+     * @return the map of computed votes, sorted from lowest to highest votes of {@link T}.
+     */
+    public LinkedHashMap<T, Integer> computeVotes() {
+        LinkedHashMap<T, Integer> results = new LinkedHashMap<>();
         playerVotes.values().stream()
                 .sorted(Comparator.comparingInt(vote -> votes.getOrDefault(vote, 0)))
                 .forEachOrdered(vote -> results.put(vote, votes.getOrDefault(vote, 0)));

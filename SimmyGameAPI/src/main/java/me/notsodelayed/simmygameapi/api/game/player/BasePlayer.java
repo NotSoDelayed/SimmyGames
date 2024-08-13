@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public interface BasePlayer {
 
@@ -25,8 +26,8 @@ public interface BasePlayer {
 
     /**
      * @return the online player
-     * @apiNote This returns {@link OfflinePlayer#getPlayer()} without null checks. You are advised to use {@link #getOptionalPlayer()} instead. :)
      */
+    @Nullable
     default Player getPlayer() {
         return getBukkitPlayer().getPlayer();
     }
@@ -36,7 +37,7 @@ public interface BasePlayer {
     }
 
     /**
-     * @return the UUID of this player ({@link OfflinePlayer#getUniqueId()})
+     * @return {@link OfflinePlayer#getUniqueId()}
      */
     UUID getUuid();
 

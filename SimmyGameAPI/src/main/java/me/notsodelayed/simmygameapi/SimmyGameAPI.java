@@ -3,6 +3,7 @@ package me.notsodelayed.simmygameapi;
 import java.util.logging.Logger;
 
 import me.notsodelayed.simmygameapi.api.sign.ExecutableSign;
+import me.notsodelayed.simmygameapi.command.GameCommand;
 import me.notsodelayed.simmygameapi.handler.internal.ServerPlayerProtectionHandler;
 import me.notsodelayed.simmygameapi.util.Util;
 import org.bukkit.Bukkit;
@@ -32,6 +33,9 @@ public final class SimmyGameAPI extends JavaPlugin {
         // General protection
         Bukkit.getPluginManager().registerEvents(new ServerPlayerProtectionHandler(), this);
 
+        // ! - - Register commands - - !
+        GameCommand.register();
+
         // ExecutableSign
         // TODO should only register listener when there's at least 1 created instance
         Bukkit.getPluginManager().registerEvents(new Listener() {
@@ -49,11 +53,8 @@ public final class SimmyGameAPI extends JavaPlugin {
                 Player player = event.getPlayer();
                 if (!execSign.check().test(player))
                     return;
-                switch (action) {
-                    case LEFT_CLICK_BLOCK -> execSign.executeLeftClick().accept(player);
-                    case RIGHT_CLICK_BLOCK -> execSign.executeRightClick().accept(player);
-                    default -> execSign.execute().accept(player);
-                }
+                ExecutableSign.ClickAction clickAction = action == Action.LEFT_CLICK_BLOCK ? ExecutableSign.ClickAction.LEFT_CLICK : ExecutableSign.ClickAction.RIGHT_CLICK;
+                execSign.execute(player, clickAction);
             }
         }, this);
 

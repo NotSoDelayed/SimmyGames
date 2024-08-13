@@ -5,6 +5,7 @@ import java.io.File;
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.thenexus.TheNexus;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 /**
@@ -13,12 +14,12 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class Config {
 
     private static Config config;
-    private YamlConfiguration yml;
+    private FileConfiguration yml;
 
     // Config values
-    public String LOBBY_SERVER = "";
     public short MAX_ACTIVE_GAMES = 1;
     public boolean SOFT_EXCEPTIONS_FOR_ENDING_GAMES = false;
+    public short CONFIG_VERSION = 1;
 
     private Config(TheNexus ignored) {}
 
@@ -29,7 +30,6 @@ public class Config {
             File configFile = new File(plugin.getDataFolder(), "config.yml");
             plugin.saveDefaultConfig();
             config.yml = YamlConfiguration.loadConfiguration(configFile);
-            config.LOBBY_SERVER = config.yml.getString("lobby-server", config.LOBBY_SERVER);
             config.MAX_ACTIVE_GAMES = ((Number) config.yml.getInt("max-active-games", config.MAX_ACTIVE_GAMES)).shortValue();
             config.SOFT_EXCEPTIONS_FOR_ENDING_GAMES = config.yml.getBoolean("soft-exceptions-for-ending-games", config.SOFT_EXCEPTIONS_FOR_ENDING_GAMES);
             return true;

@@ -47,7 +47,7 @@ public class GameMap {
     /**
      * @return the directory of this map
      */
-    public File getMapDirectory() {
+    public File getDirectory() {
         return mapDirectory;
     }
 

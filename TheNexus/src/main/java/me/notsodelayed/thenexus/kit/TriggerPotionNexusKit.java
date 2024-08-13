@@ -10,6 +10,24 @@ import org.jetbrains.annotations.Nullable;
  */
 public class TriggerPotionNexusKit extends PotionNexusKit {
 
+    public enum TriggerAction {
+
+        SNEAK("sneak"),
+        UNKNOWN("unknown");
+
+        private String toString;
+
+        TriggerAction(String toString) {
+            this.toString = toString;
+        }
+
+        @Override
+        public String toString() {
+            return toString;
+        }
+
+    }
+
     private final TriggerAction triggerAction;
 
     public TriggerPotionNexusKit(@NotNull String id, @Nullable String displayName, @NotNull Material displayItem, @Nullable String[] description, @NotNull PotionEffect[] potionEffects, @NotNull TriggerAction triggerAction) {

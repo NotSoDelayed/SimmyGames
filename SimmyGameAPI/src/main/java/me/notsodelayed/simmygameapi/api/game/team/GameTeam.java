@@ -8,7 +8,7 @@ import java.util.stream.Collectors;
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.StringUtil;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -20,11 +20,11 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Represents a team of a {@link Game}.
  */
-@SuppressWarnings("deprecation")
 public class GameTeam implements BaseTeam {
 
     private final Team team;
     private final Set<GamePlayer> players;
+    private final ChatColor color;
     protected final Scoreboard scoreboard;
 
     public GameTeam(@NotNull ChatColor color) {
@@ -37,10 +37,11 @@ public class GameTeam implements BaseTeam {
 
     private GameTeam(@NotNull ChatColor color, @NotNull String id, @Nullable String displayName) {
         players = new HashSet<>();
+        this.color = color;
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         team = scoreboard.registerNewTeam(id);
         team.setDisplayName(Optional.ofNullable(displayName).orElse(id));
-        team.setColor(color);
+        team.setPrefix(color + displayName);
     }
 
     /**
@@ -110,7 +111,7 @@ public class GameTeam implements BaseTeam {
      * @return the color
      */
     public ChatColor getColor() {
-        return team.getColor();
+        return color;
     }
 
     /**
@@ -124,7 +125,7 @@ public class GameTeam implements BaseTeam {
      * @return the string formatted for displaying
      */
     public String getDisplayName() {
-        return team.getColor() + team.getDisplayName();
+        return team.getDisplayName();
     }
 
 }

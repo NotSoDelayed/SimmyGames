@@ -43,57 +43,27 @@ public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, Ki
         return team;
     }
 
-    @Override
-    public NexusKit getKit() {
-        return kit;
-    }
-
-    @Override
-    public void setKit(NexusKit kit) {
-        this.kit = kit;
-    }
-
-    @Override
-    public boolean applyKit() {
-        if (KitPlayer.super.applyKit()) {
-            Player onlinePlayer = this.getBukkitPlayer().getPlayer();
-            // super.applyKit() assured this; using assert to shut this mf
-            assert onlinePlayer != null && getKit() != null;
-            // TPNKit potion must not be applied on player spawn
-            if (getKit().getClass().equals(PotionNexusKit.class)) {
-                LoggerUtil.verbose(onlinePlayer.getName() + " received potion effects: " + onlinePlayer.addPotionEffects(List.of(((PotionNexusKit) getKit()).getPotionEffects())));
-            }
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Initialize a respawn procedure for this player.
+     * @param cooldown the cooldown before respawning
      * @return the respawn task, otherwise null if operation failed.
      */
     @Nullable
-    public BukkitTask respawn() {
-        Player onlinePlayer = this.getBukkitPlayer().getPlayer();
+    public BukkitTask respawn(int cooldown) {
+        cooldown = Math.max(cooldown, 0);
+        Player onlinePlayer = this.getPlayer();
         if (onlinePlayer == null)
             return null;
         PlayerUtil.clean(onlinePlayer, GameMode.SPECTATOR);
-        AtomicInteger seconds = new AtomicInteger(8);
-        String damageSummary = StringUtil.getDamageEventSummary(onlinePlayer.getLastDamageCause());
-        MessageUtil.sendTypingTitle(this.getBukkitPlayer().getPlayer(), 1, "", damageSummary, 0, 21, 0);
+        AtomicInteger seconds = new AtomicInteger(cooldown);
         return Bukkit.getScheduler().runTaskTimer(TheNexus.instance, () -> {
             if (seconds.get() > 0) {
-                String display = "&6&l" + seconds.get();
-                if (seconds.get() % 2 == 0)
-                    display = "&e|&r " + display + "&e |&r";
-                String finalDisplay = display; // forced
-                Optional.ofNullable(getBukkitPlayer().getPlayer()).ifPresentOrElse(p -> p.sendTitle(finalDisplay, damageSummary, 0, 21 ,10), respawnTask::cancel);
+                getOptionalPlayer().ifPresentOrElse(player -> player.sendMessage(String.format("&eRespawning in %s...", seconds.get())),() -> seconds.set(0));
             } else {
-                this.spawn();
                 respawnTask.cancel();
             }
             seconds.getAndDecrement();
-        }, 0, 10);
+        }, 0, 20);
     }
 
     /**
@@ -101,6 +71,16 @@ public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, Ki
      */
     public boolean isRespawning() {
         return respawnTask != null;
+    }
+
+    @Override
+    public NexusKit getKit() {
+        return kit;
+    }
+
+    @Override
+    public void setKit(@Nullable NexusKit kit) {
+        this.kit = kit;
     }
 
     @Override
@@ -112,23 +92,6 @@ public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, Ki
     @Override
     public void setQueriedKit(@Nullable NexusKit queriedKit) {
         this.queriedKit = queriedKit;
-    }
-
-    /**
-     * Assigns a kit to this player. This accounts for:
-     * <p>- whether this player is in game, which the kit will set as the respawning kit</p>
-     * <p>- whether this player is in lobby, which the kit placeholder will be changed,</p>
-     * <p>  while the kit items and effects will be given once the game has begun.</p>
-     * @param nexusKit the kit
-     */
-    public void assignKit(NexusKit nexusKit) {
-//        if (this.getGame().getGameState() == GameState.INGAME) {
-//            this.respawningKit = nexusKit;
-//            this.message(MessageUtil.successMessage("You have selected kit " + nexusKit.getDisplayName().orElse(nexusKit.getId() + " on your next respawn!")));
-//            return;
-//        }
-//        this.setKit(nexusKit);
-//        this.message(MessageUtil.successMessage("You have selected kit " + nexusKit.getDisplayName().orElse(nexusKit.getId() + "!")));
     }
 
 }

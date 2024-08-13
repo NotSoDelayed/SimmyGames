@@ -10,12 +10,12 @@ public class PlayerUtil {
         if (player == null)
             return;
         player.setGameMode(gameMode);
-        player.clearActivePotionEffects();
+        player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
         player.getInventory().clear();
     }
 
     public static void clean(GamePlayer gamePlayer, GameMode gameMode) {
-        clean(gamePlayer.getBukkitPlayer().getPlayer(), gameMode);
+        clean(gamePlayer.getPlayer(), gameMode);
     }
 
 }

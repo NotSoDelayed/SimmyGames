@@ -3,7 +3,6 @@ package me.notsodelayed.thenexus.handler.internal;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
-import net.kyori.adventure.text.Component;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,7 +16,7 @@ public class ServerPlayerJoinQuitHandler implements Listener {
     // TODO adapt to config (auto join? manual join?)
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        event.joinMessage(Component.empty());
+        event.setJoinMessage("");
     }
 
     @EventHandler

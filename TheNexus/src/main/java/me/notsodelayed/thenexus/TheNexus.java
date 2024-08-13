@@ -6,13 +6,12 @@ import java.util.logging.Logger;
 
 import me.notsodelayed.simmygameapi.api.registry.GameKitRegistry;
 import me.notsodelayed.simmygameapi.api.registry.parser.Node;
-import me.notsodelayed.thenexus.command.KitPromptCommand;
+import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.thenexus.config.Config;
 import me.notsodelayed.thenexus.game.NexusGame;
 import me.notsodelayed.thenexus.handler.internal.ServerPlayerJoinQuitHandler;
 import me.notsodelayed.thenexus.kit.NexusKit;
-import me.notsodelayed.thenexus.kit.NexusKitManager;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -40,10 +39,6 @@ public final class TheNexus extends JavaPlugin {
         logger.info("Initialising...");
 
         Config.get();
-
-        // TODO NexusKitManager - replace this sh!t
-        NexusKitManager.get();
-        KitPromptCommand.register();
 
         Bukkit.getPluginManager().registerEvents(new ServerPlayerJoinQuitHandler(), this);
 
@@ -82,14 +77,6 @@ public final class TheNexus extends JavaPlugin {
                                 .defaultValue(Material.CHEST),
                         new Node<List<String>>("description")
                                 .optional(true),
-                        new Node<String>("kit-type")
-                                .getter(kitType -> {
-                                    // check valid kit type
-                                    // TODO verify does this handles null??
-                                    if (!StringUtils.containsAny(kitType, NexusGame.getKitTypes()))
-                                        return null;
-                                    return kitType;
-                                }),
                         new Node<Boolean>("soulbound-default")
                                 .optional(true)
                                 .defaultValue(false),

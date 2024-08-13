@@ -2,32 +2,23 @@ package me.notsodelayed.thenexus.game;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.TreeSet;
 
 import com.google.common.base.Preconditions;
 import me.notsodelayed.simmygameapi.api.game.GameState;
-import me.notsodelayed.simmygameapi.api.game.KitGame;
 import me.notsodelayed.simmygameapi.api.game.MapGame;
 import me.notsodelayed.simmygameapi.api.game.TeamVsTeamGame;
 import me.notsodelayed.simmygameapi.api.game.map.GameMap;
 import me.notsodelayed.simmygameapi.api.game.team.GameTeamManager;
-import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.thenexus.entity.NexusPlayer;
 import me.notsodelayed.thenexus.entity.game.Nexus;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
-import me.notsodelayed.thenexus.kit.NexusKit;
 import me.notsodelayed.thenexus.map.NexusMap;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 
-public class NexusGame extends MapGame<NexusMap> implements KitGame<NexusKit>, TeamVsTeamGame<NexusTeam> {
+public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamGame<NexusTeam> {
 
-    // TODO for testing
-    private static NexusKit WARRIOR;
     private static final String[] KIT_TYPES = new String[] {
             "classic", "potion", "trigger-potion"
     };
@@ -45,33 +36,8 @@ public class NexusGame extends MapGame<NexusMap> implements KitGame<NexusKit>, T
      */
     protected NexusGame(int minPlayers, int maxPlayers) {
         super(minPlayers, maxPlayers);
-        // TODO for testing
-        if (WARRIOR == null) {
-            WARRIOR = new NexusKit("warrior", Material.STONE_SWORD, new String[]{"Classic warrior kit", "Reminder to remove this static field in NexusGame.class"});
-            WARRIOR.setItem(0, Material.STONE_SWORD)
-                    .setItem(1,Material.WOODEN_PICKAXE)
-                    .setItem(2, Material.STONE_AXE)
-                    .setItem(3, Material.STONE_SHOVEL)
-                    .setItem(4, Material.SHEARS)
-                    .setItem(5, Material.CRAFTING_TABLE);
-        }
         teamManager = new GameTeamManager<>();
         teamNexusMap = new HashMap<>();
-    }
-
-    @Override
-    protected boolean init() {
-        return true;
-    }
-
-    @Override
-    public void tick() {
-        this.getPlayers().forEach(nexusPlayer -> {
-            Optional.ofNullable(nexusPlayer.getKit()).ifPresentOrElse(nexusKit -> {
-               if (!nexusPlayer.applyKit())
-                   LoggerUtil.verbose(this, nexusPlayer.getName() + " failed to receive kit " + nexusKit.getClass().getTypeName() + " " + nexusKit.getId());
-            }, () -> LoggerUtil.verbose(this, nexusPlayer.getName() + " does not have a kit assigned. (Unexpected behaviour)"));
-        });
     }
 
     @Override
@@ -84,28 +50,25 @@ public class NexusGame extends MapGame<NexusMap> implements KitGame<NexusKit>, T
      * @return the nexus associated to the team
      * @throws IllegalArgumentException if provided team is not associated to this game
      */
-    @NotNull
     public Nexus getNexus(NexusTeam team) {
         if (!teamNexusMap.containsKey(team))
             throw new IllegalArgumentException("Called with unassociated team " + team);
         return teamNexusMap.get(team);
     }
 
+    /**
+     * @param block the block
+     * @return the nexus associated
+     * @throws IllegalStateException if the game world is not loaded
+     */
     public Nexus getNexus(Block block) {
-        // TODO make nexus worky
-        return null;
+        Preconditions.checkState(getWorld() != null, "game world is not loaded");
+        return Nexus.get(block);
     }
-
-
 
     @Override
     public GameTeamManager<NexusTeam> getTeamManager() {
         return teamManager;
-    }
-
-    @Override
-    public TreeSet<NexusKit> getKits() {
-        return new TreeSet<>(Set.of(WARRIOR));
     }
 
     @Override
@@ -128,15 +91,6 @@ public class NexusGame extends MapGame<NexusMap> implements KitGame<NexusKit>, T
     public void setTeamBeta(NexusTeam teamBeta) {
         Preconditions.checkState(isSetup(), "game is not in setup state");
         this.teamBeta = teamBeta;
-    }
-
-    // TODO deprecate this shit
-    /**
-     * @return the kit types of this game mode, usually used for kit registrations
-     */
-    @ApiStatus.Internal
-    public static String[] getKitTypes() {
-        return KIT_TYPES.clone();
     }
 
 }

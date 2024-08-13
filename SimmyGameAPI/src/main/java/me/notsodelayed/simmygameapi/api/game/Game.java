@@ -15,15 +15,19 @@ import com.google.common.base.Preconditions;
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.event.GameStartCountdownEvent;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.command.GameCommand;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
+import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -172,6 +176,7 @@ public abstract class Game implements BaseGame {
                 .maxPlayers(maxPlayers)
                 .minPlayers(minPlayers);
         GAMES.put(uuid, this);
+        GameCommand.UUIDS_CACHE = null;
         countdownExecutable = new HashMap<>();
     }
 
@@ -181,15 +186,6 @@ public abstract class Game implements BaseGame {
     public static Map<UUID, Game> getGames() {
         garbageCollection();
         return Map.copyOf(GAMES);
-    }
-
-    /**
-     * @param message the action bar message to dispatch to all game players
-     */
-    public void dispatchActionBar(String message) {
-        for (Player player : getBukkitPlayers()) {
-            player.sendActionBar(StringUtil.color(message));
-        }
     }
 
     public void dispatchPrefixedMessage(String message) {
@@ -220,7 +216,7 @@ public abstract class Game implements BaseGame {
      */
     public void dispatchSound(Sound sound, float volume, float pitch) {
         for (Player player : getBukkitPlayers()) {
-            player.playSound(player, sound, SoundCategory.RECORDS, volume, pitch);
+            player.playSound(player.getLocation(), sound, volume, pitch);
         }
     }
 
@@ -283,7 +279,7 @@ public abstract class Game implements BaseGame {
     public void start(int startIn, GameStartCountdownEvent.StartCause startCause, boolean force) {
         Preconditions.checkState(gameState == GameState.WAITING_FOR_PLAYERS, "game is not in waiting state");
         LoggerUtil.verbose(this, "Game called to start (force: " + force + ")");
-        if (!hasMetGameRequirements() && !force) {
+        if (!force && !hasMetGameRequirements()) {
             LoggerUtil.verbose(this, "Game start countdown aborted due to game requirements not met.");
             return;
         }
@@ -298,29 +294,34 @@ public abstract class Game implements BaseGame {
         }
         this.force = force;
         gameState = GameState.STARTING;
-        new GameStartCountdownEvent(this, startCause).callEvent();
+        Bukkit.getPluginManager().callEvent(new GameStartCountdownEvent(this, startCause));
         AtomicInteger seconds = new AtomicInteger(startIn);
-        Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, countdown -> {
-            gameStartTask = countdown;
+        Game game = this;
+        gameStartTask = Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, new BukkitRunnable() {
 
-            Consumer<Game> executable = countdownExecutable.get(seconds.get());
-            if (executable != null)
-                executable.accept(this);
+            @Override
+            public void run() {
 
-            if (seconds.get() == 0) {
-                gameState = GameState.INGAME;
-                started = Instant.now();
-                dispatchMessage("&aGame has started!");
-                gameStartTask.cancel();
-                gameStartTask = null;
-                return;
+                Consumer<Game> executable = countdownExecutable.get(seconds.get());
+                if (executable != null)
+                    executable.accept(game);
+
+                if (seconds.get() == 0) {
+                    gameState = GameState.INGAME;
+                    started = Instant.now();
+                    dispatchMessage("&aGame has started!");
+                    tick();
+                    gameStartTask.cancel();
+                    gameStartTask = null;
+                    return;
+                }
+                if (seconds.get() == startIn || seconds.get() % 10 == 0 || seconds.get() <= 5) {
+                    dispatchMessage("&eGame will start in " + seconds.get() + "...");
+                    dispatchSound(Sound.NOTE_STICKS, 1);
+                }
+
+                seconds.getAndDecrement();
             }
-            if (seconds.get() == startIn || seconds.get() % 10 == 0 || seconds.get() <= 5) {
-                dispatchMessage("&eGame will start in " + seconds.get() + "...");
-                dispatchSound(Sound.BLOCK_NOTE_BLOCK_HAT, 1);
-            }
-
-            seconds.getAndDecrement();
         }, 0, 20);
     }
 
@@ -330,10 +331,20 @@ public abstract class Game implements BaseGame {
     public void cancelGameStartTask(@NotNull String reason) {
         if (gameStartTask != null) {
             gameStartTask.cancel();
+            gameStartTask = null;
             this.force = false;
             this.dispatchMessage(ChatColor.RED + reason);
-            this.dispatchSound(Sound.BLOCK_NOTE_BLOCK_BASS, 1.5f);
+            this.dispatchSound(Sound.NOTE_BASS, 1.5f);
         }
+    }
+
+    /**
+     * Ends the game.
+     * @see #delete()
+     * @implNote The default implementation for ending a game. Subclasses may override this for custom implementation.
+     */
+    public void end() {
+        end(gamePlayer -> {});
     }
 
     /**
@@ -345,13 +356,18 @@ public abstract class Game implements BaseGame {
         end(cleanup, () -> {
             this.dispatchMessage("&eGame has ended!");
             AtomicInteger seconds = new AtomicInteger(20);
-            Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, task -> {
-                this.dispatchActionBar("Game shutdown in " + seconds.get() + "...");
-                if (seconds.get() == 0) {
-                    Bukkit.getScheduler().runTask(SimmyGameAPI.instance, this::delete);
-                    task.cancel();
+            Game game = this;
+            Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, new BukkitRunnable() {
+                @Override
+                public void run() {
+                    if (seconds.get() == 0) {
+                        Bukkit.getScheduler().runTask(SimmyGameAPI.instance, game::delete);
+                        this.cancel();
+                    } else if (seconds.get() % 10 == 0) {
+                        game.dispatchMessage(String.format("&eGame shutdown in %ss...", seconds.get()));
+                    }
+                    seconds.getAndDecrement();
                 }
-                seconds.getAndDecrement();
             }, 0, 20);
         });
     }
@@ -376,6 +392,10 @@ public abstract class Game implements BaseGame {
      */
     protected void delete() {
         LoggerUtil.verbose(this, "Deleting...");
+        this.getPlayers().forEach(gamePlayer -> {
+            PlayerUtil.clean(gamePlayer, GameMode.ADVENTURE);
+            gamePlayer.leaveGame(null);
+        });
         gameState = GameState.DELETED;
     }
 
@@ -397,12 +417,21 @@ public abstract class Game implements BaseGame {
                 .collect(Collectors.toUnmodifiableSet());
     }
 
-    // TODO add remove player
+    /**
+     * @param gamePlayer the player to add
+     * @apiNote Use {@link GamePlayer#joinGame(Game)}
+     */
+    @ApiStatus.Internal
     public void addPlayer(GamePlayer gamePlayer) {
         if (!players.add(gamePlayer))
             throw new IllegalStateException(gamePlayer + " is already apart of this game");
     }
 
+    /**
+     * @param gamePlayer the player to remove
+     * @apiNote Use {@link GamePlayer#leaveGame()}
+     */
+    @ApiStatus.Internal
     public void removePlayer(GamePlayer gamePlayer) {
         if (!players.remove(gamePlayer))
             throw new IllegalStateException(gamePlayer + " is not apart of this game");
@@ -495,6 +524,10 @@ public abstract class Game implements BaseGame {
         return uuid;
     }
 
+    public String getDisplayUuid() {
+        return uuid.toString().split("-")[0];
+    }
+
     /**
      * @return whether this game is safe for settings modification.
      */
@@ -515,10 +548,15 @@ public abstract class Game implements BaseGame {
     protected static void garbageCollection() {
         // Prevent CCME
         Map<UUID, Game> games = new HashMap<>(GAMES);
+        boolean clearCache = false;
         for (Game game : games.values()) {
-            if (game.getGameState() == GameState.DELETED)
+            if (game.getGameState() == GameState.DELETED) {
+                clearCache = true;
                 GAMES.remove(game.getUuid());
+            }
         }
+        if (clearCache)
+            GameCommand.UUIDS_CACHE = null;
     }
 
     @Override

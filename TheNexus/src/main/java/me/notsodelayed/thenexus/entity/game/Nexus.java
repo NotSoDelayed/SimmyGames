@@ -1,7 +1,10 @@
 package me.notsodelayed.thenexus.entity.game;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
+import me.notsodelayed.thenexus.TheNexus;
 import me.notsodelayed.thenexus.entity.NexusPlayer;
 import me.notsodelayed.thenexus.game.NexusGame;
 import org.bukkit.block.Block;
@@ -12,6 +15,8 @@ import org.jetbrains.annotations.Nullable;
  * Represents a core entity of a team base of a {@link NexusGame}.
  */
 public class Nexus {
+
+    private static final Map<Block, Nexus> NEXUSES = new HashMap<>();
 
     private int health, maxHealth;
     private final Block block;
@@ -25,10 +30,24 @@ public class Nexus {
      * @param damageable whether to allow damage to this nexus by a player
      */
     public Nexus(@NotNull Block block, int health, int maxHealth, boolean damageable) {
+        if (NEXUSES.containsKey(block)) {
+            TheNexus.instance.getLogger().severe(block + " is already bound to a nexus.");
+            throw new IllegalStateException("block is already bound to a nexus");
+        }
         this.block = block;
         this.health = health;
         this.maxHealth = maxHealth;
         this.damageable = damageable;
+        NEXUSES.put(block, this);
+    }
+
+    /**
+     * @param block the block
+     * @return the nexus associated, otherwise null
+     */
+    @Nullable
+    public static Nexus get(Block block) {
+        return NEXUSES.get(block);
     }
 
     /**

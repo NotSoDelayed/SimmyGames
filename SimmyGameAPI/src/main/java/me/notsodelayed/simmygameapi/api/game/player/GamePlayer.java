@@ -7,7 +7,6 @@ import com.google.common.base.Preconditions;
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import org.bukkit.Sound;
-import org.bukkit.SoundCategory;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -82,7 +81,7 @@ public class GamePlayer implements BasePlayer {
      * @param messages the messages
      */
     public void message(@NotNull String... messages) {
-        this.getOptionalPlayer().ifPresent(onlinePlayer -> {
+        getOptionalPlayer().ifPresent(onlinePlayer -> {
             for (String message : messages)
                 onlinePlayer.sendMessage(StringUtil.color(message));
         });
@@ -94,19 +93,9 @@ public class GamePlayer implements BasePlayer {
      * @param pitch the pitch
      */
     public void playSound(Sound sound, int volume, int pitch) {
-        this.getOptionalPlayer().ifPresent(onlinePlayer ->
-                onlinePlayer.playSound(onlinePlayer.getLocation(), sound, SoundCategory.RECORDS, volume, pitch)
+        getOptionalPlayer().ifPresent(onlinePlayer ->
+                onlinePlayer.playSound(onlinePlayer.getLocation(), sound, volume, pitch)
         );
-    }
-
-    /**
-     * Spawns this player into the game world.
-     */
-    public void spawn() {
-        this.getOptionalPlayer().ifPresent(player -> {
-            // TODO spawn() make this work
-            message("&eSpawned into the game world.");
-        });
     }
 
     /**
@@ -129,4 +118,5 @@ public class GamePlayer implements BasePlayer {
                 ", game=" + game +
                 '}';
     }
+
 }
