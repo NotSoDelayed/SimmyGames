@@ -3,23 +3,19 @@ package me.notsodelayed.simmygameapi.command;
 import java.util.List;
 import java.util.UUID;
 
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.game.event.GameStartCountdownEvent;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.CommandUtil;
-import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.MessageUtil;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabExecutor;
 import org.bukkit.entity.Player;
 
-public class GameCommand implements TabExecutor {
+public class GameCommand extends BaseCommand {
 
-    public static void register() {
-        SimmyGameAPI.instance.getCommand("game").setExecutor(new GameCommand());
-        LoggerUtil.verbose("Registered game commands!");
+    public GameCommand(String label) {
+        super(label);
     }
 
     // /game (this|<uuid>) (start|end)
@@ -75,6 +71,9 @@ public class GameCommand implements TabExecutor {
         return true;
     }
 
+    /**
+     * Set this to null to update the cache.
+     */
     public static List<String> UUIDS_CACHE = null;
 
     @Override

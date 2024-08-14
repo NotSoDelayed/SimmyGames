@@ -76,6 +76,9 @@ public abstract class MapGame<M extends GameMap> extends Game {
         }
     }
 
+    /**
+     * Overridden: to delete the world of this game.
+     */
     @Override
     protected void delete() {
         super.delete();

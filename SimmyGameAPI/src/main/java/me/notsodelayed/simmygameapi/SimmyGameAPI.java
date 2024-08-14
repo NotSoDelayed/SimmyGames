@@ -4,6 +4,7 @@ import java.util.logging.Logger;
 
 import me.notsodelayed.simmygameapi.api.sign.ExecutableSign;
 import me.notsodelayed.simmygameapi.command.GameCommand;
+import me.notsodelayed.simmygameapi.command.StatsCommand;
 import me.notsodelayed.simmygameapi.handler.internal.ServerPlayerProtectionHandler;
 import me.notsodelayed.simmygameapi.util.Util;
 import org.bukkit.Bukkit;
@@ -34,7 +35,8 @@ public final class SimmyGameAPI extends JavaPlugin {
         Bukkit.getPluginManager().registerEvents(new ServerPlayerProtectionHandler(), this);
 
         // ! - - Register commands - - !
-        GameCommand.register();
+        new GameCommand("game");
+        new StatsCommand("stats");
 
         // ExecutableSign
         // TODO should only register listener when there's at least 1 created instance

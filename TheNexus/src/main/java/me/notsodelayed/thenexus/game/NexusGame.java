@@ -15,7 +15,6 @@ import me.notsodelayed.thenexus.entity.game.Nexus;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.map.NexusMap;
 import org.bukkit.block.Block;
-import org.jetbrains.annotations.ApiStatus;
 
 public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamGame<NexusTeam> {
 

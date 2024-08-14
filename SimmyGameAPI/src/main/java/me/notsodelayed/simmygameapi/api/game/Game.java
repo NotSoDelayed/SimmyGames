@@ -389,6 +389,7 @@ public abstract class Game implements BaseGame {
     /**
      * Deletes the game.
      * @implNote Developers must call <b>super</b> before custom implementation!
+     * @apiNote {@link #getPlayers()} returns an empty set after this method execution.
      */
     protected void delete() {
         LoggerUtil.verbose(this, "Deleting...");
