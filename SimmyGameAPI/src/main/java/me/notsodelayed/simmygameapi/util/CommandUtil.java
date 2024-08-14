@@ -2,10 +2,11 @@ package me.notsodelayed.simmygameapi.util;
 
 import java.util.UUID;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.api.game.Game;
 
 public class CommandUtil {
 

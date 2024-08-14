@@ -1,9 +1,10 @@
 package me.notsodelayed.simmygameapi.api.game.event;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.jetbrains.annotations.NotNull;
+
+import me.notsodelayed.simmygameapi.api.game.Game;
 
 /**
  * The base class for {@link Game} events.

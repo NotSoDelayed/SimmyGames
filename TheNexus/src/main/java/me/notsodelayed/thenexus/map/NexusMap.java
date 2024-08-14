@@ -2,9 +2,10 @@ package me.notsodelayed.thenexus.map;
 
 import java.io.File;
 
-import me.notsodelayed.simmygameapi.api.game.map.GameMap;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.api.game.map.GameMap;
 
 public class NexusMap extends GameMap {
 

@@ -1,13 +1,11 @@
 package me.notsodelayed.thenexus.kit;
 
-import java.util.Arrays;
-import java.util.Optional;
-
-import me.notsodelayed.simmygameapi.api.game.kit.GameKit;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.api.game.kit.GameKit;
 
 /**
  * Represents an ordinary nexus kit.

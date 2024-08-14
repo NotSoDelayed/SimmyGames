@@ -1,10 +1,11 @@
 package me.notsodelayed.thenexus.event;
 
-import me.notsodelayed.thenexus.entity.game.Nexus;
-import me.notsodelayed.thenexus.game.NexusGame;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+
+import me.notsodelayed.thenexus.entity.game.Nexus;
+import me.notsodelayed.thenexus.game.NexusGame;
 
 /**
  * Called when a {@link Nexus} is being damaged.

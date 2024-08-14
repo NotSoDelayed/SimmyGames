@@ -5,9 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
-import me.notsodelayed.simmygameapi.util.StringUtil;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
@@ -16,6 +13,10 @@ import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.util.StringUtil;
 
 /**
  * Represents a team of a {@link Game}.

@@ -4,12 +4,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import me.notsodelayed.thenexus.TheNexus;
-import me.notsodelayed.thenexus.entity.NexusPlayer;
-import me.notsodelayed.thenexus.game.NexusGame;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.thenexus.TheNexus;
+import me.notsodelayed.thenexus.entity.NexusPlayer;
+import me.notsodelayed.thenexus.game.NexusGame;
 
 /**
  * Represents a core entity of a team base of a {@link NexusGame}.

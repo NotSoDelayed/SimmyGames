@@ -3,14 +3,15 @@ package me.notsodelayed.simmygameapi.command;
 import java.util.List;
 import java.util.UUID;
 
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.game.event.GameStartCountdownEvent;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.CommandUtil;
 import me.notsodelayed.simmygameapi.util.MessageUtil;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
 
 public class GameCommand extends BaseCommand {
 

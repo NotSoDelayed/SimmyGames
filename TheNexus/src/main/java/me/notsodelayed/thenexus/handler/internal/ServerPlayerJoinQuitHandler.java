@@ -1,14 +1,15 @@
 package me.notsodelayed.thenexus.handler.internal;
 
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
+
+import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.util.PlayerUtil;
 
 // TODO move to SimmyGameAPI
 public class ServerPlayerJoinQuitHandler implements Listener {

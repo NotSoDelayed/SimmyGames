@@ -4,10 +4,11 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-import me.notsodelayed.simmygameapi.api.registry.parser.Node;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+
+import me.notsodelayed.simmygameapi.api.registry.parser.Node;
 
 // TODO finish this shit
 @ApiStatus.Experimental

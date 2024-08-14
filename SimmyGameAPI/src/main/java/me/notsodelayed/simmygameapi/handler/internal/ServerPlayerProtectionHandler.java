@@ -1,13 +1,14 @@
 package me.notsodelayed.simmygameapi.handler.internal;
 
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
-import me.notsodelayed.simmygameapi.util.Util;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.util.Util;
 
 public class ServerPlayerProtectionHandler implements Listener {
 

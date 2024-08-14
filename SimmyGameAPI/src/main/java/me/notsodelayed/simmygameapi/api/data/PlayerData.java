@@ -8,11 +8,12 @@ import java.util.Map;
 import java.util.UUID;
 
 import com.google.common.base.Preconditions;
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.util.LoggerUtil;
 
 /**
  * A data holder of a {@link Player}.

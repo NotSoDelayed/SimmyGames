@@ -12,8 +12,9 @@ import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
 
 /**
  * Utility class for {@link File}.

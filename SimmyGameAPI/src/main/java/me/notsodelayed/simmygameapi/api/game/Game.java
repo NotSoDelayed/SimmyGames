@@ -12,14 +12,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.event.GameStartCountdownEvent;
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
-import me.notsodelayed.simmygameapi.command.GameCommand;
-import me.notsodelayed.simmygameapi.util.LoggerUtil;
-import me.notsodelayed.simmygameapi.util.PlayerUtil;
-import me.notsodelayed.simmygameapi.util.StringUtil;
-import me.notsodelayed.simmygameapi.util.Util;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
@@ -30,6 +22,15 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.game.event.GameStartCountdownEvent;
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.command.GameCommand;
+import me.notsodelayed.simmygameapi.util.LoggerUtil;
+import me.notsodelayed.simmygameapi.util.PlayerUtil;
+import me.notsodelayed.simmygameapi.util.StringUtil;
+import me.notsodelayed.simmygameapi.util.Util;
 
 /**
  * Represents a game.

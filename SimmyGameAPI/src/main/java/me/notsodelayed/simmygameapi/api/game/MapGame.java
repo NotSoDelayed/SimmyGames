@@ -8,10 +8,6 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 
 import com.google.common.base.Preconditions;
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.map.GameMap;
-import me.notsodelayed.simmygameapi.util.LoggerUtil;
-import me.notsodelayed.simmygameapi.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -19,6 +15,11 @@ import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.game.map.GameMap;
+import me.notsodelayed.simmygameapi.util.LoggerUtil;
+import me.notsodelayed.simmygameapi.util.Util;
 
 public abstract class MapGame<M extends GameMap> extends Game {
 

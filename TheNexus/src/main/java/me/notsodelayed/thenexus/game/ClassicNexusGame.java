@@ -1,16 +1,15 @@
 package me.notsodelayed.thenexus.game;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 
-import me.notsodelayed.simmygameapi.api.game.KitGame;
-import me.notsodelayed.simmygameapi.util.LoggerUtil;
-import me.notsodelayed.thenexus.entity.NexusPlayer;
-import me.notsodelayed.thenexus.kit.NexusKit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+
+import me.notsodelayed.simmygameapi.api.game.KitGame;
+import me.notsodelayed.thenexus.entity.NexusPlayer;
+import me.notsodelayed.thenexus.kit.NexusKit;
 
 public class ClassicNexusGame extends NexusGame implements KitGame<NexusKit> {
 

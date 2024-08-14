@@ -1,8 +1,9 @@
 package me.notsodelayed.simmygameapi.util;
 
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 
 public class PlayerUtil {
 

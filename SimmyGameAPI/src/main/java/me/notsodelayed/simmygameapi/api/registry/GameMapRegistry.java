@@ -3,9 +3,10 @@ package me.notsodelayed.simmygameapi.api.registry;
 import java.io.File;
 import java.util.Map;
 
-import me.notsodelayed.simmygameapi.api.game.map.GameMap;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
+
+import me.notsodelayed.simmygameapi.api.game.map.GameMap;
 
 // TODO make this shit work
 @ApiStatus.Internal

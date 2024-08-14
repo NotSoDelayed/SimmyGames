@@ -4,12 +4,13 @@ import java.util.UUID;
 import java.util.WeakHashMap;
 
 import com.google.common.base.Preconditions;
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.util.StringUtil;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.util.StringUtil;
 
 /**
  * Represents a player for a {@link Game}.

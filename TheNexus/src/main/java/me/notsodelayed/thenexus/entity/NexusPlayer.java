@@ -1,26 +1,21 @@
 package me.notsodelayed.thenexus.entity;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
-import me.notsodelayed.simmygameapi.api.game.player.KitPlayer;
-import me.notsodelayed.simmygameapi.api.game.player.TeamPlayer;
-import me.notsodelayed.simmygameapi.util.LoggerUtil;
-import me.notsodelayed.simmygameapi.util.MessageUtil;
-import me.notsodelayed.simmygameapi.util.PlayerUtil;
-import me.notsodelayed.simmygameapi.util.StringUtil;
-import me.notsodelayed.thenexus.TheNexus;
-import me.notsodelayed.thenexus.entity.team.NexusTeam;
-import me.notsodelayed.thenexus.game.NexusGame;
-import me.notsodelayed.thenexus.kit.NexusKit;
-import me.notsodelayed.thenexus.kit.PotionNexusKit;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.game.player.KitPlayer;
+import me.notsodelayed.simmygameapi.api.game.player.TeamPlayer;
+import me.notsodelayed.simmygameapi.util.PlayerUtil;
+import me.notsodelayed.thenexus.TheNexus;
+import me.notsodelayed.thenexus.entity.team.NexusTeam;
+import me.notsodelayed.thenexus.game.NexusGame;
+import me.notsodelayed.thenexus.kit.NexusKit;
 
 /**
  * Represents a player of {@link NexusGame}

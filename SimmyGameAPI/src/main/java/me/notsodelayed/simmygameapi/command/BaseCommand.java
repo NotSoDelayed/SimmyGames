@@ -1,8 +1,9 @@
 package me.notsodelayed.simmygameapi.command;
 
-import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.command.TabExecutor;
+
+import me.notsodelayed.simmygameapi.util.LoggerUtil;
 
 public abstract class BaseCommand implements TabExecutor {
 

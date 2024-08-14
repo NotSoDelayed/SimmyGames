@@ -1,8 +1,9 @@
 package me.notsodelayed.thenexus.entity.team;
 
-import me.notsodelayed.simmygameapi.api.game.team.GameTeam;
 import org.bukkit.ChatColor;
 import org.jetbrains.annotations.NotNull;
+
+import me.notsodelayed.simmygameapi.api.game.team.GameTeam;
 
 @SuppressWarnings("deprecation")
 public class NexusTeam extends GameTeam {

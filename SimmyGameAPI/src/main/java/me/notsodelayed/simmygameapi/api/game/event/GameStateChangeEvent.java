@@ -1,9 +1,10 @@
 package me.notsodelayed.simmygameapi.api.game.event;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.game.GameState;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+
+import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.game.GameState;
 
 /**
  * Called when the {@link GameState} of a {@link Game} has been changed.

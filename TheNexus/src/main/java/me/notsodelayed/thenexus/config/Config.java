@@ -2,11 +2,11 @@ package me.notsodelayed.thenexus.config;
 
 import java.io.File;
 
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.thenexus.TheNexus;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import me.notsodelayed.thenexus.TheNexus;
 
 /**
  * Represents the config of {@link TheNexus}.

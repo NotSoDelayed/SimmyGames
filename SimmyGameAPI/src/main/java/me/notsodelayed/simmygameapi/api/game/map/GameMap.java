@@ -3,10 +3,11 @@ package me.notsodelayed.simmygameapi.api.game.map;
 import java.io.File;
 import java.util.Optional;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.util.FileUtil;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.util.FileUtil;
 
 /**
  * Represents a map for a {@link Game}.

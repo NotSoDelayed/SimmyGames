@@ -1,7 +1,8 @@
 package me.notsodelayed.thenexus.event;
 
-import me.notsodelayed.thenexus.game.NexusGame;
 import org.bukkit.event.Event;
+
+import me.notsodelayed.thenexus.game.NexusGame;
 
 /**
  * Represents a {@link NexusGame} event.

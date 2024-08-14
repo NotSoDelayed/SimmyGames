@@ -1,8 +1,9 @@
 package me.notsodelayed.simmygameapi.api.game.event;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
+
+import me.notsodelayed.simmygameapi.api.game.Game;
 
 /**
  * Called when a {@link Game} has started, usually after the game start countdown.

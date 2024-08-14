@@ -4,17 +4,15 @@ import java.io.File;
 import java.util.List;
 import java.util.logging.Logger;
 
-import me.notsodelayed.simmygameapi.api.registry.GameKitRegistry;
-import me.notsodelayed.simmygameapi.api.registry.parser.Node;
-import me.notsodelayed.simmygameapi.util.StringUtil;
-import me.notsodelayed.thenexus.config.Config;
-import me.notsodelayed.thenexus.game.NexusGame;
-import me.notsodelayed.thenexus.handler.internal.ServerPlayerJoinQuitHandler;
-import me.notsodelayed.thenexus.kit.NexusKit;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import me.notsodelayed.simmygameapi.api.registry.GameKitRegistry;
+import me.notsodelayed.simmygameapi.api.registry.parser.Node;
+import me.notsodelayed.thenexus.config.Config;
+import me.notsodelayed.thenexus.handler.internal.ServerPlayerJoinQuitHandler;
+import me.notsodelayed.thenexus.kit.NexusKit;
 
 public final class TheNexus extends JavaPlugin {
 

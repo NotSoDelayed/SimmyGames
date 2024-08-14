@@ -4,8 +4,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import org.bukkit.entity.Player;
+
+import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 
 public interface BaseGame {
 

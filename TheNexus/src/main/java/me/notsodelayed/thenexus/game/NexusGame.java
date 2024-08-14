@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import org.bukkit.block.Block;
+
 import me.notsodelayed.simmygameapi.api.game.GameState;
 import me.notsodelayed.simmygameapi.api.game.MapGame;
 import me.notsodelayed.simmygameapi.api.game.TeamVsTeamGame;
@@ -14,7 +16,6 @@ import me.notsodelayed.thenexus.entity.NexusPlayer;
 import me.notsodelayed.thenexus.entity.game.Nexus;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.map.NexusMap;
-import org.bukkit.block.Block;
 
 public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamGame<NexusTeam> {
 
