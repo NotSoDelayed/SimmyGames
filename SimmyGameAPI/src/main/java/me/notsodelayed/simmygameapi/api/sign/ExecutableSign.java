@@ -6,10 +6,20 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.google.common.base.Preconditions;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
+import org.bukkit.event.HandlerList;
+import org.bukkit.event.Listener;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
+
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.util.Util;
 
 public class ExecutableSign {
 
@@ -30,6 +40,26 @@ public class ExecutableSign {
 
     }
 
+    private static final Listener SIGN_LISTENER = new Listener() {
+        @EventHandler(priority = EventPriority.HIGHEST)
+        public void onSignInteract(PlayerInteractEvent event) {
+            Block block = event.getClickedBlock();
+            if (!(block instanceof Sign))
+                return;
+            Action action = event.getAction();
+            if (!Util.equalsAny(action, Action.LEFT_CLICK_BLOCK, Action.RIGHT_CLICK_BLOCK))
+                return;
+            ExecutableSign execSign = ExecutableSign.getSigns().get(block);
+            if (execSign == null)
+                return;
+            Player player = event.getPlayer();
+            if (!execSign.check().test(player))
+                return;
+            ExecutableSign.ClickAction clickAction = action == Action.LEFT_CLICK_BLOCK ? ExecutableSign.ClickAction.LEFT_CLICK : ExecutableSign.ClickAction.RIGHT_CLICK;
+            execSign.execute(player, clickAction);
+
+        }
+    };
     private static final Map<Block, ExecutableSign> SIGNS = new HashMap<>();
     private final Block block;
     private Predicate<Player> check = player -> true;
@@ -42,14 +72,18 @@ public class ExecutableSign {
     public ExecutableSign(Block block) {
         Preconditions.checkArgument(block instanceof Sign, "provided block is not a sign");
         this.block = block;
+        if (SIGNS.isEmpty())
+            Bukkit.getPluginManager().registerEvents(SIGN_LISTENER, SimmyGameAPI.instance);
         SIGNS.put(block, this);
     }
 
     /**
-     * @return an immutable map of executable signs
+     * Unregisters itself -- having itself no longer an executable sign.
      */
-    public static Map<Block, ExecutableSign> getSigns() {
-        return Map.copyOf(SIGNS);
+    public void unregister() {
+        SIGNS.remove(this.getBlock());
+        if (SIGNS.isEmpty())
+            HandlerList.unregisterAll(SIGN_LISTENER);
     }
 
     /**
@@ -61,7 +95,7 @@ public class ExecutableSign {
 
     /**
      * @param check the predicate for executing tasks
-     * @return
+     * @return itself, for chaining
      */
     public ExecutableSign check(Predicate<Player> check) {
         this.check = check;
@@ -137,6 +171,13 @@ public class ExecutableSign {
      */
     public Sign getSign() {
         return (Sign) block.getState();
+    }
+
+    /**
+     * @return an immutable map of executable signs
+     */
+    public static Map<Block, ExecutableSign> getSigns() {
+        return Map.copyOf(SIGNS);
     }
 
 }

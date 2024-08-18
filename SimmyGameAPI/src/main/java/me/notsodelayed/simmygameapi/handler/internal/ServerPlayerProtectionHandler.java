@@ -7,12 +7,12 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
+import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.Util;
 
 public class ServerPlayerProtectionHandler implements Listener {
 
-    // Player interact
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
         Player player = event.getPlayer();
@@ -23,11 +23,13 @@ public class ServerPlayerProtectionHandler implements Listener {
         GamePlayer gamePlayer = GamePlayer.getFrom(player);
         if (gamePlayer == null)
             return;
-        if (gamePlayer.getGame().hasEnded())
+        Game game = gamePlayer.getGame();
+        if (game == null)
+            return;
+        if (game.isAboutToStart() || game.hasEnded())
             event.setCancelled(true);
     }
 
-    // Player damage
     @EventHandler(ignoreCancelled = true)
     public void onPlayerDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof Player player))
@@ -39,7 +41,10 @@ public class ServerPlayerProtectionHandler implements Listener {
         GamePlayer gamePlayer = GamePlayer.getFrom(player);
         if (gamePlayer == null)
             return;
-        if (gamePlayer.getGame().hasEnded())
+        Game game = gamePlayer.getGame();
+        if (game == null)
+            return;
+        if (game.isAboutToStart() || game.hasEnded())
             event.setCancelled(true);
     }
 

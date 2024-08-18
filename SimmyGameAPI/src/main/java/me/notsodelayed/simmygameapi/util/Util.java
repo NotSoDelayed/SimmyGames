@@ -11,9 +11,7 @@ public class Util {
 
     /**
      * Compares an object with many.
-     * @param subject
-     * @param values
-     * @return
+     * @return whether the subject matches any of the values
      */
     public static boolean equalsAny(Object subject, Object... values) {
         for (Object o : values) {
@@ -40,14 +38,26 @@ public class Util {
 
     /**
      * @param input the input to parse
-     * @param defaultInt the fallback int
+     * @param defaultValue the fallback int
      * @return the parsed input, otherwise defaultInt
      */
-    public static int parseIntOrDefault(String input, int defaultInt) {
+    public static int parseIntOrDefault(String input, int defaultValue) {
         try {
-            defaultInt = Integer.parseInt(input);
-        } catch (NumberFormatException ignored) {}
-        return defaultInt;
+            defaultValue = Integer.parseInt(input);
+        } catch (Exception ignored) {}
+        return defaultValue;
+    }
+
+    /**
+     * @param input the input to parse
+     * @param defaultValue the fallback int
+     * @return the parsed input, otherwise defaultInt
+     */
+    public static double parseDoubleOrDefault(String input, double defaultValue) {
+        try {
+            defaultValue = Double.parseDouble(input);
+        } catch (Exception ignored) {}
+        return defaultValue;
     }
 
 }

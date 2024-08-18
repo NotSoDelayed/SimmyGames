@@ -9,7 +9,7 @@ public abstract class BaseCommand implements TabExecutor {
 
     protected BaseCommand(String label) {
         Bukkit.getPluginCommand(label).setExecutor(this);
-        LoggerUtil.verbose("Registered command: " + label);
+        LoggerUtil.verbose("[Command] Registered command: " + label);
     }
 
 }

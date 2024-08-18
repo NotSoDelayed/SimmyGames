@@ -9,7 +9,7 @@ import org.bukkit.Material;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.notsodelayed.simmygameapi.api.registry.GameKitRegistry;
-import me.notsodelayed.simmygameapi.api.registry.parser.Node;
+import me.notsodelayed.simmygameapi.api.util.Node;
 import me.notsodelayed.thenexus.config.Config;
 import me.notsodelayed.thenexus.handler.internal.ServerPlayerJoinQuitHandler;
 import me.notsodelayed.thenexus.kit.NexusKit;

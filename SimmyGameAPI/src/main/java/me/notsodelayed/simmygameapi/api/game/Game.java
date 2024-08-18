@@ -399,6 +399,7 @@ public abstract class Game implements BaseGame {
             gamePlayer.leaveGame(null);
         });
         gameState = GameState.DELETED;
+        GAMES.remove(this.getUuid());
     }
 
     @Override

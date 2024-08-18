@@ -8,7 +8,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 
-import me.notsodelayed.simmygameapi.api.registry.parser.Node;
+import me.notsodelayed.simmygameapi.api.util.Node;
 
 // TODO finish this shit
 @ApiStatus.Experimental
