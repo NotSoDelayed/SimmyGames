@@ -10,8 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import me.notsodelayed.simmygameapi.util.StringParser;
 
 /**
- * Represents a node. Can be used as standalone which represents a simple node, or as an abstract node for child classes for a more complex implementation.
- * @param <T>
+ * Represents a YAML node. Can be used as a standalone node with a value, or a parent node to hold all child nodes.
  */
 public class Node<T> {
 
