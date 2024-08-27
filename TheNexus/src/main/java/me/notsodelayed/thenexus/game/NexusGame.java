@@ -23,7 +23,7 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
             "classic", "potion", "trigger-potion"
     };
     private final GameTeamManager<NexusTeam> teamManager;
-    private final Map<NexusTeam, Nexus> teamNexusMap;
+    protected final Map<NexusTeam, Nexus> teamNexusMap;
     private NexusTeam teamAlpha, teamBeta;
 
     /**
