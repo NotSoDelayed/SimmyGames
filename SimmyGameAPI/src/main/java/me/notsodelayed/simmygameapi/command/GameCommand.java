@@ -8,7 +8,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.game.event.GameStartCountdownEvent;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.CommandUtil;
 import me.notsodelayed.simmygameapi.util.MessageUtil;
@@ -51,7 +50,7 @@ public class GameCommand extends BaseCommand {
                             return true;
                         }
                         MessageUtil.sendSuccessMessage(sender, "This game has been requested to force start.");
-                        game.start(GameStartCountdownEvent.StartCause.MANUAL_REQUEST, true);
+                        game.start(true);
                         return true;
                     }
                     case "end" -> {

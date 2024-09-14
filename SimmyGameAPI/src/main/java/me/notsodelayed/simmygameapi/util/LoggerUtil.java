@@ -41,7 +41,7 @@ public class LoggerUtil {
     public static void verbose(Game game, String text, Level logLevel, boolean force) {
         if (!Config.get(SimmyGameAPI.instance).VERBOSE && !force)
             return;
-        SimmyGameAPI.logger.log(logLevel, "[" + game.getClass().getSimpleName() + "-" + game.getDisplayUuid() + "] " + text);
+        SimmyGameAPI.logger.log(logLevel, "[" + game.getClass().getSimpleName() + "-" + StringUtil.getDisplayUuid(game.getUuid()) + "] " + text);
     }
 
     public static void verbose(String text) {

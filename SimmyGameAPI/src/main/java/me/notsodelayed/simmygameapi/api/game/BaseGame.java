@@ -2,6 +2,7 @@ package me.notsodelayed.simmygameapi.api.game;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.bukkit.entity.Player;
@@ -19,15 +20,24 @@ public interface BaseGame {
      */
     void ready() throws IllegalStateException;
 
+    /**
+     * Requests for this game to start while verifying its prerequisite (i.e. game requirements)
+     * @see Game#init()
+     */
+    void start();
+
+    /**
+     * Called upon game start countdown depletion, executing tasks to trigger the game systems.
+     */
     void tick();
 
     /**
-     * @return an immutable set of the players in this game
+     * @return the participant players
      */
     Set<? extends GamePlayer> getPlayers();
 
     /**
-     * @return an immutable set of the bukkit players in this game
+     * @return the participant players
      */
     default Set<Player> getBukkitPlayers() {
         return getPlayers().stream()
@@ -35,5 +45,19 @@ public interface BaseGame {
                 .filter(Objects::nonNull)
                 .collect(Collectors.toUnmodifiableSet());
     }
+
+    /**
+     * @return the uuid of this game
+     */
+    UUID getUuid();
+    /**
+     * @return the current state of this game
+     */
+    GameState getGameState();
+
+    /**
+     * @return the settings of this game
+     */
+    GameSettings getSettings();
 
 }

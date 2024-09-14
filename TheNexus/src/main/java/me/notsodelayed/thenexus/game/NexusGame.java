@@ -19,9 +19,6 @@ import me.notsodelayed.thenexus.map.NexusMap;
 
 public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamGame<NexusTeam> {
 
-    private static final String[] KIT_TYPES = new String[] {
-            "classic", "potion", "trigger-potion"
-    };
     private final GameTeamManager<NexusTeam> teamManager;
     protected final Map<NexusTeam, Nexus> teamNexusMap;
     private NexusTeam teamAlpha, teamBeta;
@@ -78,7 +75,7 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
 
     @Override
     public void setTeamAlpha(NexusTeam teamAlpha) {
-        Preconditions.checkState(isSetup(), "game is not in setup state");
+        Preconditions.checkState(isSetupMode(), "game is not in setup state");
         this.teamAlpha = teamAlpha;
     }
 
@@ -89,7 +86,7 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
 
     @Override
     public void setTeamBeta(NexusTeam teamBeta) {
-        Preconditions.checkState(isSetup(), "game is not in setup state");
+        Preconditions.checkState(isSetupMode(), "game is not in setup state");
         this.teamBeta = teamBeta;
     }
 

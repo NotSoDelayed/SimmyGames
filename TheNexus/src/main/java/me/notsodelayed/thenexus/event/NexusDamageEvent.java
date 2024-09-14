@@ -12,7 +12,6 @@ import me.notsodelayed.thenexus.game.NexusGame;
  */
 public class NexusDamageEvent extends NexusGameEvent implements Cancellable {
 
-
     private static final HandlerList HANDLER_LIST = new HandlerList();
     private final Nexus nexus;
     private boolean cancelled = false;

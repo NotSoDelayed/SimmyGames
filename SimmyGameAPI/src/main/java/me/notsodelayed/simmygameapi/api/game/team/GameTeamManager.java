@@ -37,7 +37,7 @@ public class GameTeamManager<T extends GameTeam> {
      */
     public T getSmallestTeam() {
         if (teams.isEmpty())
-            throw new NullPointerException("no teams to compute");
+            throw new IllegalStateException("no teams to compute");
         if (teams.size() == 1)
             return teams.values().iterator().next();
         List<T> sortedTeams = teams.values().stream().

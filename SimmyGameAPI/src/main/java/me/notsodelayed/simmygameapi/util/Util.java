@@ -10,18 +10,6 @@ public class Util {
     private static final ThreadLocalRandom RANDOM = ThreadLocalRandom.current();
 
     /**
-     * Compares an object with many.
-     * @return whether the subject matches any of the values
-     */
-    public static boolean equalsAny(Object subject, Object... values) {
-        for (Object o : values) {
-            if (subject.equals(o))
-                return true;
-        }
-        return false;
-    }
-
-    /**
      * @return the main world of the server
      */
     public static World getMainWorld() {

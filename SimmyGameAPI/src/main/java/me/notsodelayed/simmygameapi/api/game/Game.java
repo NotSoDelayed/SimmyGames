@@ -1,6 +1,5 @@
 package me.notsodelayed.simmygameapi.api.game;
 
-import java.time.Instant;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,157 +11,37 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
-import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.event.GameStartCountdownEvent;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.util.Countdown;
 import me.notsodelayed.simmygameapi.command.GameCommand;
+import me.notsodelayed.simmygameapi.util.CompareUtil;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;
-import me.notsodelayed.simmygameapi.util.Util;
 
 /**
  * Represents a game.
  */
 public abstract class Game implements BaseGame {
 
-    protected static final Map<UUID, Game> GAMES = new HashMap<>();
-    private final UUID uuid;
-    protected final Set<GamePlayer> players;
-    protected GameState gameState = GameState.LOADING;
-    private final Settings settings;
+    private static final Map<UUID, Game> GAMES = new HashMap<>();
     @Nullable
-    private String prefix = null;
-    protected Instant started;
-    protected BukkitTask gameStartTask;
-    protected boolean force = false;
-    protected Map<Integer, Consumer<Game>> countdownExecutable;
-
-    /**
-     * Represents a {@link Game} settings.
-     * @apiNote Usage of setters are only allowed while <b>{@link Game#hasBegun()} = true</b>
-     */
-    @SuppressWarnings("unused")
-    public class Settings {
-
-        private final Game game;
-        private int endIn = 20;
-        private int startIn = 30;
-        private int minPlayers, maxPlayers;
-        private boolean startWithMinimumPlayers = true;
-
-        private Settings(Game game) {
-            this.game = game;
-        }
-
-        /**
-         * @return the game end warmup, in positive seconds
-         */
-        public int endIn() {
-            return endIn;
-        }
-
-        /**
-         * @param endIn the game end warmup, in positive seconds
-         * @return this instance, for chaining
-         */
-        public Settings endIn(int endIn) {
-            Preconditions.checkState(isSafeForSettingsModification(), "game is not in idle states");
-            this.endIn = endIn;
-            return this;
-        }
-
-        /**
-         * @return the game minimum players
-         */
-        public int minPlayers() {
-            return minPlayers;
-        }
-
-        /**
-         * @param minPlayers the game minimum players, where minPlayers <= maxPlayers
-         * @return this instance, for chaining
-         */
-        public Settings minPlayers(int minPlayers) {
-            Preconditions.checkState(isSafeForSettingsModification(), "game is not in idle states");
-            this.minPlayers = Math.min(minPlayers, maxPlayers);
-            return this;
-        }
-
-        /**
-         * @return the game maximum players
-         */
-        public int maxPlayers() {
-            return maxPlayers;
-        }
-
-        /**
-         * @param maxPlayers the game maximum players, where maxPlayers >= minPlayers
-         * @return this instance, for chaining
-         */
-        public Settings maxPlayers(int maxPlayers) {
-            Preconditions.checkState(isSafeForSettingsModification(), "game is not in idle states");
-            this.maxPlayers = Math.max(maxPlayers, minPlayers);
-            return this;
-        }
-
-        /**
-         * @return the game start warmup, in seconds, where seconds >= 10
-         */
-        public int startIn() {
-            return startIn;
-        }
-
-        /**
-         * @param startIn the game start warmup, in seconds, where seconds >= 10
-         * @return this instance, for chaining
-         */
-        public Settings startIn(int startIn) {
-            Preconditions.checkState(isSafeForSettingsModification(), "game is not in idle states");
-            this.startIn = Math.max(startIn, 10);
-            return this;
-        }
-
-        /**
-         * @return whether this game should start automatically whenever {@link #hasMinimumPlayers()} = true
-         */
-        public boolean startWithMinimumPlayers() {
-            return startWithMinimumPlayers;
-        }
-
-        /**
-         * @param startWithMinimumPlayers whether this game should start automatically whenever {@link #hasMinimumPlayers()} = true
-         * @return this instance, for chaining
-         */
-        public Settings startWithMinimumPlayers(boolean startWithMinimumPlayers) {
-            this.startWithMinimumPlayers = startWithMinimumPlayers;
-            return this;
-        }
-
-        @Override
-        public String toString() {
-            return "Settings{" +
-                    "game=" + game +
-                    ", endIn=" + endIn +
-                    ", startIn=" + startIn +
-                    ", minPlayers=" + minPlayers +
-                    ", maxPlayers=" + maxPlayers +
-                    ", startWithMinimumPlayers=" + startWithMinimumPlayers +
-                    '}';
-        }
-
-    }
+    private String prefix;
+    private final UUID uuid;
+    private final GameSettings settings;
+    private GameState gameState = GameState.LOADING;
+    private final Countdown countdown;
+    private final Set<GamePlayer> players;
 
     /**
      * @param minPlayers the minimum player count
@@ -173,12 +52,12 @@ public abstract class Game implements BaseGame {
     protected Game(int minPlayers, int maxPlayers) {
         this.uuid = UUID.randomUUID();
         this.players = new HashSet<>();
-        this.settings = new Settings(this)
+        this.settings = new GameSettings(this)
                 .maxPlayers(maxPlayers)
                 .minPlayers(minPlayers);
+        this.countdown = new Countdown(this);
         GAMES.put(uuid, this);
         GameCommand.UUIDS_CACHE = null;
-        countdownExecutable = new HashMap<>();
     }
 
     /**
@@ -228,56 +107,37 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @param seconds the seconds mark for this task
-     * @param task the task
-     * @apiNote If there's an existing {@link Consumer} assigned, it will be overwritten.
-     */
-    public void executeTaskAtStartCountdown(int seconds, Consumer<Game> task) {
-        countdownExecutable.put(seconds, task);
-    }
-
-    /**
      * @return whether this game's initialisation is successful
      * @apiNote Called after {@link #hasMetGameRequirements()}. In event of unhandled exception occurred in this method, it will return false.
-     * @implNote Developers may implement custom initialisation tasks. Ensure this method returns <b>true</b> to allow the game start sequence to proceed.
+     * @implNote Developers may implement custom initialisation tasks. Ensure this method returns <b>true</b> (preferably, return super, unless for special reasons) to allow the game start sequence to proceed.
      */
-    protected abstract boolean init();
+    protected boolean init() {
+        if (countdown.tasksCount() == 0)
+            countdown.executeAt(seconds -> seconds == settings.startIn() || seconds % 10 == 0 || seconds <= 5, (seconds, game) -> {
+                dispatchMessage("&eGame will start in " + seconds + "...");
+                dispatchSound(Sound.NOTE_STICKS, 1);
+            }).executeAfterDepletes((seconds, game) -> {
+                gameState = GameState.INGAME;
+                dispatchMessage("&aGame has started!");
+                tick();
+            });
+        return true;
+    }
 
-    /**
-     * @return whether this game has its requirements met to start
-     * @apiNote Forced starts are exempted.
-     * @implNote Developers may override this to implement custom game requirements, and return <b>super</b> after.
-     * @see #start(int, GameStartCountdownEvent.StartCause, boolean)
-     */
     public boolean hasMetGameRequirements() {
         return hasMinimumPlayers();
     }
 
-    /**
-     * Triggers the game start sequence after verifying game requirements (i.e. minimum player count).
-     * @see #init()
-     */
-    public void start(GameStartCountdownEvent.StartCause startCause) {
-        start(settings.startIn(), startCause, false);
+    @Override
+    public void start() {
+        start(false);
     }
 
-    /**
-     * Triggers the game start sequence.
-     * <p>If <b>force</b> == true, cancelling {@link GameStartCountdownEvent} does not cancel this operation.</p>
-     * @param force whether to ignore game requirements (i.e. minimum player count)
-     * @see #init()
-     */
-    public void start(GameStartCountdownEvent.StartCause startCause, boolean force) {
-        start(settings.startIn(), startCause, force);
+    public void start(boolean force) {
+        start(settings.startIn(), force);
     }
 
-    /**
-     * Triggers the game start sequence.
-     * <p>If <b>force</b> == true, cancelling {@link GameStartCountdownEvent} does not cancel this operation.</p>
-     * @param force whether to ignore game requirements (i.e. minimum player count)
-     * @see #init()
-     */
-    public void start(int startIn, GameStartCountdownEvent.StartCause startCause, boolean force) {
+    public void start(int startIn, boolean force) {
         Preconditions.checkState(gameState == GameState.WAITING_FOR_PLAYERS, "game is not in waiting state");
         LoggerUtil.verbose(this, "Game called to start (force: " + force + ")");
         if (!force && !hasMetGameRequirements()) {
@@ -291,52 +151,11 @@ public abstract class Game implements BaseGame {
             }
         } catch (Exception ex) {
             LoggerUtil.verbose(this, "Game start countdown aborted due to an exception occurred in init()");
+            ex.printStackTrace(System.err);
             return;
         }
-        this.force = force;
         gameState = GameState.STARTING;
-        Bukkit.getPluginManager().callEvent(new GameStartCountdownEvent(this, startCause));
-        AtomicInteger seconds = new AtomicInteger(startIn);
-        Game game = this;
-        gameStartTask = Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, new BukkitRunnable() {
-
-            @Override
-            public void run() {
-
-                Consumer<Game> executable = countdownExecutable.get(seconds.get());
-                if (executable != null)
-                    executable.accept(game);
-
-                if (seconds.get() == 0) {
-                    gameState = GameState.INGAME;
-                    started = Instant.now();
-                    dispatchMessage("&aGame has started!");
-                    tick();
-                    gameStartTask.cancel();
-                    gameStartTask = null;
-                    return;
-                }
-                if (seconds.get() == startIn || seconds.get() % 10 == 0 || seconds.get() <= 5) {
-                    dispatchMessage("&eGame will start in " + seconds.get() + "...");
-                    dispatchSound(Sound.NOTE_STICKS, 1);
-                }
-
-                seconds.getAndDecrement();
-            }
-        }, 0, 20);
-    }
-
-    /**
-     * Attempts to cancel the game start countdown task.
-     */
-    public void cancelGameStartTask(@NotNull String reason) {
-        if (gameStartTask != null) {
-            gameStartTask.cancel();
-            gameStartTask = null;
-            this.force = false;
-            this.dispatchMessage(ChatColor.RED + reason);
-            this.dispatchSound(Sound.NOTE_BASS, 1.5f);
-        }
+        countdown.start(startIn);
     }
 
     /**
@@ -444,7 +263,7 @@ public abstract class Game implements BaseGame {
      * @return whether the minimum player requirements for this game has met
      */
     public boolean hasMinimumPlayers() {
-        return this.getPlayers().size() >= settings.minPlayers;
+        return this.getPlayers().size() >= settings.minPlayers();
     }
 
     /**
@@ -462,14 +281,6 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @return whether this game is forced to start
-     * @apiNote This method will always return <b>fasle</b> if this game has not yet started.
-     */
-    public boolean isForcedToStart() {
-        return force;
-    }
-
-    /**
      * @return whether this game is full
      */
     public boolean isFull() {
@@ -481,7 +292,7 @@ public abstract class Game implements BaseGame {
      * @see #isFull()
      */
     public boolean isJoinable() {
-        return Util.equalsAny(gameState, GameState.WAITING_FOR_PLAYERS, GameState.STARTING, GameState.INGAME);
+        return CompareUtil.equalsAny(gameState, GameState.WAITING_FOR_PLAYERS, GameState.STARTING, GameState.INGAME);
     }
 
     /**
@@ -491,9 +302,7 @@ public abstract class Game implements BaseGame {
         return gameState == GameState.STARTING;
     }
 
-    /**
-     * @return the game state
-     */
+    @Override
     public GameState getGameState() {
         return gameState;
     }
@@ -512,36 +321,39 @@ public abstract class Game implements BaseGame {
         return Optional.ofNullable(prefix);
     }
 
-    public void setPrefix(@Nullable String prefix) {
+    public Game setPrefix(@Nullable String prefix) {
         this.prefix = prefix;
+        return this;
     }
 
-    /**
-     * @return the game settings
-     */
-    public Settings getSettings() {
-        return settings;
-    }
-
+    @Override
     public UUID getUuid() {
         return uuid;
     }
 
-    public String getDisplayUuid() {
-        return uuid.toString().split("-")[0];
+    @Override
+    public GameSettings getSettings() {
+        return settings;
     }
 
     /**
      * @return whether this game is safe for settings modification.
      */
-    public boolean isSafeForSettingsModification() {
-        return Util.equalsAny(gameState, GameState.LOADING, GameState.WAITING_FOR_PLAYERS);
+    public boolean isSafeForSettingsModifications() {
+        return CompareUtil.equalsAny(gameState, GameState.LOADING, GameState.WAITING_FOR_PLAYERS);
+    }
+
+    /**
+     * @return the countdown manager of this game
+     */
+    public Countdown getCountdown() {
+        return countdown;
     }
 
     /**
      * @return whether this game is in setup state.
      */
-    public boolean isSetup() {
+    public boolean isSetupMode() {
         return gameState == GameState.LOADING;
     }
 
@@ -560,19 +372,6 @@ public abstract class Game implements BaseGame {
         }
         if (clearCache)
             GameCommand.UUIDS_CACHE = null;
-    }
-
-    @Override
-    public String toString() {
-        return "Game{" +
-                "uuid=" + uuid +
-                ", players=" + players +
-                ", gameState=" + gameState +
-                ", settings=" + settings +
-                ", started=" + started +
-                ", gameStartTask=" + gameStartTask +
-                ", force=" + force +
-                '}';
     }
 
 }

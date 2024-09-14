@@ -28,7 +28,7 @@ public class MessageUtil {
      */
     public static void sendErrorMessage(@NotNull CommandSender recipient, @NotNull String... messages) {
         for (String message : messages)
-            recipient.sendMessage(StringUtil.color("&4" + StringUtil.CROSSED_MARK + " " + message));
+            recipient.sendMessage(StringUtil.color("&4" + Symbol.CROSSED_MARK + " " + message));
     }
 
     /**
@@ -37,7 +37,7 @@ public class MessageUtil {
      */
     public static String[] errorMessage(@NotNull String... messages) {
         return Arrays.stream(messages).
-                map(message -> StringUtil.color("&4" + StringUtil.CROSSED_MARK + " " + message))
+                map(message -> StringUtil.color("&4" + Symbol.CROSSED_MARK + " " + message))
                 .toArray(String[]::new);
     }
 
@@ -48,7 +48,7 @@ public class MessageUtil {
      */
     public static void sendInfoMessage(@NotNull CommandSender recipient, @NotNull String... messages) {
         for (String message : messages)
-            recipient.sendMessage(StringUtil.color("&6" + StringUtil.INFORMATION_MARK + "&e " + message));
+            recipient.sendMessage(StringUtil.color("&6" + Symbol.INFORMATION_MARK + "&e " + message));
     }
 
     /**
@@ -57,7 +57,7 @@ public class MessageUtil {
      */
     public static String[] infoMessage(@NotNull String... messages) {
         return Arrays.stream(messages).
-                map(message -> StringUtil.color("&6" + StringUtil.INFORMATION_MARK + "&e " + message))
+                map(message -> StringUtil.color("&6" + Symbol.INFORMATION_MARK + "&e " + message))
                 .toArray(String[]::new);
     }
 
@@ -68,17 +68,7 @@ public class MessageUtil {
      */
     public static void sendSuccessMessage(@NotNull CommandSender recipient, @NotNull String... messages) {
         for (String message : messages)
-            recipient.sendMessage(StringUtil.color("&2" + StringUtil.CHECK_MARK + "&a " + message));
-    }
-
-    /**
-     * @param messages the messages
-     * @return an array of success formatted message
-     */
-    public static String[] successMessage(@NotNull String... messages) {
-        return Arrays.stream(messages).
-                map(message -> StringUtil.color("&2" + StringUtil.CHECK_MARK + "&a " + message))
-                .toArray(String[]::new);
+            recipient.sendMessage(StringUtil.color("&2" + Symbol.CHECK_MARK + "&a " + message));
     }
 
     /**

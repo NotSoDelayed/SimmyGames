@@ -2,10 +2,8 @@ plugins {
     id("java")
 }
 
-allprojects {
-    repositories {
-        mavenCentral()
-    }
+repositories {
+    mavenCentral()
 }
 
 subprojects {
@@ -16,15 +14,9 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven {
-            url = uri("https://jitpack.io")
-        }
-        maven {
-            url = uri("https://repo.papermc.io/repository/maven-public/")
-        }
-        maven {
-            url = uri("https://oss.sonatype.org/content/groups/public/")
-        }
+        maven("https://jitpack.io")
+        maven("https://repo.papermc.io/repository/maven-public/")
+        maven("https://oss.sonatype.org/content/groups/public/")
     }
 
     dependencies {
@@ -33,10 +25,8 @@ subprojects {
         compileOnly("org.github.paperspigot:paperspigot-api:1.8.8-R0.1-SNAPSHOT")
     }
 
-    tasks {
-        compileJava {
-            options.encoding = "UTF-8"
-        }
+    tasks.compileJava {
+        options.encoding = "UTF-8"
     }
 
     java {

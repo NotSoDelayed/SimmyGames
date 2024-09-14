@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Iterator;
-import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -81,8 +80,7 @@ public class FileUtil {
         }
     }
 
-    public static CompletableFuture<Void> generateEmbeddedFiles(JavaPlugin plugin, String fileExtension, String... directoryPaths) {
-        CompletableFuture<Void> future = new CompletableFuture<>();
+    public static void generateEmbeddedFiles(JavaPlugin plugin, String fileExtension, String... directoryPaths) {
         LoggerUtil.debug("Running directoryAutoGenerateTask for " + plugin.getName());
         Logger logger = SimmyGameAPI.logger;
         for (String path : directoryPaths) {
@@ -95,7 +93,7 @@ public class FileUtil {
             try {
                 File pluginFile = getFileOfPlugin(plugin);
                 ZipFile jar = new ZipFile(pluginFile);
-                LoggerUtil.debug("Created ZipJar " + jar); // debug // debug
+                LoggerUtil.debug("Created ZipJar " + jar); // debug
                 LoggerUtil.debug("- L/R: " + path + "/" + fileExtension); // debug
                 File contentDir = new File(plugin.getDataFolder(), path);
                 if (contentDir.isDirectory() && contentDir.listFiles().length > 0) {
@@ -119,8 +117,6 @@ public class FileUtil {
                 ex.printStackTrace(System.err);
             }
         }
-
-        return future;
     }
 
 }

@@ -19,7 +19,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.util.Util;
+import me.notsodelayed.simmygameapi.util.CompareUtil;
 
 public class ExecutableSign {
 
@@ -47,7 +47,7 @@ public class ExecutableSign {
             if (!(block instanceof Sign))
                 return;
             Action action = event.getAction();
-            if (!Util.equalsAny(action, Action.LEFT_CLICK_BLOCK, Action.RIGHT_CLICK_BLOCK))
+            if (!CompareUtil.equalsAny(action, Action.LEFT_CLICK_BLOCK, Action.RIGHT_CLICK_BLOCK))
                 return;
             ExecutableSign execSign = ExecutableSign.getSigns().get(block);
             if (execSign == null)
