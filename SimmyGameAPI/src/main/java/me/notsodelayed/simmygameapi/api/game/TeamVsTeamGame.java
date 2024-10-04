@@ -1,5 +1,7 @@
 package me.notsodelayed.simmygameapi.api.game;
 
+import org.jetbrains.annotations.NotNull;
+
 import me.notsodelayed.simmygameapi.api.game.team.GameTeam;
 
 public interface TeamVsTeamGame<T extends GameTeam> extends TeamGame<T> {
@@ -13,11 +15,27 @@ public interface TeamVsTeamGame<T extends GameTeam> extends TeamGame<T> {
             exception[1] = "team beta is null";
         if (exception[0] == null || exception[1] == null)
             throw new NullPointerException(String.join("; ", exception));
+        TeamGame.super.ready();
+    }
+
+    /**
+     * @param team the team
+     * @return its rival team
+     * @throws IllegalArgumentException if the team input is neither alpha nor beta
+     */
+    default T getRivalTeam(T team) {
+        if (team == getTeamAlpha()) {
+            return getTeamBeta();
+        } else if (team == getTeamBeta()) {
+            return getTeamAlpha();
+        } else {
+            throw new IllegalArgumentException("team is neither alpha nor beta");
+        }
     }
 
     T getTeamAlpha();
     T getTeamBeta();
-    void setTeamAlpha(T team);
-    void setTeamBeta(T team);
+    void setTeamAlpha(@NotNull T team);
+    void setTeamBeta(@NotNull T team);
 
 }

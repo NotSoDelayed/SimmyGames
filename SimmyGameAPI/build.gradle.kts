@@ -1,5 +1,5 @@
 plugins {
-    id("com.github.johnrengelman.shadow") version("8.1.1")
+    id("com.gradleup.shadow") version("8.3.2")
 }
 
 group = "me.delayedgaming.simmygameapi"
@@ -14,7 +14,7 @@ repositories {
 
 dependencies {
     implementation("fr.mrmicky:fastboard:2.1.3")
-    implementation("de.tr7zw:item-nbt-api:2.12.3")
+    implementation("de.tr7zw:item-nbt-api:2.13.2")
 }
 
 tasks {

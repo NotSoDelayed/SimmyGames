@@ -28,7 +28,7 @@ public class GameCommand extends BaseCommand {
                 if (!CommandUtil.isPlayer(sender))
                     return true;
 
-                GamePlayer gamePlayer = GamePlayer.getFrom((Player) sender);
+                GamePlayer gamePlayer = GamePlayer.get((Player) sender);
                 if (gamePlayer == null || gamePlayer.getGame() == null) {
                     MessageUtil.sendErrorMessage(sender, "You must be in a game to use 'this'.");
                     return true;
@@ -55,7 +55,7 @@ public class GameCommand extends BaseCommand {
                     }
                     case "end" -> {
                         if (!game.hasEnded()) {
-                            MessageUtil.sendInfoMessage(sender, "This game has already started.");
+                            MessageUtil.sendInfoMessage(sender, "This game has already ended.");
                             return true;
                         }
                         MessageUtil.sendSuccessMessage(sender, "This game has been requested to end.");

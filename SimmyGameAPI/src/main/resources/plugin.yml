@@ -9,3 +9,5 @@ commands:
   game:
     description: Manages game instances.
     permission: simmygameapi.game.admin
+  stats:
+    description: Stats command.

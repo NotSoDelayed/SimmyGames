@@ -5,6 +5,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.google.common.base.Preconditions;
 import org.bukkit.entity.Player;
 
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
@@ -18,10 +19,13 @@ public interface BaseGame {
      * <p>- call super before custom implementations</p>
      * <p>- call {@link Game#setGameState(GameState) Game.setGameState({@link GameState#WAITING_FOR_PLAYERS})} after custom implementations.</p>
      */
-    void ready() throws IllegalStateException;
+    default void ready() throws IllegalStateException {
+        Preconditions.checkState(getGameState() == GameState.LOADING, "game is not in loading state");
+    }
 
     /**
-     * Requests for this game to start while verifying its prerequisite (i.e. game requirements)
+     * Requests for this game to start.
+     * @see Game#hasMetGameRequirements()
      * @see Game#init()
      */
     void start();
@@ -30,6 +34,13 @@ public interface BaseGame {
      * Called upon game start countdown depletion, executing tasks to trigger the game systems.
      */
     void tick();
+
+    /**
+     * Ends the game.
+     * @see Game#delete()
+     * @implNote The default implementation for ending a game accounting with their implemented variables. Subclasses may override this for custom implementation.
+     */
+    void end();
 
     /**
      * @return the participant players

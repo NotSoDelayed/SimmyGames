@@ -2,7 +2,6 @@ package me.notsodelayed.simmygameapi.api.game.kit;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.TreeMap;
 
 import org.bukkit.Material;
@@ -19,18 +18,13 @@ public class GameKit implements Comparable<GameKit> {
     private final String id;
     private final Material displayItem;
     private String displayName;
-    @Nullable
-    private final String[] description;
+    private final String @NotNull [] description;
 
-    /**
-     * @param id the id
-     * @param displayName the display name
-     */
     protected GameKit(@NotNull String id, @NotNull Material displayItem, @Nullable String displayName, @Nullable String[] description) {
         this.id = id;
         this.displayItem = displayItem;
-        this.displayName = displayName;
-        this.description = description;
+        this.displayName = displayName != null ? displayName : id;
+        this.description = description != null ? description : new String[0];
     }
 
     /**
@@ -152,39 +146,24 @@ public class GameKit implements Comparable<GameKit> {
         return this;
     }
 
-    /**
-     * @return the id
-     */
     public String getId() {
         return id;
     }
 
-    /**
-     * @return the display item
-     */
     public Material getDisplayItem() {
         return displayItem;
     }
 
-    /**
-     * @return the display name
-     */
-    public Optional<String> getDisplayName() {
-        return Optional.ofNullable(displayName);
+    public String getDisplayName() {
+        return displayName;
     }
 
-    /**
-     * @param displayName the display name
-     */
     public void setDisplayName(@Nullable String displayName) {
         this.displayName = displayName;
     }
 
-    /**
-     * @return the optional description
-     */
-    public Optional<String[]> getDescription() {
-        return Optional.ofNullable(description);
+    public String @NotNull [] getDescription() {
+        return description;
     }
 
     @Override

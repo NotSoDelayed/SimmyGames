@@ -15,7 +15,6 @@ import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.util.StringUtil;
 
 public class Countdown {
 
@@ -27,21 +26,34 @@ public class Countdown {
     private final List<Map.Entry<Predicate<Integer>, BiConsumer<Integer, Game>>> predicateTasks = new ArrayList<>();
 
     public Countdown(Game game) {
-        Preconditions.checkState(game.getCountdown() == null, String.format("%s-%s already has a countdown instance", game.getClass().getSimpleName(), StringUtil.getDisplayUuid(game.getUuid())));
         this.game = game;
     }
 
+    /**
+     * @param seconds the seconds to execute this task
+     * @param task the task
+     * @return itself
+     */
     public Countdown executeAt(int seconds, BiConsumer<Integer, Game> task) {
         tasks.computeIfAbsent(seconds, s -> new ArrayList<>())
                 .add(task);
         return this;
     }
 
+    /**
+     * @param task the task to execute upon {@link #start(int)}
+     * @return itself
+     */
     public Countdown executeOnActive(BiConsumer<Integer, Game> task) {
         pretasks.add(task);
         return this;
-    } 
+    }
 
+    /**
+     * @param condition the condition to check against the timer for running this task
+     * @param task the task
+     * @return itself
+     */
     public Countdown executeAt(Predicate<Integer> condition, BiConsumer<Integer, Game> task) {
         predicateTasks.add(Map.entry(condition, task));
         return this;

@@ -1,6 +1,3 @@
-plugins {
-    id("java")
-}
 
 group = "me.notsodelayed.thenexus"
 version = "1.0-SNAPSHOT"

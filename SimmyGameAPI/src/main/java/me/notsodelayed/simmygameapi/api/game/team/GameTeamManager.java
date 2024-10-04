@@ -4,11 +4,18 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
+import com.google.common.base.Preconditions;
+import org.bukkit.Bukkit;
+import org.bukkit.scoreboard.Scoreboard;
+import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.game.player.TeamPlayer;
 import me.notsodelayed.simmygameapi.util.Util;
 
 /**
@@ -17,18 +24,43 @@ import me.notsodelayed.simmygameapi.util.Util;
 public class GameTeamManager<T extends GameTeam> {
 
     private final Map<String, T> teams;
+    private final Map<T, Team> teamsPair;
+    private final Scoreboard scoreboard;
 
     public GameTeamManager() {
         teams = new HashMap<>();
+        teamsPair = new HashMap<>();
+        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
     }
 
     /**
      * Registers a team into this manager.
-     * @param gameTeam the team
+     * @param team the team
      */
     @ApiStatus.Internal
-    public void registerTeam(@NotNull T gameTeam) {
-        teams.put(gameTeam.getId(), gameTeam);
+    public void registerTeam(@NotNull T team) {
+        Team bukkitTeam = scoreboard.registerNewTeam(team.getId());
+        bukkitTeam.color(team.getColor());
+        bukkitTeam.displayName(team.getDisplayName());
+        teams.put(team.getId(), team);
+        teamsPair.put(team, bukkitTeam);
+    }
+
+    /**
+     * @param team the team
+     * @throws IllegalArgumentException if the provided team is not registered in this manager
+     * @throws IllegalStateException if the provided player is already assigned to a team
+     */
+    public void joinTeam(T team, TeamPlayer<T> player) {
+        Preconditions.checkState(player.getTeam() == null, "player is already assigned to a team");
+        team.addPlayer(player);
+    }
+
+    public @Nullable T getTeam(TeamPlayer<?> player) {
+        Optional<T> qTeam = teams.values().stream()
+                .filter(team -> team.getPlayers().contains(player))
+                .findFirst();
+        return qTeam.orElse(null);
     }
 
     /**
@@ -71,7 +103,14 @@ public class GameTeamManager<T extends GameTeam> {
      */
     @ApiStatus.Internal
     public void unregisterAll() {
-        teams.values().forEach(gameTeam -> gameTeam.getBukkitTeam().unregister());
+        teamsPair.values().forEach(Team::unregister);
+    }
+
+    /**
+     * @return the scoreboard for housing teams
+     */
+    public Scoreboard getScoreboard() {
+        return scoreboard;
     }
 
 }

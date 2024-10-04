@@ -5,7 +5,9 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import org.bukkit.Bukkit;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.api.game.GameState;
 import me.notsodelayed.simmygameapi.api.game.MapGame;
@@ -59,7 +61,7 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
      * @throws IllegalStateException if the game world is not loaded
      */
     public Nexus getNexus(Block block) {
-        Preconditions.checkState(getWorld() != null, "game world is not loaded");
+        Preconditions.checkState(Bukkit.getWorld(getWorldName()) != null, "game world is not loaded");
         return Nexus.get(block);
     }
 
@@ -74,7 +76,7 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
     }
 
     @Override
-    public void setTeamAlpha(NexusTeam teamAlpha) {
+    public void setTeamAlpha(@NotNull NexusTeam teamAlpha) {
         Preconditions.checkState(isSetupMode(), "game is not in setup state");
         this.teamAlpha = teamAlpha;
     }
@@ -85,7 +87,7 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
     }
 
     @Override
-    public void setTeamBeta(NexusTeam teamBeta) {
+    public void setTeamBeta(@NotNull NexusTeam teamBeta) {
         Preconditions.checkState(isSetupMode(), "game is not in setup state");
         this.teamBeta = teamBeta;
     }

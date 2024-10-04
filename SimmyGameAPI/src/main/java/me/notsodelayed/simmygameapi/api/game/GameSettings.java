@@ -1,11 +1,11 @@
 package me.notsodelayed.simmygameapi.api.game;
 
-import com.google.common.base.Preconditions;
+import me.notsodelayed.simmygameapi.util.CompareUtil;
 
 /**
  * Represents a {@link Game} settings.
  *
- * @apiNote Usage of setters are only allowed while <b>{@link Game#hasBegun()} = true</b>
+ * @apiNote Usage of setters are only allowed while <b>{@link Game#isSetupMode()} = true</b>
  */
 public class GameSettings {
 
@@ -31,7 +31,7 @@ public class GameSettings {
      * @return this instance, for chaining
      */
     public GameSettings endIn(int endIn) {
-        Preconditions.checkState(game.isSafeForSettingsModifications(), "game is not in idle states");
+        checkSafeForSettingsModifications();
         this.endIn = endIn;
         return this;
     }
@@ -48,7 +48,7 @@ public class GameSettings {
      * @return this instance, for chaining
      */
     public GameSettings minPlayers(int minPlayers) {
-        Preconditions.checkState(game.isSafeForSettingsModifications(), "game is not in idle states");
+        checkSafeForSettingsModifications();
         this.minPlayers = Math.min(1, minPlayers);
         return this;
     }
@@ -65,7 +65,7 @@ public class GameSettings {
      * @return this instance, for chaining
      */
     public GameSettings maxPlayers(int maxPlayers) {
-        Preconditions.checkState(game.isSafeForSettingsModifications(), "game is not in idle states");
+        checkSafeForSettingsModifications();
         this.maxPlayers = Math.max(1, maxPlayers);
         return this;
     }
@@ -82,7 +82,7 @@ public class GameSettings {
      * @return this instance, for chaining
      */
     public GameSettings startIn(int startIn) {
-        Preconditions.checkState(game.isSafeForSettingsModifications(), "game is not in idle states");
+        checkSafeForSettingsModifications();
         this.startIn = Math.max(startIn, 5);
         return this;
     }
@@ -101,6 +101,11 @@ public class GameSettings {
     public GameSettings startWithMinimumPlayers(boolean startWithMinimumPlayers) {
         this.startWithMinimumPlayers = startWithMinimumPlayers;
         return this;
+    }
+
+    protected void checkSafeForSettingsModifications() {
+        if (!CompareUtil.equalsAny(game.getGameState(), GameState.LOADING, GameState.WAITING_FOR_PLAYERS))
+            throw new IllegalStateException("game is not safe for settings modifications");
     }
 
     @Override

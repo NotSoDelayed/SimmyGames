@@ -3,24 +3,20 @@ package me.notsodelayed.simmygameapi.api.game;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
-import org.bukkit.Bukkit;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.util.Countdown;
 import me.notsodelayed.simmygameapi.command.GameCommand;
@@ -35,13 +31,13 @@ import me.notsodelayed.simmygameapi.util.StringUtil;
 public abstract class Game implements BaseGame {
 
     private static final Map<UUID, Game> GAMES = new HashMap<>();
-    @Nullable
-    private String prefix;
+    private Component prefix;
     private final UUID uuid;
     private final GameSettings settings;
     private GameState gameState = GameState.LOADING;
     private final Countdown countdown;
     private final Set<GamePlayer> players;
+    private boolean setupCountdown = true;
 
     /**
      * @param minPlayers the minimum player count
@@ -68,32 +64,28 @@ public abstract class Game implements BaseGame {
         return Map.copyOf(GAMES);
     }
 
-    public void dispatchPrefixedMessage(String message) {
-        dispatchMessage(prefix + "&r " + message);
-    }
-
-    /**
-     * @param message the message to dispatch to all game players
-     */
     public void dispatchMessage(String message) {
-        for (Player player : getBukkitPlayers()) {
+        for (Player player : getBukkitPlayers())
             player.sendMessage(StringUtil.color(message));
-        }
     }
 
-    /**
-     * @param sound the to dispatch to all game players
-     * @param pitch the pitch
-     */
+    public void dispatchMessage(Component message) {
+        for (Player player : getBukkitPlayers())
+            player.sendMessage(message);
+    }
+
+    public void dispatchPrefixedMessage(@NotNull String message) {
+        dispatchMessage(prefix.append(Component.text(" ").color(NamedTextColor.WHITE)).append(StringUtil.colorToComponent(message)));
+    }
+
+    public void dispatchPrefixedMessage(@NotNull Component message) {
+        dispatchMessage(prefix.append(Component.text(" ").color(NamedTextColor.WHITE)).append(message));
+    }
+
     public void dispatchSound(Sound sound, float pitch) {
         dispatchSound(sound, 2, pitch);
     }
 
-    /**
-     * @param sound the sound to dispatch to all game players
-     * @param volume the volume
-     * @param pitch the pitch
-     */
     public void dispatchSound(Sound sound, float volume, float pitch) {
         for (Player player : getBukkitPlayers()) {
             player.playSound(player.getLocation(), sound, volume, pitch);
@@ -102,7 +94,7 @@ public abstract class Game implements BaseGame {
 
     @Override
     public void ready() throws IllegalStateException {
-        Preconditions.checkState(gameState == GameState.LOADING, "game is not in loading state");
+        BaseGame.super.ready();
         gameState = GameState.WAITING_FOR_PLAYERS;
     }
 
@@ -112,15 +104,17 @@ public abstract class Game implements BaseGame {
      * @implNote Developers may implement custom initialisation tasks. Ensure this method returns <b>true</b> (preferably, return super, unless for special reasons) to allow the game start sequence to proceed.
      */
     protected boolean init() {
-        if (countdown.tasksCount() == 0)
+        if (setupCountdown) {
             countdown.executeAt(seconds -> seconds == settings.startIn() || seconds % 10 == 0 || seconds <= 5, (seconds, game) -> {
                 dispatchMessage("&eGame will start in " + seconds + "...");
-                dispatchSound(Sound.NOTE_STICKS, 1);
+                dispatchSound(Sound.BLOCK_NOTE_BLOCK_HAT, 1);
             }).executeAfterDepletes((seconds, game) -> {
                 gameState = GameState.INGAME;
                 dispatchMessage("&aGame has started!");
                 tick();
             });
+            setupCountdown = false;
+        }
         return true;
     }
 
@@ -158,52 +152,11 @@ public abstract class Game implements BaseGame {
         countdown.start(startIn);
     }
 
-    /**
-     * Ends the game.
-     * @see #delete()
-     * @implNote The default implementation for ending a game. Subclasses may override this for custom implementation.
-     */
+    @Override
     public void end() {
-        end(gamePlayer -> {});
-    }
-
-    /**
-     * Ends the game and schedules for deletion.
-     * @param cleanup the cleanup task to perform on the game players
-     * @see #delete()
-     */
-    public void end(Consumer<GamePlayer> cleanup) {
-        end(cleanup, () -> {
-            this.dispatchMessage("&eGame has ended!");
-            AtomicInteger seconds = new AtomicInteger(20);
-            Game game = this;
-            Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (seconds.get() == 0) {
-                        Bukkit.getScheduler().runTask(SimmyGameAPI.instance, game::delete);
-                        this.cancel();
-                    } else if (seconds.get() % 10 == 0) {
-                        game.dispatchMessage(String.format("&eGame shutdown in %ss...", seconds.get()));
-                    }
-                    seconds.getAndDecrement();
-                }
-            }, 0, 20);
-        });
-    }
-
-    /**
-     * Ends the game.
-     * @param cleanup the cleanup task to perform on the game players
-     * @param postCleanup the post-cleanup task to perform on the game
-     * @implNote Developers are <b>required</b> to call {@link #delete()} in <b>postCleanup</b> argument!
-     * @see #delete()
-     */
-    public void end(Consumer<GamePlayer> cleanup, Runnable postCleanup) {
-        if (!this.hasBegun())
-            return;
-        this.getPlayers().forEach(cleanup);
-        postCleanup.run();
+        new Countdown(this)
+                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, (seconds, game) -> delete())
+                .start(settings.endIn());
     }
 
     /**
@@ -215,7 +168,7 @@ public abstract class Game implements BaseGame {
         LoggerUtil.verbose(this, "Deleting...");
         this.getPlayers().forEach(gamePlayer -> {
             PlayerUtil.clean(gamePlayer, GameMode.ADVENTURE);
-            gamePlayer.leaveGame(null);
+            gamePlayer.leaveGame();
         });
         gameState = GameState.DELETED;
         GAMES.remove(this.getUuid());
@@ -240,13 +193,15 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @param gamePlayer the player to add
-     * @apiNote Use {@link GamePlayer#joinGame(Game)}
+     * @see GamePlayer#GamePlayer(Player, Game)
      */
     @ApiStatus.Internal
     public void addPlayer(GamePlayer gamePlayer) {
         if (!players.add(gamePlayer))
             throw new IllegalStateException(gamePlayer + " is already apart of this game");
+        dispatchPrefixedMessage(String.format("&e%s has joined! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
+        if (settings.startWithMinimumPlayers() && hasMetGameRequirements())
+            start();
     }
 
     /**
@@ -257,6 +212,8 @@ public abstract class Game implements BaseGame {
     public void removePlayer(GamePlayer gamePlayer) {
         if (!players.remove(gamePlayer))
             throw new IllegalStateException(gamePlayer + " is not apart of this game");
+        if (isAboutToStart() && !hasMetGameRequirements())
+            countdown.cancel();
     }
 
     /**
@@ -307,21 +264,20 @@ public abstract class Game implements BaseGame {
         return gameState;
     }
 
-    /**
-     * @param gameState the game state
-     */
     protected void setGameState(@NotNull GameState gameState) {
         this.gameState = gameState;
     }
 
-    /**
-     * @return the prefix
-     */
-    public Optional<String> getPrefix() {
-        return Optional.ofNullable(prefix);
+    public Component getPrefix() {
+        return prefix;
     }
 
     public Game setPrefix(@Nullable String prefix) {
+        this.prefix = prefix != null ? StringUtil.colorToComponent(prefix) : Component.empty();
+        return this;
+    }
+
+    public Game setPrefix(@NotNull Component prefix) {
         this.prefix = prefix;
         return this;
     }
@@ -337,18 +293,13 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @return whether this game is safe for settings modification.
-     */
-    public boolean isSafeForSettingsModifications() {
-        return CompareUtil.equalsAny(gameState, GameState.LOADING, GameState.WAITING_FOR_PLAYERS);
-    }
-
-    /**
-     * @return the countdown manager of this game
+     * @return the game start countdown of this game
      */
     public Countdown getCountdown() {
         return countdown;
     }
+
+    public abstract @NotNull GameMode getGameMode();
 
     /**
      * @return whether this game is in setup state.

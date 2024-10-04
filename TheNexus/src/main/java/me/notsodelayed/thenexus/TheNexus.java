@@ -6,7 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.notsodelayed.thenexus.config.Config;
-import me.notsodelayed.thenexus.handler.internal.ServerPlayerJoinQuitHandler;
+import me.notsodelayed.simmygameapi.handler.internal.PlayerJoinQuitHandler;
 
 public final class TheNexus extends JavaPlugin {
 
@@ -30,7 +30,7 @@ public final class TheNexus extends JavaPlugin {
 
         Config.get();
 
-        Bukkit.getPluginManager().registerEvents(new ServerPlayerJoinQuitHandler(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerJoinQuitHandler(), this);
 
         logger.info("Welcome onboard! Nexus can now be damaged! (took " + (System.currentTimeMillis() - start) + "ms)");
 

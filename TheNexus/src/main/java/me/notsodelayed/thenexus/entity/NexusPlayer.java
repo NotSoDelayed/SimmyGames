@@ -1,18 +1,12 @@
 package me.notsodelayed.thenexus.entity;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import org.bukkit.scheduler.BukkitTask;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.game.player.KitPlayer;
 import me.notsodelayed.simmygameapi.api.game.player.TeamPlayer;
-import me.notsodelayed.simmygameapi.util.PlayerUtil;
-import me.notsodelayed.thenexus.TheNexus;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.game.NexusGame;
 import me.notsodelayed.thenexus.kit.NexusKit;
@@ -22,71 +16,35 @@ import me.notsodelayed.thenexus.kit.NexusKit;
  */
 public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, KitPlayer<NexusKit> {
 
-    @Nullable
-    private NexusKit queriedKit = null, kit = null;
-    private BukkitTask respawnTask;
-    private NexusTeam team;
+    private @Nullable NexusKit kit = null, nextKit = null;
 
-    public NexusPlayer(Player player, NexusTeam team, NexusKit kit) {
-        super(player);
-        this.team = team;
-        this.kit = kit;
+    public NexusPlayer(Player player, NexusGame game) {
+        super(player, game);
     }
 
     @Override
-    public NexusTeam getTeam() {
-        return team;
-    }
-
-    /**
-     * Initialize a respawn procedure for this player.
-     * @param cooldown the cooldown before respawning
-     * @return the respawn task, otherwise null if operation failed.
-     */
-    @Nullable
-    public BukkitTask respawn(int cooldown) {
-        cooldown = Math.max(cooldown, 0);
-        Player onlinePlayer = this.getPlayer();
-        if (onlinePlayer == null)
-            return null;
-        PlayerUtil.clean(onlinePlayer, GameMode.SPECTATOR);
-        AtomicInteger seconds = new AtomicInteger(cooldown);
-        return Bukkit.getScheduler().runTaskTimer(TheNexus.instance, () -> {
-            if (seconds.get() > 0) {
-                getOptionalPlayer().ifPresentOrElse(player -> player.sendMessage(String.format("&eRespawning in %s...", seconds.get())),() -> seconds.set(0));
-            } else {
-                respawnTask.cancel();
-            }
-            seconds.getAndDecrement();
-        }, 0, 20);
-    }
-
-    /**
-     * @return whether the player is respawning
-     */
-    public boolean isRespawning() {
-        return respawnTask != null;
+    public @Nullable NexusTeam getTeam() {
+        NexusGame game = (NexusGame) getGame();
+        return game.getTeamManager().getTeam(this);
     }
 
     @Override
-    public NexusKit getKit() {
+    public @Nullable NexusKit getKit() {
         return kit;
     }
 
     @Override
-    public void setKit(@Nullable NexusKit kit) {
-        this.kit = kit;
+    public @Nullable NexusKit getNextKit() {
+        return nextKit;
     }
 
     @Override
-    @Nullable
-    public NexusKit getQueriedKit() {
-        return queriedKit;
-    }
-
-    @Override
-    public void setQueriedKit(@Nullable NexusKit queriedKit) {
-        this.queriedKit = queriedKit;
+    public void assignNextKit(@Nullable NexusKit kit) {
+        if (kit != null && assignKitPredicate().test(this)) {
+            this.kit = kit;
+        } else {
+            nextKit = kit;
+        }
     }
 
 }

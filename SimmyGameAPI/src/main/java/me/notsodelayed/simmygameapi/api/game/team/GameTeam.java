@@ -1,21 +1,17 @@
 package me.notsodelayed.simmygameapi.api.game.team;
 
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang.StringUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Sound;
-import org.bukkit.scoreboard.Scoreboard;
-import org.bukkit.scoreboard.Team;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.game.player.TeamPlayer;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 
 /**
@@ -23,44 +19,39 @@ import me.notsodelayed.simmygameapi.util.StringUtil;
  */
 public class GameTeam implements BaseTeam {
 
-    private final Team team;
-    private final Set<GamePlayer> players;
-    private final ChatColor color;
-    protected final Scoreboard scoreboard;
+    private final String id;
+    private final Component displayName;
+    private final NamedTextColor color;
+    private final Set<TeamPlayer<?>> players;
 
-    public GameTeam(@NotNull ChatColor color) {
-        this(color, color.asBungee().getName(), StringUtils.upperCase(color.asBungee().getName().replace('_', ' ')));
+    public GameTeam(@NotNull NamedTextColor color) {
+        this(color, color.toString());
     }
 
-    public GameTeam(@NotNull ChatColor color, @Nullable String displayName) {
-        this(color, color.asBungee().getName(), displayName);
-    }
-
-    private GameTeam(@NotNull ChatColor color, @NotNull String id, @Nullable String displayName) {
-        players = new HashSet<>();
+    private GameTeam(@NotNull NamedTextColor color, @NotNull String id) {
+        this.id = id;
         this.color = color;
-        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        team = scoreboard.registerNewTeam(id);
-        team.setDisplayName(Optional.ofNullable(displayName).orElse(id));
-        team.setPrefix(color + displayName);
+        displayName = Component.text(color.toString())
+                .color(color);
+        players = new HashSet<>();
     }
 
     /**
-     * @param message the message to dispatch to all game players
+     * Sends a {@link org.bukkit.ChatColor} formatted message to the team members.
+     * @param message the message
      */
-    public void dispatchMessage(String message) {
-        for (GamePlayer player : players) {
+    public void message(String message) {
+        for (TeamPlayer<?> player : players)
             player.message(StringUtil.color(message));
-        }
     }
 
-    /**
-     * @param sound the sound
-     * @param volume the volume
-     * @param pitch the pitch
-     */
+    public void message(Component message) {
+        for (TeamPlayer<?> player : players)
+            player.message(message);
+    }
+
     public void dispatchSound(Sound sound, int volume, int pitch) {
-        for (GamePlayer player : players) {
+        for (TeamPlayer<?> player : players) {
             player.playSound(sound, volume, pitch);
         }
     }
@@ -69,7 +60,7 @@ public class GameTeam implements BaseTeam {
      * @return an immutable set of the players
      */
     @Override
-    public Set<? extends GamePlayer> getPlayers() {
+    public Set<? extends TeamPlayer<?>> getPlayers() {
         return Set.copyOf(players);
     }
 
@@ -87,46 +78,24 @@ public class GameTeam implements BaseTeam {
 
     }
 
-    /**
-     * @param player the player
-     */
-    public void addPlayer(GamePlayer player) {
+    public void addPlayer(TeamPlayer<?> player) {
         players.add(player);
     }
 
-    /**
-     * @param player the player
-     */
-    public void removePlayer(GamePlayer player) {
+    public void removePlayer(TeamPlayer<?> player) {
         players.remove(player);
     }
 
-    /**
-     * @return the bukkit team associated
-     */
-    public Team getBukkitTeam() {
-        return team;
-    }
-
-    /**
-     * @return the color
-     */
-    public ChatColor getColor() {
+    public NamedTextColor getColor() {
         return color;
     }
 
-    /**
-     * @return the id
-     */
-    public String getId() {
-        return team.getName();
+    public Component getDisplayName() {
+        return displayName;
     }
 
-    /**
-     * @return the string formatted for displaying
-     */
-    public String getDisplayName() {
-        return team.getDisplayName();
+    public String getId() {
+        return id;
     }
 
 }

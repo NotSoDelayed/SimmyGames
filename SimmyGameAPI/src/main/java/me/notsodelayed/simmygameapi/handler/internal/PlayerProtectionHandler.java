@@ -11,7 +11,7 @@ import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.Util;
 
-public class ServerPlayerProtectionHandler implements Listener {
+public class PlayerProtectionHandler implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractEvent event) {
@@ -20,7 +20,7 @@ public class ServerPlayerProtectionHandler implements Listener {
             event.setCancelled(true);
             return;
         }
-        GamePlayer gamePlayer = GamePlayer.getFrom(player);
+        GamePlayer gamePlayer = GamePlayer.get(player);
         if (gamePlayer == null)
             return;
         Game game = gamePlayer.getGame();
@@ -38,7 +38,7 @@ public class ServerPlayerProtectionHandler implements Listener {
             event.setCancelled(true);
             return;
         }
-        GamePlayer gamePlayer = GamePlayer.getFrom(player);
+        GamePlayer gamePlayer = GamePlayer.get(player);
         if (gamePlayer == null)
             return;
         Game game = gamePlayer.getGame();

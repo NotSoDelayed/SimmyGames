@@ -1,21 +1,21 @@
 package me.notsodelayed.simmygameapi.api.game;
 
-import net.md_5.bungee.api.ChatColor;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 public enum GameState {
 
-    LOADING("loading", "Loading", ChatColor.BLACK),
-    WAITING_FOR_PLAYERS("waiting", "Waiting", ChatColor.GREEN),
-    STARTING("starting", "Starting", ChatColor.GOLD),
-    INGAME("ingame", "In-Game", ChatColor.RED),
-    ENDING("ending", "Ending", ChatColor.DARK_PURPLE),
-    DELETED("deleted", "Deleted", ChatColor.BLACK);
+    LOADING("loading", "Loading", NamedTextColor.BLACK),
+    WAITING_FOR_PLAYERS("waiting", "Waiting", NamedTextColor.GREEN),
+    STARTING("starting", "Starting", NamedTextColor.GOLD),
+    INGAME("ingame", "In-Game", NamedTextColor.RED),
+    ENDING("ending", "Ending", NamedTextColor.DARK_PURPLE),
+    DELETED("deleted", "Deleted", NamedTextColor.BLACK);
 
 
     private final String toString, displayName;
-    private final ChatColor color;
+    private final NamedTextColor color;
 
-    GameState(String toString, String displayName, ChatColor color) {
+    GameState(String toString, String displayName, NamedTextColor color) {
         this.toString = toString;
         this.displayName = displayName;
         this.color = color;
@@ -24,7 +24,7 @@ public enum GameState {
     /**
      * @return the color
      */
-    public ChatColor getColor() {
+    public NamedTextColor getColor() {
         return color;
     }
 

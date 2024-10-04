@@ -1,5 +1,6 @@
-package me.notsodelayed.thenexus.handler.internal;
+package me.notsodelayed.simmygameapi.handler.internal;
 
+import net.kyori.adventure.text.Component;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -11,19 +12,20 @@ import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
 
-// TODO move to SimmyGameAPI
-public class ServerPlayerJoinQuitHandler implements Listener {
+public class PlayerJoinQuitHandler implements Listener {
 
     // TODO adapt to config (auto join? manual join?)
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        event.setJoinMessage("");
+        event.joinMessage(Component.empty());
+
     }
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
+        event.quitMessage(Component.empty());
         Player bukkitPlayer = event.getPlayer();
-        GamePlayer gamePlayer = GamePlayer.getFrom(bukkitPlayer);
+        GamePlayer gamePlayer = GamePlayer.get(bukkitPlayer);
         if (gamePlayer == null)
             return;
         Game game = gamePlayer.getGame();
@@ -31,9 +33,6 @@ public class ServerPlayerJoinQuitHandler implements Listener {
             return;
         gamePlayer.leaveGame();
         PlayerUtil.clean(bukkitPlayer, GameMode.ADVENTURE);
-        if (game.isAboutToStart() && !game.hasMinimumPlayers()) {
-            game.cancelGameStartTask("Insufficient players to start this game.");
-        }
     }
 
 }

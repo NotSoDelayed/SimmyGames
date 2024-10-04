@@ -1,9 +1,7 @@
 package me.notsodelayed.simmygameapi;
 
-import java.io.File;
-
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 public class Config {
 
@@ -18,7 +16,7 @@ public class Config {
         try {
             config = new Config(plugin);
             plugin.saveDefaultConfig();
-            YamlConfiguration yml = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), "config.yml"));
+            FileConfiguration yml = plugin.getConfig();
             config.VERBOSE = yml.getBoolean("verbose", config.VERBOSE);
             return true;
         } catch (Exception ex) {

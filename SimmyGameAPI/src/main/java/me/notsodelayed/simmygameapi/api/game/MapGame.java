@@ -14,7 +14,7 @@ import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.map.GameMap;
@@ -24,11 +24,10 @@ import me.notsodelayed.simmygameapi.util.Util;
 public abstract class MapGame<M extends GameMap> extends Game {
 
     private M map, queriedMap;
-    protected boolean lockMap = false;
-    protected File worldDirectory;
-    @Nullable
-    protected World world;
-    protected final String worldName;
+    private boolean lockMap = false;
+    private File worldDirectory;
+    private World world;
+    private final String worldName;
 
     /**
      * @param minPlayers the minimum player count
@@ -38,7 +37,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
      */
     protected MapGame(int minPlayers, int maxPlayers) {
         super(minPlayers, maxPlayers);
-        this.worldName = this.getClass().getSimpleName().toLowerCase(Locale.ENGLISH) + getUuid();
+        this.worldName = this.getClass().getSimpleName().toLowerCase(Locale.ENGLISH) + "-" + getUuid();
         this.worldDirectory = new File(worldName);
     }
 
@@ -53,6 +52,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
         CompletableFuture.runAsync(() -> {
            try {
                FileUtils.copyDirectory(getMap().getDirectory(), worldDirectory);
+               worldDirectory.deleteOnExit();
                aTimeTakenCopy.set(System.currentTimeMillis());
            } catch (IOException ex) {
                dispatchMessage("&c(!) An error occurred whilst setting up the map. This game has been terminated.");
@@ -78,7 +78,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
     }
 
     /**
-     * Overridden: to delete the world of this game.
+     * Deletes the game with the game world.
      */
     @Override
     protected void delete() {
@@ -146,10 +146,11 @@ public abstract class MapGame<M extends GameMap> extends Game {
     }
 
     /**
-     * @return the world of this game, or null if it's not loaded
+     * @return the world of this game
+     * @throws IllegalStateException if this game has not begun, as its world is not loaded yet
+     * @see #getWorldName()
      */
-    @Nullable
-    public World getWorld() {
+    public @NotNull World getWorld() {
         return world;
     }
 
