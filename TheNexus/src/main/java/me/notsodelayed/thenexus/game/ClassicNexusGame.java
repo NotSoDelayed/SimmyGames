@@ -18,15 +18,15 @@ public class ClassicNexusGame extends NexusGame implements KitGame<NexusKit> {
 
     static {
         NexusKit warrior = new NexusKit("warrior", Material.STONE_SWORD, new String[]{"Classic warrior kit", "Reminder to remove this static field in NexusGame.class"});
-        warrior.setItem(0, Material.STONE_SWORD)
-                .setItem(1,Material.WOODEN_PICKAXE)
-                .setItem(2, Material.STONE_AXE)
-                .setItem(3, Material.STONE_SHOVEL)
-                .setItem(4, Material.SHEARS)
-                .setItem(5, Material.CRAFTING_TABLE);
+        warrior.slot(0, Material.STONE_SWORD)
+                .slot(1,Material.WOODEN_PICKAXE)
+                .slot(2, Material.STONE_AXE)
+                .slot(3, Material.STONE_SHOVEL)
+                .slot(4, Material.SHEARS)
+                .slot(5, Material.CRAFTING_TABLE);
         NexusKit archer = new NexusKit("archer", Material.BOW, new String[]{"Classic archer kit", "Reminder to remove this static field in NexusGame.class"});
-        archer.addItems(List.of(Material.WOODEN_SWORD, Material.WOODEN_PICKAXE, Material.WOODEN_AXE, Material.WOODEN_SHOVEL, Material.SHEARS))
-                .addItemStack(new ItemStack(Material.ARROW, 24));
+        archer.items(Material.WOODEN_SWORD, Material.WOODEN_PICKAXE, Material.WOODEN_AXE, Material.WOODEN_SHOVEL, Material.SHEARS)
+                .items(new ItemStack(Material.ARROW, 24));
         KIT_MANAGER.registerKit(warrior);
         KIT_MANAGER.registerKit(archer);
     }

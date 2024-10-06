@@ -18,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
-import me.notsodelayed.simmygameapi.api.util.Countdown;
+import me.notsodelayed.simmygameapi.api.util.AscendingTimer;
+import me.notsodelayed.simmygameapi.api.util.DescendingTimer;
+import me.notsodelayed.simmygameapi.api.util.Timer;
 import me.notsodelayed.simmygameapi.command.GameCommand;
 import me.notsodelayed.simmygameapi.util.CompareUtil;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
@@ -35,7 +37,7 @@ public abstract class Game implements BaseGame {
     private final UUID uuid;
     private final GameSettings settings;
     private GameState gameState = GameState.LOADING;
-    private final Countdown countdown;
+    private final DescendingTimer countdown;
     private final Set<GamePlayer> players;
     private boolean setupCountdown = true;
 
@@ -51,7 +53,7 @@ public abstract class Game implements BaseGame {
         this.settings = new GameSettings(this)
                 .maxPlayers(maxPlayers)
                 .minPlayers(minPlayers);
-        this.countdown = new Countdown(this);
+        this.countdown = new DescendingTimer();
         GAMES.put(uuid, this);
         GameCommand.UUIDS_CACHE = null;
     }
@@ -62,34 +64,6 @@ public abstract class Game implements BaseGame {
     public static Map<UUID, Game> getGames() {
         garbageCollection();
         return Map.copyOf(GAMES);
-    }
-
-    public void dispatchMessage(String message) {
-        for (Player player : getBukkitPlayers())
-            player.sendMessage(StringUtil.color(message));
-    }
-
-    public void dispatchMessage(Component message) {
-        for (Player player : getBukkitPlayers())
-            player.sendMessage(message);
-    }
-
-    public void dispatchPrefixedMessage(@NotNull String message) {
-        dispatchMessage(prefix.append(Component.text(" ").color(NamedTextColor.WHITE)).append(StringUtil.colorToComponent(message)));
-    }
-
-    public void dispatchPrefixedMessage(@NotNull Component message) {
-        dispatchMessage(prefix.append(Component.text(" ").color(NamedTextColor.WHITE)).append(message));
-    }
-
-    public void dispatchSound(Sound sound, float pitch) {
-        dispatchSound(sound, 2, pitch);
-    }
-
-    public void dispatchSound(Sound sound, float volume, float pitch) {
-        for (Player player : getBukkitPlayers()) {
-            player.playSound(player.getLocation(), sound, volume, pitch);
-        }
     }
 
     @Override
@@ -105,10 +79,10 @@ public abstract class Game implements BaseGame {
      */
     protected boolean init() {
         if (setupCountdown) {
-            countdown.executeAt(seconds -> seconds == settings.startIn() || seconds % 10 == 0 || seconds <= 5, (seconds, game) -> {
+            countdown.executeAt(seconds -> seconds == settings.startIn() || seconds % 10 == 0 || seconds <= 5, seconds -> {
                 dispatchMessage("&eGame will start in " + seconds + "...");
                 dispatchSound(Sound.BLOCK_NOTE_BLOCK_HAT, 1);
-            }).executeAfterDepletes((seconds, game) -> {
+            }).executeAt(seconds -> seconds == 0, seconds -> {
                 gameState = GameState.INGAME;
                 dispatchMessage("&aGame has started!");
                 tick();
@@ -116,10 +90,6 @@ public abstract class Game implements BaseGame {
             setupCountdown = false;
         }
         return true;
-    }
-
-    public boolean hasMetGameRequirements() {
-        return hasMinimumPlayers();
     }
 
     @Override
@@ -154,8 +124,8 @@ public abstract class Game implements BaseGame {
 
     @Override
     public void end() {
-        new Countdown(this)
-                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, (seconds, game) -> delete())
+        ((DescendingTimer) new DescendingTimer()
+                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, seconds -> delete()))
                 .start(settings.endIn());
     }
 
@@ -172,6 +142,34 @@ public abstract class Game implements BaseGame {
         });
         gameState = GameState.DELETED;
         GAMES.remove(this.getUuid());
+    }
+
+    public void dispatchMessage(String message) {
+        for (Player player : getBukkitPlayers())
+            player.sendMessage(StringUtil.color(message));
+    }
+
+    public void dispatchMessage(Component message) {
+        for (Player player : getBukkitPlayers())
+            player.sendMessage(message);
+    }
+
+    public void dispatchPrefixedMessage(@NotNull String message) {
+        dispatchMessage(prefix.append(Component.text(" ").color(NamedTextColor.WHITE)).append(StringUtil.colorToComponent(message)));
+    }
+
+    public void dispatchPrefixedMessage(@NotNull Component message) {
+        dispatchMessage(prefix.append(Component.text(" ").color(NamedTextColor.WHITE)).append(message));
+    }
+
+    public void dispatchSound(Sound sound, float pitch) {
+        dispatchSound(sound, 2, pitch);
+    }
+
+    public void dispatchSound(Sound sound, float volume, float pitch) {
+        for (Player player : getBukkitPlayers()) {
+            player.playSound(player.getLocation(), sound, volume, pitch);
+        }
     }
 
     @Override
@@ -221,6 +219,10 @@ public abstract class Game implements BaseGame {
      */
     public boolean hasMinimumPlayers() {
         return this.getPlayers().size() >= settings.minPlayers();
+    }
+
+    public boolean hasMetGameRequirements() {
+        return hasMinimumPlayers();
     }
 
     /**
@@ -295,7 +297,7 @@ public abstract class Game implements BaseGame {
     /**
      * @return the game start countdown of this game
      */
-    public Countdown getCountdown() {
+    public Timer getCountdown() {
         return countdown;
     }
 

@@ -85,7 +85,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
         super.delete();
         if (world != null) {
             for (Player player : world.getPlayers())
-                player.teleport(Util.getMainWorld().getSpawnLocation());
+                player.teleportAsync(Util.getMainWorld().getSpawnLocation());
             Bukkit.unloadWorld(world, false);
         }
         Bukkit.getScheduler().runTaskAsynchronously(SimmyGameAPI.instance, () -> {

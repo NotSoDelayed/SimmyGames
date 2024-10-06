@@ -13,11 +13,7 @@ import me.notsodelayed.simmygameapi.api.game.kit.GameKit;
 public class NexusKit extends GameKit {
 
     public NexusKit(@NotNull String id, @NotNull Material displayItem, @Nullable String[] description) {
-        this(id, StringUtils.capitalize(id.replace('_', ' ')), displayItem, description);
-    }
-
-    public NexusKit(@NotNull String id, @Nullable String displayName, @NotNull Material displayItem, @Nullable String[] description) {
-        super(id, displayItem, displayName, description);
+        super(id, String.join(" ", StringUtils.capitalize(id)), displayItem, description);
     }
 
 }

@@ -1,7 +1,6 @@
 package me.notsodelayed.thenexus.entity;
 
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
@@ -39,12 +38,13 @@ public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, Ki
     }
 
     @Override
-    public void assignNextKit(@Nullable NexusKit kit) {
-        if (kit != null && assignKitPredicate().test(this)) {
-            this.kit = kit;
-        } else {
-            nextKit = kit;
-        }
+    public void setNextKit(@Nullable NexusKit kit) {
+        nextKit = kit;
+    }
+
+    @Override
+    public @Nullable NexusKit assignNextKit() {
+        return null;
     }
 
 }
