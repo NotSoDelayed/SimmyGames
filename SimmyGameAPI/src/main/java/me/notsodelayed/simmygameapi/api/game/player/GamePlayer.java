@@ -14,6 +14,9 @@ import net.kyori.adventure.util.Ticks;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -32,6 +35,17 @@ public class GamePlayer implements BasePlayer {
     private Game game;
     private BukkitTask respawnTask = null;
 
+    static {
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onQuit(PlayerQuitEvent event) {
+                GamePlayer gamePlayer = GAME_PLAYERS.get(event.getPlayer());
+                if (gamePlayer != null)
+                    gamePlayer.leaveGame();
+            }
+        }, SimmyGameAPI.instance);
+    }
+
     /**
      * @see #get(Player)
      */
@@ -45,7 +59,7 @@ public class GamePlayer implements BasePlayer {
 
     /**
      * @param player the player
-     * @return the associated instance
+     * @return the associated instance, otherwise null
      */
     @Nullable
     public static GamePlayer get(Player player) {
@@ -53,7 +67,7 @@ public class GamePlayer implements BasePlayer {
     }
 
     /**
-     * Leaves the current game.
+     * Leaves the current game. This also renders this GamePlayer instance {@link #isOutdated() outdated}.
      */
     public void leaveGame() {
         if (this.game == null)

@@ -24,28 +24,4 @@ public class Util {
         return input >= min && input <= max;
     }
 
-    /**
-     * @param input the input to parse
-     * @param defaultValue the fallback int
-     * @return the parsed input, otherwise defaultInt
-     */
-    public static int parseIntOrDefault(String input, int defaultValue) {
-        try {
-            defaultValue = Integer.parseInt(input);
-        } catch (Exception ignored) {}
-        return defaultValue;
-    }
-
-    /**
-     * @param input the input to parse
-     * @param defaultValue the fallback int
-     * @return the parsed input, otherwise defaultInt
-     */
-    public static double parseDoubleOrDefault(String input, double defaultValue) {
-        try {
-            defaultValue = Double.parseDouble(input);
-        } catch (Exception ignored) {}
-        return defaultValue;
-    }
-
 }

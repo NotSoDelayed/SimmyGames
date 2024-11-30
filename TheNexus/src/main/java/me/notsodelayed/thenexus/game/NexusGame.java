@@ -62,6 +62,7 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
      */
     public Nexus getNexus(Block block) {
         Preconditions.checkState(Bukkit.getWorld(getWorldName()) != null, "game world is not loaded");
+        Preconditions.checkState(block.getWorld() != getWorld(), "block is not in the same world of game");
         return Nexus.get(block);
     }
 

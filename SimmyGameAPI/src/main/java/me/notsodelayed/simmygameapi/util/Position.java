@@ -4,16 +4,17 @@ import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * Represents a location without a {@link World}.
  */
-public class LazyLocation {
+public class Position {
 
     private double x, y, z;
     private float yaw, pitch;
 
-    public LazyLocation(double x, double y, double z, float yaw, float pitch) {
+    public Position(double x, double y, double z, float yaw, float pitch) {
         this.x = x;
         this.y = y;
         this.z = z;
@@ -21,12 +22,33 @@ public class LazyLocation {
         this.pitch = pitch;
     }
 
-    public LazyLocation(double x, double y, double z) {
+    public Position(double x, double y, double z) {
         this(x, y, z, 0f, 0f);
     }
 
-    public LazyLocation(Location location) {
+    public Position(Location location) {
         this(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
+    }
+
+    public static Position fromString(String string) {
+        double x, y, z;
+        float yaw = 0, pitch = 0;
+        String[] data = string.split(",");
+        if (data.length != 3 && data.length != 5)
+            throw new IllegalArgumentException("provided string does not represent a Position");
+
+        try {
+            x = Double.parseDouble(data[0]);
+            y = Double.parseDouble(data[1]);
+            z = Double.parseDouble(data[2]);
+            if (data.length == 5) {
+                yaw = Float.parseFloat(data[3]);
+                pitch = Float.parseFloat(data[4]);
+            }
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("provided string does not represent a Position", ex);
+        }
+        return new Position(x, y, z, yaw, pitch);
     }
 
     /**
@@ -43,7 +65,7 @@ public class LazyLocation {
      */
     public Location toBukkitLocation(String worldName) {
         World world = Bukkit.getWorld(worldName);
-        Preconditions.checkState(world != null, String.format("world %s is not loaded", worldName));
+        Preconditions.checkState(world != null, "world '" + worldName + "' is not loaded");
         return toBukkitLocation(world);
     }
 
@@ -51,7 +73,7 @@ public class LazyLocation {
      * Centralises this location.
      * @return this instance
      */
-    public LazyLocation centralise() {
+    public Position centralise() {
         x = Math.floor(x) + 0.5;
         y = Math.floor(y) + 0.5;
         z = Math.floor(z) + 0.5;
@@ -59,25 +81,25 @@ public class LazyLocation {
     }
 
     /**
-     * @param obj {@link LazyLocation} or {@link Location} (ignoring world)
+     * @param obj {@link Position} or {@link Location} (ignores world)
      */
     @Override
     public boolean equals(Object obj) {
-        if (!(obj instanceof LazyLocation) && !(obj instanceof Location))
+        if (!(obj instanceof Position) && !(obj instanceof Location))
             return false;
-        if (obj instanceof LazyLocation dummy)
+        if (obj instanceof Position dummy)
             return x == dummy.x && y == dummy.y && z == dummy.z && yaw == dummy.yaw && pitch == dummy.pitch;
         Location bukkit = ((Location) obj);
         return x == bukkit.getX() && y == bukkit.getY() && z == bukkit.getZ() && yaw == bukkit.getYaw() && pitch == bukkit.getPitch();
     }
 
     /**
-     * @param obj {@link LazyLocation} or {@link Location} (ignoring world)
+     * @param obj {@link Position} or {@link Location} (ignores world)
      */
     public boolean equalsIgnoreYawPitch(Object obj) {
-        if (!(obj instanceof LazyLocation) && !(obj instanceof Location))
+        if (!(obj instanceof Position) && !(obj instanceof Location))
             return false;
-        if (obj instanceof LazyLocation dummy)
+        if (obj instanceof Position dummy)
             return x == dummy.x && y == dummy.y && z == dummy.z;
         Location bukkit = ((Location) obj);
         return x == bukkit.getX() && y == bukkit.getY() && z == bukkit.getZ();

@@ -84,8 +84,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
     protected void delete() {
         super.delete();
         if (world != null) {
-            for (Player player : world.getPlayers())
-                player.teleportAsync(Util.getMainWorld().getSpawnLocation());
+                world.getPlayers().forEach(player -> player.teleportAsync(Util.getMainWorld().getSpawnLocation()));
             Bukkit.unloadWorld(world, false);
         }
         Bukkit.getScheduler().runTaskAsynchronously(SimmyGameAPI.instance, () -> {
@@ -94,6 +93,22 @@ public abstract class MapGame<M extends GameMap> extends Game {
             } catch (IOException ex) {
                 LoggerUtil.verbose(this, "Failed to delete the world directory. It will be removed on JVM shutdown.", Level.WARNING, true);
             }
+        });
+    }
+
+    /**
+     * Teleports the game players into the game world.
+     * @throws IllegalStateException if the game world is not loaded
+     */
+    public void spawnPlayers() {
+        if (world == null)
+            throw new IllegalStateException("game world is not loaded");
+        getPlayers().forEach(gamePlayer -> {
+            Player player = gamePlayer.getPlayer();
+            if (player == null)
+                return;
+            // TODO adapt to configured spawn value
+            player.teleportAsync(world.getSpawnLocation());
         });
     }
 

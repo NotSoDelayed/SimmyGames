@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 public class Poll<T> {
 
@@ -51,6 +52,10 @@ public class Poll<T> {
                 .sorted(Comparator.comparingInt(vote -> votes.getOrDefault(vote, 0)))
                 .forEachOrdered(vote -> results.put(vote, votes.getOrDefault(vote, 0)));
         return results;
+    }
+
+    public int getVoteAmount(T vote) {
+        return votes.getOrDefault(vote, 0);
     }
 
 }

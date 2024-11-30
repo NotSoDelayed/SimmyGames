@@ -24,8 +24,6 @@ public class PlayerProtectionHandler implements Listener {
         if (gamePlayer == null)
             return;
         Game game = gamePlayer.getGame();
-        if (game == null)
-            return;
         if (game.isAboutToStart() || game.hasEnded())
             event.setCancelled(true);
     }

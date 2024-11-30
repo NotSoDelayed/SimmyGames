@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.bukkit.block.Block;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import me.notsodelayed.simmygameapi.util.Position;
 import me.notsodelayed.thenexus.TheNexus;
 import me.notsodelayed.thenexus.entity.NexusPlayer;
 import me.notsodelayed.thenexus.game.NexusGame;
@@ -17,12 +17,11 @@ import me.notsodelayed.thenexus.game.NexusGame;
  */
 public class Nexus {
 
-    private static final Map<Block, Nexus> NEXUSES = new HashMap<>();
+    private static final Map<Position, Nexus> NEXUSES = new HashMap<>();
 
     private int health, maxHealth;
-    private final Block block;
-    @Nullable
-    private NexusPlayer lastDamager = null;
+    private final Position position;
+    private @Nullable NexusPlayer lastDamager = null;
     private boolean damageable;
 
     /**
@@ -30,24 +29,23 @@ public class Nexus {
      * @param maxHealth the max health
      * @param damageable whether to allow damage to this nexus by a player
      */
-    public Nexus(@NotNull Block block, int health, int maxHealth, boolean damageable) {
-        if (NEXUSES.containsKey(block)) {
-            TheNexus.instance.getLogger().severe(block + " is already bound to a nexus.");
+    public Nexus(Position position, int health, int maxHealth, boolean damageable) {
+        if (NEXUSES.containsKey(position)) {
+            TheNexus.instance.getLogger().severe(position + " is already bound to a nexus.");
             throw new IllegalStateException("block is already bound to a nexus");
         }
-        this.block = block;
+        this.position = position;
         this.health = health;
         this.maxHealth = maxHealth;
         this.damageable = damageable;
-        NEXUSES.put(block, this);
+        NEXUSES.put(position, this);
     }
 
     /**
      * @param block the block
      * @return the nexus associated, otherwise null
      */
-    @Nullable
-    public static Nexus get(Block block) {
+    public static @Nullable Nexus get(Block block) {
         return NEXUSES.get(block);
     }
 
@@ -82,16 +80,10 @@ public class Nexus {
         return false;
     }
 
-    /**
-     * @return the block
-     */
-    public Block getBlock() {
-        return block;
+    public Position getPosition() {
+        return position;
     }
 
-    /**
-     * @return the health
-     */
     public int getHealth() {
         return health;
     }
@@ -103,9 +95,6 @@ public class Nexus {
         this.health = health;
     }
 
-    /**
-     * @return the max health
-     */
     public int getMaxHealth() {
         return maxHealth;
     }
@@ -120,8 +109,7 @@ public class Nexus {
     /**
      * @return the previous nexus damager, or null if the nexus was damaged without a player
      */
-    @Nullable
-    public NexusPlayer getLastDamager() {
+    public @Nullable NexusPlayer getLastDamager() {
         return lastDamager;
     }
 
