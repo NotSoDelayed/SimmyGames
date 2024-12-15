@@ -4,6 +4,8 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import org.bukkit.Bukkit;
 import org.bukkit.World;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
 
 public class Util {
 
@@ -22,6 +24,11 @@ public class Util {
 
     public static boolean isNumberWithin(int min, int max, int input) {
         return input >= min && input <= max;
+    }
+
+    public static void setItems(Inventory inventory, ItemStack itemStack, int... indices) {
+        for (int index : indices)
+            inventory.setItem(index, itemStack.clone());
     }
 
 }

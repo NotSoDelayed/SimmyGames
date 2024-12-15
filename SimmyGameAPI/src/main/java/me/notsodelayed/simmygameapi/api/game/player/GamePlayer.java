@@ -70,11 +70,12 @@ public class GamePlayer implements BasePlayer {
      * Leaves the current game. This also renders this GamePlayer instance {@link #isOutdated() outdated}.
      */
     public void leaveGame() {
-        if (this.game == null)
+        if (game == null)
             return;
-        this.game.removePlayer(this);
+        game.removePlayer(this);
+        GAME_PLAYERS.remove(getPlayer());
         Game pGame = game;
-        this.game = null;
+        game = null;
         pGame.dispatchPrefixedMessage(String.format("&e%s has left! (%s/%s)", getName(), game.getPlayers().size(), game.getSettings().maxPlayers()));
     }
 

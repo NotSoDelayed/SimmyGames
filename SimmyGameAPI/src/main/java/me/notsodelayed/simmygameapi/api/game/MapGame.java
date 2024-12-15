@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.map.GameMap;
+import me.notsodelayed.simmygameapi.api.game.map.GameMapManager;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 
@@ -25,9 +26,10 @@ public abstract class MapGame<M extends GameMap> extends Game {
 
     private M map, queriedMap;
     private boolean lockMap = false;
-    private File worldDirectory;
+    private final File worldDirectory;
     private World world;
     private final String worldName;
+    private boolean setupCountdown = true;
 
     /**
      * @param minPlayers the minimum player count
@@ -39,6 +41,19 @@ public abstract class MapGame<M extends GameMap> extends Game {
         super(minPlayers, maxPlayers);
         this.worldName = this.getClass().getSimpleName().toLowerCase(Locale.ENGLISH) + "-" + getUuid();
         this.worldDirectory = new File(worldName);
+    }
+
+    @Override
+    protected boolean init() {
+        if (setupCountdown) {
+            // TODO make this voteable
+            getCountdown().executeAt(10, seconds -> {
+                setMap(getMapManager().randomChoices(1).getFirst());
+                lockMap();
+            });
+            setupCountdown = false;
+        }
+        return super.init();
     }
 
     /**
@@ -107,10 +122,11 @@ public abstract class MapGame<M extends GameMap> extends Game {
             Player player = gamePlayer.getPlayer();
             if (player == null)
                 return;
-            // TODO adapt to configured spawn value
             player.teleportAsync(world.getSpawnLocation());
         });
     }
+
+    public abstract @NotNull GameMapManager<M> getMapManager();
 
     /**
      * Locks the map of this game from changing.
@@ -136,12 +152,14 @@ public abstract class MapGame<M extends GameMap> extends Game {
 
     /**
      * Applies {@link #getQueriedMap()} to {@link #getMap()}.
-     * @throws IllegalStateException if the map is locked from modifications
+     * @return whether the map is successfully applied
      */
-    public void applyQueriedMap() {
-        checkMapLock();
+    public boolean applyQueriedMap() {
+        if (lockMap)
+            return false;
         map = queriedMap;
         queriedMap = null;
+        return true;
     }
 
     /**
@@ -155,7 +173,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
      * @param map the map to be used
      * @throws IllegalStateException if the game has already locked in the map to be used
      */
-    public void setMap(M map) {
+    protected void setMap(M map) {
         checkMapLock();
         this.map = map;
     }

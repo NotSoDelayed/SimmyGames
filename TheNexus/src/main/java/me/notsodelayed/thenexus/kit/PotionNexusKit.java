@@ -12,8 +12,8 @@ public class PotionNexusKit extends NexusKit {
 
     private final PotionEffect[] potionEffects;
 
-    public PotionNexusKit(@NotNull String id, @Nullable String displayName, @NotNull Material displayItem, @Nullable String[] description, @Nullable PotionEffect[] potionEffects) {
-        super(id, displayName, displayItem, description);
+    public PotionNexusKit(@NotNull String id, @NotNull Material displayItem, @Nullable String[] description, @Nullable PotionEffect[] potionEffects) {
+        super(id, displayItem, description);
         this.potionEffects = potionEffects;
     }
 

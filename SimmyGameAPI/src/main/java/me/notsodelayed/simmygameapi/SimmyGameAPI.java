@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.notsodelayed.simmygameapi.command.GameCommand;
+import me.notsodelayed.simmygameapi.command.QueueCommand;
 import me.notsodelayed.simmygameapi.command.StatsCommand;
 import me.notsodelayed.simmygameapi.handler.internal.PlayerProtectionHandler;
 
@@ -20,8 +21,8 @@ public final class SimmyGameAPI extends JavaPlugin {
         logger = getLogger();
         Config.get(this);
 
-        initCommands();
         initEventListeners();
+        initCommands();
 
         logger.info("Successfully loaded Game API!");
     }
@@ -34,6 +35,7 @@ public final class SimmyGameAPI extends JavaPlugin {
     private void initCommands() {
         new GameCommand("game");
         new StatsCommand("stats");
+        new QueueCommand("queue");
     }
 
 }

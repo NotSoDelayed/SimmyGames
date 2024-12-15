@@ -82,4 +82,8 @@ public class MessageUtil {
             recipient.sendMessage(StringUtil.color(message));
     }
 
+    public static void playerOnly(CommandSender recipient) {
+        sendErrorMessage(recipient, "&cThis command is only for players.");
+    }
+
 }

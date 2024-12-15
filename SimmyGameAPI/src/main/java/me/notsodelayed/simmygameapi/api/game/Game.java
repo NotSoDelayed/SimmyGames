@@ -247,11 +247,11 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @return whether this game is in a joinable state
+     * @return whether this game is joinable, such that <b>{@link GameState#isJoinableState()} == true</b> and <b>{@link Game#isFull()} == false</b>
      * @see #isFull()
      */
     public boolean isJoinable() {
-        return CompareUtil.equalsAny(gameState, GameState.WAITING_FOR_PLAYERS, GameState.STARTING, GameState.INGAME);
+        return gameState.isJoinableState() && !isFull();
     }
 
     /**

@@ -10,4 +10,6 @@ commands:
     description: Manages game instances.
     permission: simmygameapi.game.admin
   stats:
-    description: Stats command.
+    description: View current player statistics in a game.
+  queue:
+    description: Queues into matchmaking.

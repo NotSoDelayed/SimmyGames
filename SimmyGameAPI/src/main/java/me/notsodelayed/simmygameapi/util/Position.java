@@ -30,7 +30,7 @@ public class Position {
         this(location.getX(), location.getY(), location.getZ(), location.getYaw(), location.getPitch());
     }
 
-    public static Position fromString(String string) {
+    public static Position fromString(@NotNull String string) {
         double x, y, z;
         float yaw = 0, pitch = 0;
         String[] data = string.split(",");

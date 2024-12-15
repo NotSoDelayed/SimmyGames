@@ -1,11 +1,14 @@
 package me.notsodelayed.thenexus.entity;
 
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.game.player.KitPlayer;
+import me.notsodelayed.simmygameapi.api.game.player.StatisticsPlayer;
 import me.notsodelayed.simmygameapi.api.game.player.TeamPlayer;
+import me.notsodelayed.simmygameapi.api.statistics.Statistics;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.game.NexusGame;
 import me.notsodelayed.thenexus.kit.NexusKit;
@@ -13,7 +16,7 @@ import me.notsodelayed.thenexus.kit.NexusKit;
 /**
  * Represents a player of {@link NexusGame}
  */
-public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, KitPlayer<NexusKit> {
+public class NexusPlayer extends GamePlayer implements StatisticsPlayer, TeamPlayer<NexusTeam>, KitPlayer<NexusKit> {
 
     private @Nullable NexusKit kit = null, nextKit = null;
 
@@ -23,7 +26,7 @@ public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, Ki
 
     @Override
     public @Nullable NexusTeam getTeam() {
-        NexusGame game = (NexusGame) getGame();
+        NexusGame<?, ?> game = (NexusGame<?, ?>) getGame();
         return game.getTeamManager().getTeam(this);
     }
 
@@ -47,4 +50,9 @@ public class NexusPlayer extends GamePlayer implements TeamPlayer<NexusTeam>, Ki
         return null;
     }
 
+    @Override
+    public @NotNull Statistics getStatistics() {
+        // TODO
+        return null;
+    }
 }

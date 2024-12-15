@@ -2,6 +2,8 @@ package me.notsodelayed.simmygameapi.api.game;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 
+import me.notsodelayed.simmygameapi.util.CompareUtil;
+
 public enum GameState {
 
     LOADING("loading", "Loading", NamedTextColor.BLACK),
@@ -19,6 +21,10 @@ public enum GameState {
         this.toString = toString;
         this.displayName = displayName;
         this.color = color;
+    }
+
+    public boolean isJoinableState() {
+        return CompareUtil.equalsAny(this, GameState.WAITING_FOR_PLAYERS, GameState.STARTING, GameState.INGAME);
     }
 
     /**

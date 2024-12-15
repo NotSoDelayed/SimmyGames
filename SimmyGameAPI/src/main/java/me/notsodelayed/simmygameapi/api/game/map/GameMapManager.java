@@ -1,6 +1,8 @@
 package me.notsodelayed.simmygameapi.api.game.map;
 
+import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -15,7 +17,13 @@ public class GameMapManager<M extends GameMap> {
 
     public GameMapManager() {}
 
+    /**
+     * @param map the map
+     * @throws IllegalStateException if registering a map with an existing id
+     */
     public void registerMap(M map) {
+        if (maps.containsKey(map.getId()))
+            throw new IllegalStateException("map with id '" + map.getId() + "' already exists");
         maps.put(map.getId(), map);
     }
 
@@ -31,13 +39,15 @@ public class GameMapManager<M extends GameMap> {
         return Map.copyOf(maps);
     }
 
-    public Set<M> randomChoices(int amount) {
+    public List<M> randomChoices(int amount) {
+        if (size() < 0)
+            throw new IllegalStateException("no maps available for choices");
         if (amount < 0)
             throw new ArrayIndexOutOfBoundsException("amount cannot be less than 0");
         if (amount > size())
             throw new ArrayIndexOutOfBoundsException("amount cannot be more than the registered maps");
         List<M> mapsList = new ArrayList<>(maps.values());
-        Set<M> choices = new HashSet<>();
+        List<M> choices = new ArrayList<>();
         for (int i = 0; i < amount; i++) {
             M map = mapsList.get(Util.getRandomInt(mapsList.size()));
             choices.add(map);

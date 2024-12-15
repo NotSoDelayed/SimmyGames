@@ -19,11 +19,10 @@ import me.notsodelayed.thenexus.entity.game.Nexus;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.map.NexusMap;
 
-public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamGame<NexusTeam> {
+public abstract class NexusGame<M extends NexusMap, T extends NexusTeam> extends MapGame<M> implements TeamVsTeamGame<T> {
 
-    private final GameTeamManager<NexusTeam> teamManager;
-    protected final Map<NexusTeam, Nexus> teamNexusMap;
-    private NexusTeam teamAlpha, teamBeta;
+    private final GameTeamManager<T> teamManager;
+    private T teamAlpha, teamBeta;
 
     /**
      * Creates a MapGame without pre-defined {@link GameMap}.
@@ -36,7 +35,6 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
     protected NexusGame(int minPlayers, int maxPlayers) {
         super(minPlayers, maxPlayers);
         teamManager = new GameTeamManager<>();
-        teamNexusMap = new HashMap<>();
     }
 
     @Override
@@ -44,51 +42,29 @@ public abstract class NexusGame extends MapGame<NexusMap> implements TeamVsTeamG
         return getPlayers(NexusPlayer.class);
     }
 
-    /**
-     * @param team the nexus team, <b>specifically</b> {@link TeamVsTeamGame#getTeamAlpha()} or {@link TeamVsTeamGame#getTeamBeta()}
-     * @return the nexus associated to the team
-     * @throws IllegalArgumentException if provided team is not associated to this game
-     */
-    public Nexus getNexus(NexusTeam team) {
-        if (!teamNexusMap.containsKey(team))
-            throw new IllegalArgumentException("Called with unassociated team " + team);
-        return teamNexusMap.get(team);
-    }
-
-    /**
-     * @param block the block
-     * @return the nexus associated
-     * @throws IllegalStateException if the game world is not loaded
-     */
-    public Nexus getNexus(Block block) {
-        Preconditions.checkState(Bukkit.getWorld(getWorldName()) != null, "game world is not loaded");
-        Preconditions.checkState(block.getWorld() != getWorld(), "block is not in the same world of game");
-        return Nexus.get(block);
-    }
-
     @Override
-    public GameTeamManager<NexusTeam> getTeamManager() {
+    public GameTeamManager<T> getTeamManager() {
         return teamManager;
     }
 
     @Override
-    public NexusTeam getTeamAlpha() {
+    public T getTeamAlpha() {
         return teamAlpha;
     }
 
     @Override
-    public void setTeamAlpha(@NotNull NexusTeam teamAlpha) {
+    public void setTeamAlpha(@NotNull T teamAlpha) {
         Preconditions.checkState(isSetupMode(), "game is not in setup state");
         this.teamAlpha = teamAlpha;
     }
 
     @Override
-    public NexusTeam getTeamBeta() {
+    public T getTeamBeta() {
         return teamBeta;
     }
 
     @Override
-    public void setTeamBeta(@NotNull NexusTeam teamBeta) {
+    public void setTeamBeta(@NotNull T teamBeta) {
         Preconditions.checkState(isSetupMode(), "game is not in setup state");
         this.teamBeta = teamBeta;
     }
