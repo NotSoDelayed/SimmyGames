@@ -31,16 +31,19 @@ public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
     public static void register() {
         TheNexus.logger.info("Registering maps...");
         MAP_MANAGER = new GameMapManager<>();
-        for (File mapDirectory : new File(TheNexus.instance.getDataFolder(), "maps").listFiles()) {
-            try {
-                if (!mapDirectory.isDirectory())
-                    continue;
-                MAP_MANAGER.registerMap(new TntNexusMap(mapDirectory.getName(), mapDirectory));
-            } catch (Exception ignored) {
-                TheNexus.logger.warning("Skipping " + mapDirectory.getName() + " due to exception occurred...");
+        File mapsDir = new File(TheNexus.instance.getDataFolder(), "maps");
+        if (!mapsDir.mkdir()) {
+            for (File mapDirectory : mapsDir.listFiles()) {
+                try {
+                    if (!mapDirectory.isDirectory())
+                        continue;
+                    MAP_MANAGER.registerMap(new TntNexusMap(mapDirectory.getName(), mapDirectory));
+                } catch (Exception ignored) {
+                    TheNexus.logger.warning("Skipping " + mapDirectory.getName() + " due to exception occurred...");
+                }
             }
+            TheNexus.logger.info("Successfully registered " + MAP_MANAGER.size() + " maps!");
         }
-        TheNexus.logger.info("Successfully registered " + MAP_MANAGER.size() + " maps!");
 
         TheNexus.logger.info("Registering game into matchmaking...");
         Matchmaking.registerGame(TntNexusGame.class, NexusPlayer::new);

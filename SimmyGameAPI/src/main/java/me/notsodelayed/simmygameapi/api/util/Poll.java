@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.bukkit.entity.Player;
-import org.jetbrains.annotations.Nullable;
 
 public class Poll<T> {
 

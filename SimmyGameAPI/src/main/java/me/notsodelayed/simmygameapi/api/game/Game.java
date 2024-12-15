@@ -18,11 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
-import me.notsodelayed.simmygameapi.api.util.AscendingTimer;
 import me.notsodelayed.simmygameapi.api.util.DescendingTimer;
 import me.notsodelayed.simmygameapi.api.util.Timer;
 import me.notsodelayed.simmygameapi.command.GameCommand;
-import me.notsodelayed.simmygameapi.util.CompareUtil;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;

@@ -19,6 +19,7 @@ import me.notsodelayed.thenexus.kit.NexusKit;
 public class NexusPlayer extends GamePlayer implements StatisticsPlayer, TeamPlayer<NexusTeam>, KitPlayer<NexusKit> {
 
     private @Nullable NexusKit kit = null, nextKit = null;
+    private final Statistics stats = new Statistics();
 
     public NexusPlayer(Player player, NexusGame game) {
         super(player, game);
@@ -52,7 +53,7 @@ public class NexusPlayer extends GamePlayer implements StatisticsPlayer, TeamPla
 
     @Override
     public @NotNull Statistics getStatistics() {
-        // TODO
-        return null;
+        return stats;
     }
+
 }

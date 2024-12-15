@@ -1,12 +1,8 @@
 package me.notsodelayed.thenexus.game;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
-import org.bukkit.Bukkit;
-import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.api.game.GameState;
@@ -15,7 +11,6 @@ import me.notsodelayed.simmygameapi.api.game.TeamVsTeamGame;
 import me.notsodelayed.simmygameapi.api.game.map.GameMap;
 import me.notsodelayed.simmygameapi.api.game.team.GameTeamManager;
 import me.notsodelayed.thenexus.entity.NexusPlayer;
-import me.notsodelayed.thenexus.entity.game.Nexus;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.map.NexusMap;
 
