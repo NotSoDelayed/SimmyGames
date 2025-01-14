@@ -4,7 +4,7 @@ description: Simmy's Game API
 author: NotSoDelayed
 website: https://github.com/NotSoDelayed
 version: 1.0-SNAPSHOT
-api-version: '1.8'
+api-version: '1.20'
 commands:
   game:
     description: Manages game instances.
@@ -13,3 +13,6 @@ commands:
     description: View current player statistics in a game.
   queue:
     description: Queues into matchmaking.
+  maps:
+    description: Manages game maps.
+    permission: simmygapeapi.game.admin

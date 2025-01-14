@@ -1,10 +1,6 @@
 package me.notsodelayed.simmygameapi.api.game.team;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import com.google.common.base.Preconditions;
 import org.bukkit.Bukkit;
@@ -39,6 +35,7 @@ public class GameTeamManager<T extends GameTeam> {
      */
     @ApiStatus.Internal
     public void registerTeam(@NotNull T team) {
+        Preconditions.checkState(!teams.containsValue(team), "team '" + team.getId() + "' already registered");
         Team bukkitTeam = scoreboard.registerNewTeam(team.getId());
         bukkitTeam.color(team.getColor());
         bukkitTeam.displayName(team.getDisplayName());
@@ -47,16 +44,31 @@ public class GameTeamManager<T extends GameTeam> {
     }
 
     /**
+     * @param player the player
+     * @return the chosen team
+     * @throws IllegalStateException if
+     */
+    public T joinRandom(TeamPlayer<T> player) { // TODO account for team size
+        Preconditions.checkState(!teams.isEmpty(), "no teams available");
+        List<T> teams = this.teams.values().stream().sorted().toList();
+        // Prioritize lowest team
+        T team = Util.getRandomInt(2) != 2 ? teams.getFirst() : teams.get(Util.getRandomInt(teams.size()));
+        joinTeam(team, player);
+        return team;
+    }
+
+    /**
      * @param team the team
      * @throws IllegalArgumentException if the provided team is not registered in this manager
      * @throws IllegalStateException if the provided player is already assigned to a team
      */
     public void joinTeam(T team, TeamPlayer<T> player) {
+        Preconditions.checkArgument(teamsPair.containsKey(team), "team is not registered in the manager");
         Preconditions.checkState(player.getTeam() == null, "player is already assigned to a team");
         team.addPlayer(player);
     }
 
-    public @Nullable T getTeam(TeamPlayer<?> player) {
+    public @Nullable T getTeam(TeamPlayer<T> player) {
         Optional<T> qTeam = teams.values().stream()
                 .filter(team -> team.getPlayers().contains(player))
                 .findFirst();

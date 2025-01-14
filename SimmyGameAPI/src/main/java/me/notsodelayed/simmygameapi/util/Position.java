@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 /**
  * Represents a location without a {@link World}.
  */
-public class Position {
+public class Position implements Cloneable {
 
     private double x, y, z;
     private float yaw, pitch;
@@ -123,6 +123,15 @@ public class Position {
 
     public float getPitch() {
         return pitch;
+    }
+
+    @Override
+    public Position clone() {
+        try {
+            return (Position) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
     }
 
 }

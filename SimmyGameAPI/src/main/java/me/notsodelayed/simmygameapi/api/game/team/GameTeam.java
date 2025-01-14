@@ -17,7 +17,7 @@ import me.notsodelayed.simmygameapi.util.StringUtil;
 /**
  * Represents a team of a {@link Game}.
  */
-public class GameTeam implements BaseTeam {
+public class GameTeam implements BaseTeam, Comparable<GameTeam> {
 
     private final String id;
     private final Component displayName;
@@ -96,6 +96,11 @@ public class GameTeam implements BaseTeam {
 
     public String getId() {
         return id;
+    }
+
+    @Override
+    public int compareTo(@NotNull GameTeam other) {
+        return Integer.compare(players.size(), other.players.size()) ;
     }
 
 }

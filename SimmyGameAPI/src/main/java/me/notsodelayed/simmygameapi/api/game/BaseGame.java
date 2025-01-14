@@ -26,14 +26,14 @@ public interface BaseGame {
     /**
      * Requests for this game to start.
      * @see Game#hasMetGameRequirements()
-     * @see Game#init()
+     * @see Game#validate()
      */
     void start();
 
     /**
      * Called upon game start countdown depletion, executing tasks to trigger the game systems.
      */
-    void tick();
+    void init();
 
     /**
      * Ends the game.

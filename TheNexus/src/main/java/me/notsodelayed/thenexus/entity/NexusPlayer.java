@@ -12,6 +12,7 @@ import me.notsodelayed.simmygameapi.api.statistics.Statistics;
 import me.notsodelayed.thenexus.entity.team.NexusTeam;
 import me.notsodelayed.thenexus.game.NexusGame;
 import me.notsodelayed.thenexus.kit.NexusKit;
+import me.notsodelayed.thenexus.map.NexusMap;
 
 /**
  * Represents a player of {@link NexusGame}
@@ -27,7 +28,7 @@ public class NexusPlayer extends GamePlayer implements StatisticsPlayer, TeamPla
 
     @Override
     public @Nullable NexusTeam getTeam() {
-        NexusGame<?, ?> game = (NexusGame<?, ?>) getGame();
+        NexusGame<NexusMap, NexusTeam> game = (NexusGame<NexusMap, NexusTeam>) getGame();
         return game.getTeamManager().getTeam(this);
     }
 

@@ -9,10 +9,7 @@ import java.util.logging.Level;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -43,8 +40,20 @@ public abstract class MapGame<M extends GameMap> extends Game {
         this.worldDirectory = new File(worldName);
     }
 
+    /**
+     * @param minPlayers the minimum player count
+     * @param maxPlayers the maximum player count
+     * @param map the map
+     * @apiNote This returns a Game instance with state {@link GameState#LOADING}, where it is not joinable.
+     * @implSpec For custom game setup requirements, developers must override {@link #ready()} and call super before custom implementations.
+     */
+    protected MapGame(int minPlayers, int maxPlayers, M map) {
+        this(minPlayers, maxPlayers);
+        this.map = map;
+    }
+
     @Override
-    protected boolean init() {
+    protected boolean validate() {
         if (setupCountdown) {
             // TODO make this voteable
             getCountdown().executeAt(10, seconds -> {
@@ -53,7 +62,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
             });
             setupCountdown = false;
         }
-        return super.init();
+        return super.validate();
     }
 
     /**
@@ -61,35 +70,40 @@ public abstract class MapGame<M extends GameMap> extends Game {
      * @implNote Developers must call super from this class before custom implementations.
      */
     @Override
-    public void tick() {
-        long started = System.currentTimeMillis();
-        AtomicLong aTimeTakenCopy = new AtomicLong();
+    public void init() {
+        AtomicLong started = new AtomicLong();
         CompletableFuture.runAsync(() -> {
            try {
+               started.set(System.currentTimeMillis());
                FileUtils.copyDirectory(getMap().getDirectory(), worldDirectory);
                worldDirectory.deleteOnExit();
-               aTimeTakenCopy.set(System.currentTimeMillis());
            } catch (IOException ex) {
                dispatchMessage("&c(!) An error occurred whilst setting up the map. This game has been terminated.");
                LoggerUtil.verbose(this, "An error occurred whilst copying " + map.getDisplayName().orElse(map.getId()) + ":");
                ex.printStackTrace(System.err);
                delete();
            }
+        }).thenRun(() -> {
+            // World loading must be synced
+            Bukkit.getScheduler().runTask(SimmyGameAPI.instance, () -> {
+                world = new WorldCreator(worldName)
+                        .type(WorldType.FLAT)
+                        .generator("VoidGen")
+                        .generateStructures(false)
+                        .createWorld();
+                long timeTaken = started.get() - System.currentTimeMillis();
+                if (world == null) {
+                    dispatchMessage("&c(!) An error occurred whilst setting up the map. This game has been terminated.");
+                    LoggerUtil.verbose(this, "Game world of map '" + map.getDisplayName().orElse(map.getId()) + "' is null after creation");
+                    delete();
+                    return;
+                }
+                if (timeTaken > 50) {
+                    LoggerUtil.verbose(this, String.format("Map '%s' took %s ms to load", map.getDisplayName().orElse(map.getId()), timeTaken), Level.WARNING, true);
+                }
+            });
         });
-        long timeTakenCopy = aTimeTakenCopy.get() - started;
-
-        started = System.currentTimeMillis();
-        world = new WorldCreator(worldName)
-                .type(WorldType.FLAT)
-                .generator("VoidGen:{}")
-                .generateStructures(false)
-                .createWorld();
-        long timeTakenLoad = System.currentTimeMillis() - started;
-        if (world == null)
-            throw new RuntimeException("world is null after world creation");
-        if (timeTakenCopy + timeTakenLoad > 50) {
-            LoggerUtil.verbose(this, String.format("Map '%s' took longer than 1 tick to load (%sms copy, %sms load)", map.getDisplayName().orElse(map.getId()), timeTakenCopy, timeTakenLoad), Level.WARNING, true);
-        }
+        spawnPlayers();
     }
 
     /**

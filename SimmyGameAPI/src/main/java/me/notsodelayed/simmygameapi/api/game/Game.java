@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.util.AscendingTimer;
 import me.notsodelayed.simmygameapi.api.util.DescendingTimer;
 import me.notsodelayed.simmygameapi.api.util.Timer;
 import me.notsodelayed.simmygameapi.command.GameCommand;
@@ -35,6 +36,7 @@ public abstract class Game implements BaseGame {
     private final UUID uuid;
     private final GameSettings settings;
     private GameState gameState = GameState.LOADING;
+    private final AscendingTimer ingameTimer;
     private final DescendingTimer countdown;
     private final Set<GamePlayer> players;
     private boolean setupCountdown = true;
@@ -51,6 +53,7 @@ public abstract class Game implements BaseGame {
         this.settings = new GameSettings(this)
                 .maxPlayers(maxPlayers)
                 .minPlayers(minPlayers);
+        this.ingameTimer = new AscendingTimer();
         this.countdown = new DescendingTimer();
         GAMES.put(uuid, this);
         GameCommand.UUIDS_CACHE = null;
@@ -71,11 +74,11 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @return whether this game's initialisation is successful
+     * @return whether this game's validation is successful. This doubles as a pre-start checks.
      * @apiNote Called after {@link #hasMetGameRequirements()}. In event of unhandled exception occurred in this method, it will return false.
-     * @implNote Developers may implement custom initialisation tasks. Ensure this method returns <b>true</b> (preferably, return super, unless for special reasons) to allow the game start sequence to proceed.
+     * @implNote Developers may implement custom pre-start check tasks. Ensure this method returns <b>true</b> (preferably, return super, unless for special reasons) to allow the game start sequence to proceed.
      */
-    protected boolean init() {
+    protected boolean validate() {
         if (setupCountdown) {
             countdown.executeAt(seconds -> seconds == settings.startIn() || seconds % 10 == 0 || seconds <= 5, seconds -> {
                 dispatchMessage("&eGame will start in " + seconds + "...");
@@ -83,7 +86,8 @@ public abstract class Game implements BaseGame {
             }).executeAt(seconds -> seconds == 0, seconds -> {
                 gameState = GameState.INGAME;
                 dispatchMessage("&aGame has started!");
-                tick();
+                ingameTimer.start();
+                init();
             });
             setupCountdown = false;
         }
@@ -107,8 +111,8 @@ public abstract class Game implements BaseGame {
             return;
         }
         try {
-            if (!init()) {
-                LoggerUtil.verbose(this, "Game start countdown aborted due to init() returns false.");
+            if (!validate()) {
+                LoggerUtil.verbose(this, "Game start countdown aborted due to validate() returns false.");
                 return;
             }
         } catch (Exception ex) {
@@ -122,8 +126,10 @@ public abstract class Game implements BaseGame {
 
     @Override
     public void end() {
+        ingameTimer.end();
         ((DescendingTimer) new DescendingTimer()
-                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, seconds -> delete()))
+                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, seconds -> dispatchPrefixedMessage("Game ending in " + seconds + " seconds...")))
+                .executeAtEnd(seconds -> delete())
                 .start(settings.endIn());
     }
 
@@ -170,6 +176,14 @@ public abstract class Game implements BaseGame {
         }
     }
 
+    public AscendingTimer getIngameTimer() {
+        return ingameTimer;
+    }
+
+    /**
+     * @return an immutable set of game players
+     * @implNote Developers may override this with {@link #getPlayers(Class)} to explicitly return a specific type of game players.
+     */
     @Override
     public Set<? extends GamePlayer> getPlayers() {
         return Set.copyOf(players);
@@ -219,6 +233,10 @@ public abstract class Game implements BaseGame {
         return this.getPlayers().size() >= settings.minPlayers();
     }
 
+    /**
+     * @return whether this game has met game requirements to start
+     * @implNote Developers may override this for custom requirements.
+     */
     public boolean hasMetGameRequirements() {
         return hasMinimumPlayers();
     }

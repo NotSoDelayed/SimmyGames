@@ -7,22 +7,22 @@ import org.jetbrains.annotations.NotNull;
 import me.notsodelayed.simmygameapi.api.game.map.GameMap;
 import me.notsodelayed.simmygameapi.util.Position;
 
-public class NexusMap extends GameMap {
+public abstract class NexusMap extends GameMap {
 
     private final Position spawnAlpha, spawnBeta;
 
-    public NexusMap(@NotNull String id, @NotNull File mapDirectory) throws RuntimeException {
+    protected NexusMap(@NotNull String id, @NotNull File mapDirectory) throws RuntimeException {
         super(id, mapDirectory);
         spawnAlpha = Position.fromString(getYaml().getString("map.spawn.red"));
         spawnBeta = Position.fromString(getYaml().getString("map.spawn.blue"));
     }
 
     public Position getSpawnAlpha() {
-        return spawnAlpha;
+        return spawnAlpha.clone();
     }
 
     public Position getSpawnBeta() {
-        return spawnBeta;
+        return spawnBeta.clone();
     }
 
 }

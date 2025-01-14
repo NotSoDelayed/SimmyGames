@@ -12,10 +12,12 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.api.Matchmaking;
 import me.notsodelayed.simmygameapi.api.game.map.GameMapManager;
+import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 import me.notsodelayed.thenexus.TheNexus;
 import me.notsodelayed.thenexus.entity.NexusPlayer;
@@ -26,35 +28,45 @@ public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
 
     private static GameMapManager<TntNexusMap> MAP_MANAGER;
 
+    private final TntNexusTeam teamAlpha, teamBeta;
     private final WeakHashMap<Player, Inventory> virtualChest = new WeakHashMap<>();
 
     public static void register() {
-        TheNexus.logger.info("Registering maps...");
         MAP_MANAGER = new GameMapManager<>();
         File mapsDir = new File(TheNexus.instance.getDataFolder(), "maps");
         if (!mapsDir.mkdir()) {
-            for (File mapDirectory : mapsDir.listFiles()) {
-                try {
-                    if (!mapDirectory.isDirectory())
-                        continue;
-                    MAP_MANAGER.registerMap(new TntNexusMap(mapDirectory.getName(), mapDirectory));
-                } catch (Exception ignored) {
-                    TheNexus.logger.warning("Skipping " + mapDirectory.getName() + " due to exception occurred...");
-                }
-            }
+            TheNexus.logger.info("Registering maps...");
+            MAP_MANAGER.registerMapsFromDirectory(mapsDir, file -> new TntNexusMap(file.getName(), file));
             TheNexus.logger.info("Successfully registered " + MAP_MANAGER.size() + " maps!");
+        } else {
+            // TODO add maps reload command
+            TheNexus.logger.warning("Place your configured maps into " + mapsDir.getPath() + " and restart your server.");
         }
-
-        TheNexus.logger.info("Registering game into matchmaking...");
+        Matchmaking.registerGameCreator(TntNexusGame.class, () -> new TntNexusGame(1, 10));
         Matchmaking.registerGame(TntNexusGame.class, NexusPlayer::new);
     }
 
-    protected TntNexusGame(int minPlayers, int maxPlayers) {
+    public TntNexusGame(int minPlayers, int maxPlayers) {
         super(minPlayers, maxPlayers);
-        TntNexusTeam teamAlpha = new TntNexusTeam(NamedTextColor.RED);
-        TntNexusTeam teamBeta = new TntNexusTeam(NamedTextColor.BLUE);
-        setTeamAlpha(teamAlpha);
-        setTeamBeta(teamBeta);
+        teamAlpha = new TntNexusTeam(NamedTextColor.RED);
+        teamBeta = new TntNexusTeam(NamedTextColor.BLUE);
+        getTeamManager().registerTeam(teamAlpha);
+        getTeamManager().registerTeam(teamBeta);
+    }
+
+    @Override
+    public void init() {
+        super.init();
+        ItemStack chest = new ItemStack(Material.CHEST);
+        ItemMeta meta = chest.getItemMeta();
+        meta.itemName(
+                Component.text("Virtual Chest ").color(NamedTextColor.GOLD)
+                        .append(
+                                Component.text(StringUtil.smallText("right click")).color(NamedTextColor.GRAY)
+                        )
+        );
+        chest.setItemMeta(meta);
+        getBukkitPlayers().forEach(player -> player.getInventory().setItem(8, chest));
     }
 
     @Override
@@ -105,6 +117,16 @@ public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
     @Override
     public @NotNull GameMode getGameMode() {
         return GameMode.SURVIVAL;
+    }
+
+    @Override
+    public TntNexusTeam getTeamAlpha() {
+        return teamAlpha;
+    }
+
+    @Override
+    public TntNexusTeam getTeamBeta() {
+        return teamBeta;
     }
 
 }

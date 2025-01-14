@@ -17,7 +17,7 @@ public class AscendingTimer extends Timer {
     private Instant since, ended;
     private Integer endsAt;
 
-    public AscendingTimer(Game game) {
+    public AscendingTimer() {
         super();
     }
 

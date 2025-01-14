@@ -25,7 +25,7 @@ public class FileUtil {
      * @param file the file
      * @throws NullPointerException if the file does not exist
      */
-    public static void checkExistsOrThrow(File file) throws NullPointerException {
+    public static void checkExistsOrThrow(File file) {
         if (!file.exists())
             throw new NullPointerException((file.isDirectory() ? "directory " : "file ") + file.getName() + " does not exist");
     }
@@ -35,7 +35,7 @@ public class FileUtil {
      * @param file the file
      * @throws IllegalArgumentException if the file is not a directory
      */
-    public static void checkIsDirectoryOrThrow(File file) throws IllegalArgumentException {
+    public static void checkIsDirectoryOrThrow(File file) {
         if (!file.isDirectory())
             throw new IllegalArgumentException("file " + file.getName() + " is not a directory");
     }

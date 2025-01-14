@@ -1,5 +1,7 @@
 package me.notsodelayed.simmygameapi.util;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import net.kyori.adventure.text.Component;
@@ -59,6 +61,24 @@ public class StringUtil {
             checkColor = false;
         }
         return Component.text(result.toString());
+    }
+
+    public static String decimal(float number, int decimalPoint) {
+        return String.format(("%." + decimalPoint + "f"), number);
+    }
+
+    private static final Map<String, String> ALPHABETS = new HashMap<>();
+    public static String smallText(String text) {
+        if (ALPHABETS.isEmpty()) {
+            String[] beg = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+            String[] smol = "ᴀʙᴄᴅᴇғɢʜᴊɪᴋʟᴍɴᴏᴘᴏ̨ʀsᴛᴜᴠᴡxʏᴢ".split("");
+            for (int i = 0; i < 26; i++)
+                ALPHABETS.put(beg[i], smol[i]);
+        }
+        StringBuilder output = new StringBuilder();
+        for (String s : text.split(""))
+            output.append(ALPHABETS.getOrDefault(s, s));
+        return output.toString();
     }
 
     public static String getDisplayUuid(UUID uuid) {

@@ -1,4 +1,4 @@
-group = "me.notsodelayed.thenexus"
+group = "me.notsodelayed.towerdefense"
 version = "1.0-SNAPSHOT"
 
 dependencies {
@@ -7,6 +7,8 @@ dependencies {
     }
 }
 
-tasks.compileJava {
-    dependsOn(":SimmyGameAPI:shadowJar")
+tasks {
+    compileJava {
+        dependsOn(":SimmyGameAPI:shadowJar")
+    }
 }

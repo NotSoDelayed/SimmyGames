@@ -35,7 +35,5 @@ public interface TeamVsTeamGame<T extends GameTeam> extends TeamGame<T> {
 
     T getTeamAlpha();
     T getTeamBeta();
-    void setTeamAlpha(@NotNull T team);
-    void setTeamBeta(@NotNull T team);
 
 }

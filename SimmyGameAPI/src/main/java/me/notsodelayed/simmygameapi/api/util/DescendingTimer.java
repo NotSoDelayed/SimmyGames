@@ -20,8 +20,8 @@ public class DescendingTimer extends Timer {
      * @param task the task to execute upon timer reaching 0 seconds
      * @return itself
      */
-    public Timer executeAtEnd(Consumer<Integer> task) {
-        return executeAt(0, task);
+    public DescendingTimer executeAtEnd(Consumer<Integer> task) {
+        return (DescendingTimer) executeAt(0, task);
     }
 
     public void start(int seconds) {

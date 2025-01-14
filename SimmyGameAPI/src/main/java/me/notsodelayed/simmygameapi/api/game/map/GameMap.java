@@ -7,6 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.yaml.snakeyaml.error.YAMLException;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.Game;
@@ -16,18 +17,29 @@ import me.notsodelayed.simmygameapi.util.FileUtil;
  * Represents a map for a {@link Game}.
  * Developers shall extend from this class to make use of the current implementation for their game map.
  */
-public class GameMap {
+public class GameMap implements Cloneable {
 
     private final String id;
     private final String displayName;
     private final File mapDirectory;
-    private final YamlConfiguration yaml;
+    private YamlConfiguration yaml;
 
+    /**
+     * @throws YAMLException if the directory is not a valid map directory
+     */
     public GameMap(@NotNull String id, @Nullable String displayName, @NotNull File mapDirectory) {
         FileUtil.checkIsDirectoryOrThrow(mapDirectory);
         this.id = id;
         this.displayName = displayName;
         this.mapDirectory = mapDirectory;
+        loadYaml();
+    }
+
+    public GameMap(@NotNull String id, @NotNull File mapDirectory) {
+        this(id, StringUtils.capitalize(id), mapDirectory);
+    }
+
+    protected void loadYaml() {
         File ymlFile = new File(mapDirectory, "map.yml");
         yaml = new YamlConfiguration();
         if (ymlFile.exists()) {
@@ -38,12 +50,8 @@ public class GameMap {
                 ex.printStackTrace(System.err);
             }
         } else {
-            SimmyGameAPI.logger.warning(mapDirectory.getPath() + " does not have a 'map.yml' -- Proceeding without any custom data...");
+            throw new YAMLException("Missing map.yml file");
         }
-    }
-
-    public GameMap(@NotNull String id, @NotNull File mapDirectory) {
-        this(id, StringUtils.capitalize(id), mapDirectory);
     }
 
     public Optional<String> getDisplayName() {
@@ -62,4 +70,14 @@ public class GameMap {
         return yaml;
     }
 
+    @Override
+    public GameMap clone() {
+        try {
+            GameMap clone = (GameMap) super.clone();
+            clone.loadYaml();
+            return clone;
+        } catch (CloneNotSupportedException e) {
+            throw new AssertionError();
+        }
+    }
 }
