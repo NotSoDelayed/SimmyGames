@@ -1,5 +1,6 @@
 plugins {
     id("java")
+//    id("io.papermc.paperweight.userdev") version "1.7.7"
 }
 
 repositories {
@@ -10,6 +11,7 @@ subprojects {
 
     apply {
         plugin("java")
+//        plugin("io.papermc.paperweight.userdev")
     }
 
     repositories {
@@ -20,10 +22,16 @@ subprojects {
     dependencies {
         compileOnly("commons-io:commons-io:2.16.1")
         compileOnly("io.papermc.paper:paper-api:1.20.6-R0.1-SNAPSHOT")
+//        paperweight.paperDevBundle("1.20.6-R0.1-SNAPSHOT")
     }
 
-    tasks.compileJava {
-        options.encoding = "UTF-8"
+    tasks {
+//        build {
+//            dependsOn(reobfJar)
+//        }
+        compileJava {
+            options.encoding = "UTF-8"
+        }
     }
 
     java {

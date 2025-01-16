@@ -2,7 +2,7 @@ plugins {
     id("com.gradleup.shadow") version("8.3.2")
 }
 
-group = "me.delayedgaming.simmygameapi"
+group = "me.notsodelayed.simmygameapi"
 version = "1.0-SNAPSHOT"
 
 repositories {
@@ -20,6 +20,9 @@ dependencies {
 }
 
 tasks {
+//    reobfJar {
+//        dependsOn(shadowJar)
+//    }
     build {
         dependsOn(shadowJar)
     }
