@@ -10,7 +10,6 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import me.notsodelayed.simmygameapi.lib.fastinv.FastInv;
 import me.notsodelayed.simmygameapi.lib.fastinv.FastInvManager;
 import me.notsodelayed.towerdefense.game.DefenseGame;
 

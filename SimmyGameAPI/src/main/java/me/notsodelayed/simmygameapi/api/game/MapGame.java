@@ -9,7 +9,10 @@ import java.util.logging.Level;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
-import org.bukkit.*;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 

@@ -11,6 +11,7 @@ import me.notsodelayed.thenexus.TheNexus;
 /**
  * Represents the config of {@link TheNexus}.
  */
+// TODO repurpose this
 public class Config {
 
     private static Config config;

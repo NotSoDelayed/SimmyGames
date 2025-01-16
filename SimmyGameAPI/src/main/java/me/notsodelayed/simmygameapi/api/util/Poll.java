@@ -1,10 +1,6 @@
 package me.notsodelayed.simmygameapi.api.util;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import java.util.*;
 
 import org.bukkit.entity.Player;
 

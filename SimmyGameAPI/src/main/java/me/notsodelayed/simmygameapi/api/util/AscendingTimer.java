@@ -10,7 +10,6 @@ import org.bukkit.Bukkit;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.Game;
 
 public class AscendingTimer extends Timer {
 

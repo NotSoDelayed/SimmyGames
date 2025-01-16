@@ -1,11 +1,7 @@
 package me.notsodelayed.towerdefense.gui;
 
-import java.util.List;
-
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.Style;
-import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -13,7 +9,6 @@ import org.bukkit.entity.Player;
 import me.notsodelayed.simmygameapi.lib.fastinv.FastInv;
 import me.notsodelayed.simmygameapi.lib.fastinv.ItemBuilder;
 import me.notsodelayed.towerdefense.building.defense.ArcherTower;
-import me.notsodelayed.towerdefense.util.LoreUtil;
 
 public class MonsterGui extends FastInv {
     public MonsterGui(Player player) {

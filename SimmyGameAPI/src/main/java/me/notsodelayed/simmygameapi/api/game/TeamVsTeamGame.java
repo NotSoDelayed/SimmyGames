@@ -1,7 +1,5 @@
 package me.notsodelayed.simmygameapi.api.game;
 
-import org.jetbrains.annotations.NotNull;
-
 import me.notsodelayed.simmygameapi.api.game.team.GameTeam;
 
 public interface TeamVsTeamGame<T extends GameTeam> extends TeamGame<T> {

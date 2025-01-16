@@ -1,10 +1,6 @@
 package me.notsodelayed.simmygameapi.api;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.WeakHashMap;
+import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
@@ -26,6 +22,11 @@ public class Matchmaking {
     private static final Map<Class<? extends Game>, BiConsumer<Player, Game>> GAME_QUEUE = new HashMap<>();
     private static BukkitTask matchmaking;
 
+    /**
+     * Registers a game type into matchmaking.
+     * @param gameType the game type
+     * @param playerJoinTask the task of joining this game
+     */
     public static <T extends Game> void registerGame(Class<T> gameType, BiConsumer<Player, T> playerJoinTask) {
         //noinspection unchecked
         GAME_QUEUE.put(gameType, (BiConsumer<Player, Game>) playerJoinTask);
@@ -37,6 +38,11 @@ public class Matchmaking {
         GAME_QUEUE.remove(gameType);
     }
 
+    /**
+     * Creates a new game instance. The game type must register themselves into this beforehand via {@link #registerGameCreator(Class, Supplier)}.
+     * @param gameType the game type
+     * @return the created game instance, otherwise null if this game type is not supported
+     */
     public static <T extends Game> @Nullable T newGame(Class<T> gameType) {
         Supplier<T> register = (Supplier<T>) NEW_GAME_CREATOR.get(gameType);
         if (register == null)
@@ -44,6 +50,11 @@ public class Matchmaking {
         return register.get();
     }
 
+    /**
+     * Creates a new game instance. The game type must register themselves into this beforehand via {@link #registerGameCreator(Class, Supplier)}.
+     * @param gameType the game type
+     * @return the created game instance, otherwise null if this game type is not supported
+     */
     public static <T extends Game> @Nullable T newGame(String gameType) {
         Optional<Class<? extends Game>> clazzQuery = NEW_GAME_CREATOR.keySet().stream()
                 .filter(clazz -> clazz.getSimpleName().equalsIgnoreCase(gameType))
@@ -51,6 +62,7 @@ public class Matchmaking {
         return clazzQuery.map(clazz -> (T) newGame(clazz)).orElse(null);
     }
     /**
+     * Queues a player for matchmaking.
      * @param player the player
      * @param gameType the game type to match
      * @return whether the player is successfully queued
@@ -132,4 +144,5 @@ public class Matchmaking {
     public static <T extends Game> void registerGameCreator(Class<T> gameType, Supplier<T> register) {
         NEW_GAME_CREATOR.put(gameType, register);
     }
+
 }

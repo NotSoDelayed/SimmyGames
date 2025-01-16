@@ -1,10 +1,6 @@
 package me.notsodelayed.simmygameapi.api.game;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
