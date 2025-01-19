@@ -52,6 +52,7 @@ public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
         teamBeta = new TntNexusTeam(NamedTextColor.BLUE);
         getTeamManager().registerTeam(teamAlpha);
         getTeamManager().registerTeam(teamBeta);
+        ready();
     }
 
     @Override

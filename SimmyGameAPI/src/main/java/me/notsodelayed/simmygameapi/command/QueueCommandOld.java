@@ -13,9 +13,9 @@ import me.notsodelayed.simmygameapi.api.Matchmaking;
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.util.MessageUtil;
 
-public class QueueCommand extends BaseCommand {
+public class QueueCommandOld extends BaseCommandOld {
 
-    public QueueCommand(String label) {
+    public QueueCommandOld(String label) {
         super(label);
     }
 

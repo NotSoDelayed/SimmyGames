@@ -5,9 +5,10 @@ import org.bukkit.command.TabExecutor;
 
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 
-public abstract class BaseCommand implements TabExecutor {
+// TODO get rid of this
+public abstract class BaseCommandOld implements TabExecutor {
 
-    protected BaseCommand(String label) {
+    protected BaseCommandOld(String label) {
         Bukkit.getPluginCommand(label).setExecutor(this);
         LoggerUtil.verbose("[Command] Registered command: " + label);
     }

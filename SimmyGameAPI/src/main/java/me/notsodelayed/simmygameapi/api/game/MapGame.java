@@ -88,7 +88,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
            }
         }).thenRun(() -> {
             // World loading must be synced
-            Bukkit.getScheduler().runTask(SimmyGameAPI.instance, () -> {
+            SimmyGameAPI.scheduler().runTask(() -> {
                 world = new WorldCreator(worldName)
                         .type(WorldType.FLAT)
                         .generator("VoidGen")
@@ -119,7 +119,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
                 world.getPlayers().forEach(player -> player.teleportAsync(Util.getMainWorld().getSpawnLocation()));
             Bukkit.unloadWorld(world, false);
         }
-        Bukkit.getScheduler().runTaskAsynchronously(SimmyGameAPI.instance, () -> {
+        SimmyGameAPI.scheduler().runTaskAsynchronously(() -> {
             try {
                 FileUtils.deleteDirectory(worldDirectory);
             } catch (IOException ex) {

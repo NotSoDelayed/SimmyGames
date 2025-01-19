@@ -37,7 +37,7 @@ public class AscendingTimer extends Timer {
         since = Instant.now();
         for (Consumer<Integer> task : pretasks)
             task.accept(aSeconds.get());
-        timerTask = Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, () -> {
+        timerTask = SimmyGameAPI.scheduler().runTaskTimer(() -> {
             List<Consumer<Integer>> tasks = this.tasks.get(aSeconds.get());
             if (!tasks.isEmpty())
                 tasks.forEach(task -> task.accept(aSeconds.get()));

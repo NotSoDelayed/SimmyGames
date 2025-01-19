@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.command.QueueCommand;
+import me.notsodelayed.simmygameapi.command.QueueCommandOld;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 
 public class Matchmaking {
@@ -30,12 +30,17 @@ public class Matchmaking {
     public static <T extends Game> void registerGame(Class<T> gameType, BiConsumer<Player, T> playerJoinTask) {
         //noinspection unchecked
         GAME_QUEUE.put(gameType, (BiConsumer<Player, Game>) playerJoinTask);
-        QueueCommand.REGISTERED_GAMES_CACHE = null;
+        // TODO fix this in favor of CAPI
+        QueueCommandOld.REGISTERED_GAMES_CACHE = null;
         SimmyGameAPI.logger.info("Registered " + gameType.getSimpleName() + " into matchmaking!");
     }
 
     public static void unregisterGame(Class<? extends Game> gameType) {
         GAME_QUEUE.remove(gameType);
+    }
+
+    public static <T extends Game> void registerGameCreator(Class<T> gameType, Supplier<T> register) {
+        NEW_GAME_CREATOR.put(gameType, register);
     }
 
     /**
@@ -76,7 +81,7 @@ public class Matchmaking {
         PLAYER_QUEUE_SINCE.put(player, System.currentTimeMillis());
         info(player.getName() + " queued for " + gameType.getSimpleName());
         if (matchmaking == null) {
-            matchmaking = Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, () -> {
+            matchmaking = SimmyGameAPI.scheduler().runTaskTimer(() -> {
                 if (PLAYER_QUEUE.isEmpty())
                     return;
                 for (Map.Entry<Player, Class<? extends Game>> entry : PLAYER_QUEUE.entrySet()) {
@@ -139,10 +144,6 @@ public class Matchmaking {
 
     private static void info(String text) {
         SimmyGameAPI.logger.info("[Matchmaking] " + text);
-    }
-
-    public static <T extends Game> void registerGameCreator(Class<T> gameType, Supplier<T> register) {
-        NEW_GAME_CREATOR.put(gameType, register);
     }
 
 }

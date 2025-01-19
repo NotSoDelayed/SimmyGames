@@ -10,9 +10,9 @@ import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.game.player.StatisticsPlayer;
 import me.notsodelayed.simmygameapi.util.MessageUtil;
 
-public class StatsCommand extends BaseCommand {
+public class StatsCommandOld extends BaseCommandOld {
 
-    public StatsCommand(String label) {
+    public StatsCommandOld(String label) {
         super(label);
     }
 

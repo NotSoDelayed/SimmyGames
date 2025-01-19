@@ -18,9 +18,9 @@ import me.notsodelayed.simmygameapi.util.MessageUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.simmygameapi.util.Symbol;
 
-public class GameCommand extends BaseCommand {
+public class GameCommandOld extends BaseCommandOld {
 
-    public GameCommand(String label) {
+    public GameCommandOld(String label) {
         super(label);
     }
 

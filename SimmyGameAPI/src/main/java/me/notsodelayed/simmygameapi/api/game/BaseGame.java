@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
@@ -41,6 +42,12 @@ public interface BaseGame {
      * @implNote The default implementation for ending a game accounting with their implemented variables. Subclasses may override this for custom implementation.
      */
     void end();
+
+    /**
+     * Displays game information to the command user (/game info).
+     * @param sender the command user
+     */
+    void showInfo(CommandSender sender);
 
     /**
      * @return the participant players

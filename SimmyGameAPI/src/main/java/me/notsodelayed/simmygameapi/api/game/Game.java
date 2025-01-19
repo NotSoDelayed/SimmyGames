@@ -8,6 +8,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -17,7 +18,7 @@ import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.util.AscendingTimer;
 import me.notsodelayed.simmygameapi.api.util.DescendingTimer;
 import me.notsodelayed.simmygameapi.api.util.Timer;
-import me.notsodelayed.simmygameapi.command.GameCommand;
+import me.notsodelayed.simmygameapi.command.GameCommandOld;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;
@@ -28,6 +29,7 @@ import me.notsodelayed.simmygameapi.util.StringUtil;
 public abstract class Game implements BaseGame {
 
     private static final Map<UUID, Game> GAMES = new HashMap<>();
+    private final long created;
     private Component prefix;
     private final UUID uuid;
     private final GameSettings settings;
@@ -44,6 +46,7 @@ public abstract class Game implements BaseGame {
      * @implSpec For custom game setup requirements, developers must override {@link #ready()} and call super before custom implementations.
      */
     protected Game(int minPlayers, int maxPlayers) {
+        this.created = System.currentTimeMillis();
         this.uuid = UUID.randomUUID();
         this.players = new HashSet<>();
         this.settings = new GameSettings(this)
@@ -52,7 +55,7 @@ public abstract class Game implements BaseGame {
         this.ingameTimer = new AscendingTimer();
         this.countdown = new DescendingTimer();
         GAMES.put(uuid, this);
-        GameCommand.UUIDS_CACHE = null;
+        GameCommandOld.UUIDS_CACHE = null;
     }
 
     /**
@@ -61,6 +64,25 @@ public abstract class Game implements BaseGame {
     public static Map<UUID, Game> getGames() {
         garbageCollection();
         return Map.copyOf(GAMES);
+    }
+
+    public static @Nullable Game getGame(UUID uuid) {
+        return GAMES.get(uuid);
+    }
+
+    /**
+     * @param stringUuid the string representation or the first portion of a UUID
+     * @return the matched game, otherwise null
+     */
+    public static @Nullable Game getGame(String stringUuid) {
+        return GAMES.values().stream()
+                .filter(game -> {
+                    if (stringUuid.length() == 8)
+                        return game.getUuid().toString().split("-")[0].equals(stringUuid);
+                    if (stringUuid.length() == 32)
+                        return game.getUuid().toString().equals(stringUuid);
+                    return false;
+                }).findAny().orElse(null);
     }
 
     @Override
@@ -144,6 +166,19 @@ public abstract class Game implements BaseGame {
         GAMES.remove(this.getUuid());
     }
 
+    @Override
+    public void showInfo(CommandSender sender) {
+        Component info = Component.newline()
+                .append(Component.text(this.getClass().getSimpleName() + StringUtil.getDisplayUuid(uuid), NamedTextColor.GREEN))
+
+                .appendNewline()
+                .append(Component.text("Players: "))
+                .append(Component.text(playing(), NamedTextColor.GREEN))
+                .append(Component.text("/", NamedTextColor.GRAY))
+                .append(Component.text(settings.maxPlayers()));
+        sender.sendMessage(info);
+    }
+
     public void dispatchMessage(String message) {
         for (Player player : getBukkitPlayers())
             player.sendMessage(StringUtil.color(message));
@@ -174,6 +209,10 @@ public abstract class Game implements BaseGame {
 
     public AscendingTimer getIngameTimer() {
         return ingameTimer;
+    }
+
+    public int playing() {
+        return players.size();
     }
 
     /**
@@ -282,6 +321,13 @@ public abstract class Game implements BaseGame {
         this.gameState = gameState;
     }
 
+    /**
+     * @return the time in millis from epoch, of this game's creation
+     */
+    public long createdAt() {
+        return created;
+    }
+
     public Component getPrefix() {
         return prefix;
     }
@@ -301,6 +347,13 @@ public abstract class Game implements BaseGame {
         return uuid;
     }
 
+    /**
+     * @return a formatted name of this game (CLASS_NAME-PORTION_1_UUID)
+     */
+    public String getFormattedName() {
+        return getClass().getSimpleName() + "-" + StringUtil.getDisplayUuid(uuid);
+    }
+
     @Override
     public GameSettings getSettings() {
         return settings;
@@ -309,7 +362,7 @@ public abstract class Game implements BaseGame {
     /**
      * @return the game start countdown of this game
      */
-    public Timer getCountdown() {
+    public DescendingTimer getCountdown() {
         return countdown;
     }
 
@@ -336,7 +389,7 @@ public abstract class Game implements BaseGame {
             }
         }
         if (clearCache)
-            GameCommand.UUIDS_CACHE = null;
+            GameCommandOld.UUIDS_CACHE = null;
     }
 
 }
