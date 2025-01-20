@@ -5,7 +5,7 @@ import java.io.File;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import me.notsodelayed.simmygameapi.api.game.map.GameMap;
+import me.notsodelayed.simmygameapi.api.map.GameMap;
 
 public class DefenseMap extends GameMap {
 

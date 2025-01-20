@@ -8,8 +8,8 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import me.notsodelayed.simmygameapi.command.v2.GameCommand;
-import me.notsodelayed.simmygameapi.handler.internal.PlayerProtectionHandler;
+import me.notsodelayed.simmygameapi.commands.GameCommand;
+import me.notsodelayed.simmygameapi.handler.PlayerProtectionHandler;
 import me.notsodelayed.simmygameapi.util.Scheduler;
 
 public final class SimmyGameAPI extends JavaPlugin {
@@ -19,6 +19,8 @@ public final class SimmyGameAPI extends JavaPlugin {
     public static Logger logger;
     private static final MiniMessage MINI_MESSAGE = MiniMessage.miniMessage();
     private static Scheduler SCHEDULER;
+
+    private static GameCommand gameCommand;
 
     @Override
     public void onLoad() {
@@ -31,7 +33,14 @@ public final class SimmyGameAPI extends JavaPlugin {
         logger = getLogger();
         Config.get(this);
         SCHEDULER = new Scheduler(this);
+
+        if (Bukkit.getPluginManager().getPlugin("VoidGen") == null) {
+            logger.warning("Plugin 'VoidGen' not found! It is required to load game worlds as void worlds!");
+            logger.warning("Download at: https://github.com/xtkq-is-not-available/VoidGen/releases");
+        }
+
         CommandAPI.onEnable();
+        gameCommand.tabCompleteListener();
         initEventListeners();
         logger.info("Successfully loaded Game API!");
     }
@@ -56,7 +65,7 @@ public final class SimmyGameAPI extends JavaPlugin {
 
     private void initCommands() {
         CommandAPI.onLoad(new CommandAPIBukkitConfig(this));
-        new GameCommand("game");
+        gameCommand = new GameCommand("game");
     }
 
 

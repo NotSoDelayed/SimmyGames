@@ -6,11 +6,12 @@ import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.util.Position;
 
-public class TntNexusMap extends NexusMap implements Cloneable {
+public class TntNexusMap extends NexusMap {
 
-    private Position nexusAlphaLeft, nexusAlphaMiddle, nexusAlphaRight;
-    private Position nexusBetaLeft, nexusBetaMiddle, nexusBetaRight;
+    private final Position nexusAlphaLeft, nexusAlphaMiddle, nexusAlphaRight;
+    private final Position nexusBetaLeft, nexusBetaMiddle, nexusBetaRight;
 
+    @SuppressWarnings("DataFlowIssue")
     public TntNexusMap(@NotNull String id, @NotNull File mapDirectory) throws RuntimeException {
         super(id, mapDirectory);
         nexusAlphaLeft = Position.fromString(getYaml().getString("map.nexus.red.left"));
@@ -45,16 +46,16 @@ public class TntNexusMap extends NexusMap implements Cloneable {
         return nexusBetaRight.clone();
     }
 
-    @Override
-    public TntNexusMap clone() {
-        TntNexusMap clone = (TntNexusMap) super.clone();
-        clone.nexusAlphaLeft = getNexusAlphaLeft();
-        clone.nexusAlphaMiddle = getNexusAlphaMiddle();
-        clone.nexusAlphaRight = getNexusAlphaRight();
-        clone.nexusBetaLeft = getNexusBetaLeft();
-        clone.nexusBetaMiddle = getNexusBetaMiddle();
-        clone.nexusBetaRight = getNexusBetaRight();
-        return clone;
-    }
+//    @Override
+//    public TntNexusMap clone() {
+//        TntNexusMap clone = (TntNexusMap) super.clone();
+//        clone.nexusAlphaLeft = getNexusAlphaLeft();
+//        clone.nexusAlphaMiddle = getNexusAlphaMiddle();
+//        clone.nexusAlphaRight = getNexusAlphaRight();
+//        clone.nexusBetaLeft = getNexusBetaLeft();
+//        clone.nexusBetaMiddle = getNexusBetaMiddle();
+//        clone.nexusBetaRight = getNexusBetaRight();
+//        return clone;
+//    }
 
 }

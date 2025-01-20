@@ -4,7 +4,7 @@ import java.io.File;
 
 import org.jetbrains.annotations.NotNull;
 
-import me.notsodelayed.simmygameapi.api.game.map.GameMap;
+import me.notsodelayed.simmygameapi.api.map.GameMap;
 import me.notsodelayed.simmygameapi.util.Position;
 
 public abstract class NexusMap extends GameMap {

@@ -33,7 +33,7 @@ public class DescendingTimer extends Timer {
             task.accept(aSeconds.get());
         timerTask = SimmyGameAPI.scheduler().runTaskTimer(() -> {
             List<Consumer<Integer>> tasks = this.tasks.get(aSeconds.get());
-            if (!tasks.isEmpty())
+            if (tasks != null)
                 tasks.forEach(task -> task.accept(aSeconds.get()));
             for (Map.Entry<Predicate<Integer>, Consumer<Integer>> entry : predicateTasks) {
                 if (entry.getKey().test(aSeconds.get()))

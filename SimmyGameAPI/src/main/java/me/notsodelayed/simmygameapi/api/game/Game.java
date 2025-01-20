@@ -14,11 +14,11 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.BaseGame;
+import me.notsodelayed.simmygameapi.api.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.util.AscendingTimer;
 import me.notsodelayed.simmygameapi.api.util.DescendingTimer;
-import me.notsodelayed.simmygameapi.api.util.Timer;
-import me.notsodelayed.simmygameapi.command.GameCommandOld;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;
@@ -30,7 +30,6 @@ public abstract class Game implements BaseGame {
 
     private static final Map<UUID, Game> GAMES = new HashMap<>();
     private final long created;
-    private Component prefix;
     private final UUID uuid;
     private final GameSettings settings;
     private GameState gameState = GameState.LOADING;
@@ -55,7 +54,6 @@ public abstract class Game implements BaseGame {
         this.ingameTimer = new AscendingTimer();
         this.countdown = new DescendingTimer();
         GAMES.put(uuid, this);
-        GameCommandOld.UUIDS_CACHE = null;
     }
 
     /**
@@ -79,7 +77,7 @@ public abstract class Game implements BaseGame {
                 .filter(game -> {
                     if (stringUuid.length() == 8)
                         return game.getUuid().toString().split("-")[0].equals(stringUuid);
-                    if (stringUuid.length() == 32)
+                    if (stringUuid.length() == 36)
                         return game.getUuid().toString().equals(stringUuid);
                     return false;
                 }).findAny().orElse(null);
@@ -169,8 +167,8 @@ public abstract class Game implements BaseGame {
     @Override
     public void showInfo(CommandSender sender) {
         Component info = Component.newline()
-                .append(Component.text(this.getClass().getSimpleName() + StringUtil.getDisplayUuid(uuid), NamedTextColor.GREEN))
-
+                .append(Component.text(this.getFormattedName()))
+                .append(Component.text(StringUtil.smallText(gameState.toString()), gameState.getColor()))
                 .appendNewline()
                 .append(Component.text("Players: "))
                 .append(Component.text(playing(), NamedTextColor.GREEN))
@@ -179,22 +177,28 @@ public abstract class Game implements BaseGame {
         sender.sendMessage(info);
     }
 
-    public void dispatchMessage(String message) {
-        for (Player player : getBukkitPlayers())
-            player.sendMessage(StringUtil.color(message));
-    }
-
     public void dispatchMessage(Component message) {
         for (Player player : getBukkitPlayers())
             player.sendMessage(message);
     }
 
-    public void dispatchPrefixedMessage(@NotNull String message) {
-        dispatchMessage(prefix.append(Component.text(" ").color(NamedTextColor.WHITE)).append(StringUtil.colorToComponent(message)));
+    /**
+     * @param message the message (supported by MiniMessage)
+     */
+    public void dispatchMessage(String message) {
+        for (Player player : getBukkitPlayers())
+            player.sendMessage(SimmyGameAPI.miniMessage().deserialize(message));
     }
 
     public void dispatchPrefixedMessage(@NotNull Component message) {
-        dispatchMessage(prefix.append(Component.text(" ").color(NamedTextColor.WHITE)).append(message));
+        dispatchMessage(getPrefix().appendSpace().append(message));
+    }
+
+    /**
+     * @param message the message (supported by MiniMessage)
+     */
+    public void dispatchPrefixedMessage(@NotNull String message) {
+        dispatchPrefixedMessage(getPrefix().appendSpace().append(SimmyGameAPI.miniMessage().deserialize(message)));
     }
 
     public void dispatchSound(Sound sound, float pitch) {
@@ -215,6 +219,8 @@ public abstract class Game implements BaseGame {
         return players.size();
     }
 
+    public abstract @NotNull Component getPrefix();
+
     /**
      * @return an immutable set of game players
      * @implNote Developers may override this with {@link #getPlayers(Class)} to explicitly return a specific type of game players.
@@ -232,7 +238,7 @@ public abstract class Game implements BaseGame {
      * @throws ClassCastException if the object is not assignable to the provided class
      */
     protected <P extends GamePlayer> Set<P> getPlayers(Class<P> clazz) {
-        return this.getPlayers().stream()
+        return players.stream()
                 .map(clazz::cast)
                 .collect(Collectors.toUnmodifiableSet());
     }
@@ -244,7 +250,7 @@ public abstract class Game implements BaseGame {
     public void addPlayer(GamePlayer gamePlayer) {
         if (!players.add(gamePlayer))
             throw new IllegalStateException(gamePlayer + " is already apart of this game");
-        dispatchPrefixedMessage(String.format("&e%s has joined! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
+        dispatchPrefixedMessage(String.format("<yellow>%s has joined! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
         if (settings.startWithMinimumPlayers() && hasMetGameRequirements())
             start();
     }
@@ -328,20 +334,6 @@ public abstract class Game implements BaseGame {
         return created;
     }
 
-    public Component getPrefix() {
-        return prefix;
-    }
-
-    public Game setPrefix(@Nullable String prefix) {
-        this.prefix = prefix != null ? StringUtil.colorToComponent(prefix) : Component.empty();
-        return this;
-    }
-
-    public Game setPrefix(@NotNull Component prefix) {
-        this.prefix = prefix;
-        return this;
-    }
-
     @Override
     public UUID getUuid() {
         return uuid;
@@ -381,15 +373,10 @@ public abstract class Game implements BaseGame {
     protected static void garbageCollection() {
         // Prevent CCME
         Map<UUID, Game> games = new HashMap<>(GAMES);
-        boolean clearCache = false;
         for (Game game : games.values()) {
-            if (game.getGameState() == GameState.DELETED) {
-                clearCache = true;
+            if (game.getGameState() == GameState.DELETED)
                 GAMES.remove(game.getUuid());
-            }
         }
-        if (clearCache)
-            GameCommandOld.UUIDS_CACHE = null;
     }
 
 }

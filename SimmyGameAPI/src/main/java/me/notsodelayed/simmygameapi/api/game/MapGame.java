@@ -17,8 +17,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.map.GameMap;
-import me.notsodelayed.simmygameapi.api.game.map.GameMapManager;
+import me.notsodelayed.simmygameapi.api.map.GameMap;
+import me.notsodelayed.simmygameapi.api.map.GameMapManager;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 
@@ -57,11 +57,23 @@ public abstract class MapGame<M extends GameMap> extends Game {
 
     @Override
     protected boolean validate() {
+        if (map == null && queriedMap == null && getMapManager().size() == 0) {
+            SimmyGameAPI.logger.warning(getFormattedName() + " does not have a map, queried map, and idling maps in map manager.");
+            dispatchPrefixedMessage("The game could not be started due to no maps available.");
+            return false;
+        }
         if (setupCountdown) {
             // TODO make this voteable
             getCountdown().executeAt(10, seconds -> {
-                setMap(getMapManager().randomChoices(1).getFirst());
+                if (map == null) {
+                    if (queriedMap != null) {
+                        map = queriedMap;
+                    } else {
+                        map = getMapManager().randomChoices(1).getFirst();
+                    }
+                }
                 lockMap();
+                dispatchMessage("Map of the game: <gold>" + map.getDisplayName().orElse(map.getId()));
             });
             setupCountdown = false;
         }

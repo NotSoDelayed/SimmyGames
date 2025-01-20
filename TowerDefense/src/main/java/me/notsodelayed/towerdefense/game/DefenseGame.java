@@ -9,10 +9,10 @@ import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.api.game.MapGame;
 import me.notsodelayed.simmygameapi.api.game.TeamVsTeamGame;
-import me.notsodelayed.simmygameapi.api.game.map.GameMapManager;
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
-import me.notsodelayed.simmygameapi.api.game.team.GameTeam;
-import me.notsodelayed.simmygameapi.api.game.team.GameTeamManager;
+import me.notsodelayed.simmygameapi.api.map.GameMapManager;
+import me.notsodelayed.simmygameapi.api.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.team.GameTeam;
+import me.notsodelayed.simmygameapi.api.team.GameTeamManager;
 import me.notsodelayed.towerdefense.TowerDefense;
 
 public class DefenseGame extends MapGame<DefenseMap> implements TeamVsTeamGame<GameTeam> {

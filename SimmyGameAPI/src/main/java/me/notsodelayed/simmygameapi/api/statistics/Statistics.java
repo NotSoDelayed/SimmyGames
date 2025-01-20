@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.jetbrains.annotations.Nullable;
 
+// TODO a better way to create /stats maybe
 public class Statistics {
 
     private final Map<String, Object> STATS = new HashMap<>();

@@ -1,6 +1,6 @@
 package me.notsodelayed.simmygameapi.api.game;
 
-import me.notsodelayed.simmygameapi.api.game.team.GameTeam;
+import me.notsodelayed.simmygameapi.api.team.GameTeam;
 
 public interface TeamVsTeamGame<T extends GameTeam> extends TeamGame<T> {
 

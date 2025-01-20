@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import me.notsodelayed.simmygameapi.api.game.kit.GameKit;
+import me.notsodelayed.simmygameapi.api.kit.GameKit;
 
 /**
  * Represents an ordinary nexus kit.

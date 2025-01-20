@@ -15,19 +15,19 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.NotNull;
 
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Matchmaking;
-import me.notsodelayed.simmygameapi.api.game.map.GameMapManager;
+import me.notsodelayed.simmygameapi.api.map.GameMapManager;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 import me.notsodelayed.thenexus.TheNexus;
-import me.notsodelayed.thenexus.entity.NexusPlayer;
-import me.notsodelayed.thenexus.entity.team.TntNexusTeam;
+import me.notsodelayed.thenexus.team.TntNexusTeam;
 import me.notsodelayed.thenexus.map.TntNexusMap;
 
 public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
 
     private static GameMapManager<TntNexusMap> MAP_MANAGER;
-
+    private static final Component PREFIX = SimmyGameAPI.miniMessage().deserialize("<dark_gray>[<dark_red><bold>TNT<gold>Wars<dark_gray>]<reset>");
     private final TntNexusTeam teamAlpha, teamBeta;
     private final WeakHashMap<Player, Inventory> virtualChest = new WeakHashMap<>();
 
@@ -75,10 +75,6 @@ public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
         return MAP_MANAGER;
     }
 
-    public void wipeVirtualChests() {
-        virtualChest.clear();
-    }
-
     public @NotNull Inventory getVirtualChest(Player player) {
         return virtualChest.computeIfAbsent(player, p -> {
             Inventory inv = Bukkit.createInventory(null, 36, Component.text("Virtual Chest").color(NamedTextColor.YELLOW).decorate(TextDecoration.BOLD));
@@ -113,6 +109,15 @@ public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
 
             return inv;
         });
+    }
+
+    public void wipeVirtualChests() {
+        virtualChest.clear();
+    }
+
+    @Override
+    public @NotNull Component getPrefix() {
+        return PREFIX;
     }
 
     @Override

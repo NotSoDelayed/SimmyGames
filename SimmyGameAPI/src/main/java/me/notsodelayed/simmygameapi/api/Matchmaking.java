@@ -1,17 +1,16 @@
 package me.notsodelayed.simmygameapi.api;
 
+import java.util.Map;
 import java.util.*;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.command.QueueCommandOld;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 
 public class Matchmaking {
@@ -30,8 +29,6 @@ public class Matchmaking {
     public static <T extends Game> void registerGame(Class<T> gameType, BiConsumer<Player, T> playerJoinTask) {
         //noinspection unchecked
         GAME_QUEUE.put(gameType, (BiConsumer<Player, Game>) playerJoinTask);
-        // TODO fix this in favor of CAPI
-        QueueCommandOld.REGISTERED_GAMES_CACHE = null;
         SimmyGameAPI.logger.info("Registered " + gameType.getSimpleName() + " into matchmaking!");
     }
 
@@ -114,21 +111,14 @@ public class Matchmaking {
         }
     }
 
-    public static List<String> getRegisteredGames() {
+    public static Set<Class<? extends Game>> getRegisteredGames() {
+        return GAME_QUEUE.keySet();
+    }
+
+    public static List<String> getRegisteredGamesList() {
         return GAME_QUEUE.keySet().stream()
                 .map(Class::getSimpleName)
                 .toList();
-    }
-
-    /**
-     * @param name the name (case-insensitive)
-     * @return the class of game type if registered, otherwise null
-     */
-    public static @Nullable Class<? extends Game> valueOf(String name) {
-        Optional<Class<? extends Game>> query = GAME_QUEUE.keySet().stream()
-                .filter(clazz -> clazz.getSimpleName().equalsIgnoreCase(name))
-                .findAny();
-        return query.orElse(null);
     }
 
     public static @Nullable <T extends Game> BiConsumer<Player, T> getJoinTask(Class<T> gameType) {

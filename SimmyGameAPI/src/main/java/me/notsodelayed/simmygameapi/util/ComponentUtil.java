@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 public class ComponentUtil {
 
     public static Component errorMessage(String text, @NotNull TextColor color) {
-        return Component.text(Symbol.CHECK_MARK, NamedTextColor.DARK_RED)
+        return Component.text(Symbol.X, NamedTextColor.DARK_RED)
                 .appendSpace()
                 .append(Component.text(text, color));
     }
@@ -18,7 +18,7 @@ public class ComponentUtil {
     }
 
     public static Component infoMessage(String text, @NotNull TextColor color) {
-        return Component.text(Symbol.INFORMATION_MARK, NamedTextColor.GOLD)
+        return Component.text(Symbol.INFORMATION, NamedTextColor.GOLD)
                 .appendSpace()
                 .append(Component.text(text, color));
     }
@@ -28,7 +28,7 @@ public class ComponentUtil {
     }
 
     public static Component successMessage(String text, @NotNull TextColor color) {
-        return Component.text(Symbol.CHECK_MARK, NamedTextColor.GREEN)
+        return Component.text(Symbol.TICK, NamedTextColor.GREEN)
                 .appendSpace()
                 .append(Component.text(text, color));
     }

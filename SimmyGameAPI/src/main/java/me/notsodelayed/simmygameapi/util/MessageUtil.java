@@ -28,7 +28,7 @@ public class MessageUtil {
      */
     public static void sendErrorMessage(@NotNull CommandSender recipient, @NotNull String... messages) {
         for (String message : messages)
-            recipient.sendMessage(StringUtil.color("&4" + Symbol.CROSSED_MARK + " " + message));
+            recipient.sendMessage(StringUtil.color("&4" + Symbol.X + " " + message));
     }
 
     /**
@@ -37,7 +37,7 @@ public class MessageUtil {
      */
     public static String[] errorMessage(@NotNull String... messages) {
         return Arrays.stream(messages).
-                map(message -> StringUtil.color("&4" + Symbol.CROSSED_MARK + " " + message))
+                map(message -> StringUtil.color("&4" + Symbol.X + " " + message))
                 .toArray(String[]::new);
     }
 
@@ -48,7 +48,7 @@ public class MessageUtil {
      */
     public static void sendInfoMessage(@NotNull CommandSender recipient, @NotNull String... messages) {
         for (String message : messages)
-            recipient.sendMessage(StringUtil.color("&6" + Symbol.INFORMATION_MARK + "&e " + message));
+            recipient.sendMessage(StringUtil.color("&6" + Symbol.INFORMATION + "&e " + message));
     }
 
     /**
@@ -57,7 +57,7 @@ public class MessageUtil {
      */
     public static String[] infoMessage(@NotNull String... messages) {
         return Arrays.stream(messages).
-                map(message -> StringUtil.color("&6" + Symbol.INFORMATION_MARK + "&e " + message))
+                map(message -> StringUtil.color("&6" + Symbol.INFORMATION + "&e " + message))
                 .toArray(String[]::new);
     }
 
@@ -68,7 +68,7 @@ public class MessageUtil {
      */
     public static void sendSuccessMessage(@NotNull CommandSender recipient, @NotNull String... messages) {
         for (String message : messages)
-            recipient.sendMessage(StringUtil.color("&2" + Symbol.CHECK_MARK + "&a " + message));
+            recipient.sendMessage(StringUtil.color("&2" + Symbol.TICK + "&a " + message));
     }
 
     /**

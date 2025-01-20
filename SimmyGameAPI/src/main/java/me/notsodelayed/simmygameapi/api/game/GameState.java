@@ -7,9 +7,9 @@ import me.notsodelayed.simmygameapi.util.CompareUtil;
 public enum GameState {
 
     LOADING("loading", "Loading", NamedTextColor.BLACK),
-    WAITING_FOR_PLAYERS("waiting", "Waiting", NamedTextColor.GREEN),
+    WAITING_FOR_PLAYERS("waiting", "Waiting", NamedTextColor.AQUA),
     STARTING("starting", "Starting", NamedTextColor.GOLD),
-    INGAME("ingame", "In-Game", NamedTextColor.RED),
+    INGAME("ingame", "In-Game", NamedTextColor.GREEN),
     ENDING("ending", "Ending", NamedTextColor.DARK_PURPLE),
     DELETED("deleted", "Deleted", NamedTextColor.BLACK);
 

@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.game.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.player.GamePlayer;
 
 public class DefensePlayer extends GamePlayer {
 

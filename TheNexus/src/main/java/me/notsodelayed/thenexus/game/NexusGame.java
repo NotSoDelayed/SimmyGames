@@ -5,10 +5,9 @@ import java.util.Set;
 import me.notsodelayed.simmygameapi.api.game.GameState;
 import me.notsodelayed.simmygameapi.api.game.MapGame;
 import me.notsodelayed.simmygameapi.api.game.TeamVsTeamGame;
-import me.notsodelayed.simmygameapi.api.game.map.GameMap;
-import me.notsodelayed.simmygameapi.api.game.team.GameTeamManager;
-import me.notsodelayed.thenexus.entity.NexusPlayer;
-import me.notsodelayed.thenexus.entity.team.NexusTeam;
+import me.notsodelayed.simmygameapi.api.map.GameMap;
+import me.notsodelayed.simmygameapi.api.team.GameTeamManager;
+import me.notsodelayed.thenexus.team.NexusTeam;
 import me.notsodelayed.thenexus.map.NexusMap;
 
 public abstract class NexusGame<M extends NexusMap, T extends NexusTeam> extends MapGame<M> implements TeamVsTeamGame<T> {
