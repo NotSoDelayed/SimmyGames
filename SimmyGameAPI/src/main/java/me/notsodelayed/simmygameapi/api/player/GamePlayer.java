@@ -74,9 +74,7 @@ public class GamePlayer implements BasePlayer {
             return;
         game.removePlayer(this);
         GAME_PLAYERS.remove(getPlayer());
-        Game pGame = game;
         game = null;
-        pGame.dispatchPrefixedMessage(String.format("&e%s has left! (%s/%s)", getName(), game.getPlayers().size(), game.getSettings().maxPlayers()));
     }
 
     public void respawn(int respawnAfter, Consumer<GamePlayer> postRespawn) {
@@ -92,7 +90,7 @@ public class GamePlayer implements BasePlayer {
         PlayerUtil.clean(getPlayer(), GameMode.SPECTATOR);
         AtomicInteger seconds = new AtomicInteger(respawnAfter);
         int fRespawnAfter = respawnAfter;
-        Bukkit.getScheduler().runTaskTimer(SimmyGameAPI.instance, task -> {
+        SimmyGameAPI.scheduler().runTaskTimer(task -> {
             respawnTask = task;
             if (getPlayer() == null || game == null) {
                 respawnTask.cancel();
@@ -146,7 +144,7 @@ public class GamePlayer implements BasePlayer {
      * @throws IllegalStateException if this instance is outdated
      */
     protected void validate() {
-        if (game != null) {
+        if (game == null) {
             SimmyGameAPI.logger.severe("Attempted to interact with outdated GamePlayer instance of " + getName());
             throw new IllegalStateException("outdated GamePlayer instance");
         }

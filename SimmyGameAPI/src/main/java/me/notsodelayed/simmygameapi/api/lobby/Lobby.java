@@ -1,15 +1,84 @@
 package me.notsodelayed.simmygameapi.api.lobby;
 
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+
+import net.kyori.adventure.util.TriState;
+import org.bukkit.Bukkit;
+import org.bukkit.World;
+import org.bukkit.WorldCreator;
+import org.bukkit.WorldType;
+import org.bukkit.entity.Player;
+
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.game.Game;
+
 public class Lobby {
 
+    private static final Map<Class<? extends Game>, List<Lobby>> LOBBIES = new HashMap<>();
+    private final Class<? extends Game> group;
     private final LobbyMap map;
+    private final UUID uuid;
 
-    public Lobby(LobbyMap map) {
+    public Lobby(Class<? extends Game> group, LobbyMap map) {
+        this.group = group;
         this.map = map;
+        this.uuid = UUID.randomUUID();
+    }
+
+    /**
+     * Loads the world representing this lobby. It will do nothing if it's already loaded.
+     * @return the loaded world
+     */
+    public CompletableFuture<World> load() {
+        CompletableFuture<World> future = new CompletableFuture<>();
+        World world = Bukkit.getWorld(getWorldName());
+        if (world != null) {
+            future.complete(world);
+        } else {
+            try {
+                future.complete(
+                        new WorldCreator(getWorldName())
+                                .type(WorldType.FLAT)
+                                .generator("VoidGen")
+                                .keepSpawnLoaded(TriState.FALSE)
+                                .createWorld()
+                );
+            } catch (Exception ex) {
+                future.obtrudeException(ex);
+            }
+        }
+        return future;
+    }
+
+    /**
+     * Summons a player into this lobby. The world will be loaded if not beforehand.
+     * @param player the player
+     */
+    public void summon(Player player) {
+        load().thenAccept(world -> SimmyGameAPI.scheduler().runTask(() -> player.teleportAsync(world.getSpawnLocation())));
+    }
+
+    /**
+     * @return the game group representing this lobby
+     */
+    public Class<? extends Game> getGroup() {
+        return group;
     }
 
     public LobbyMap getMap() {
         return map;
+    }
+
+    /**
+     * @return the world name representing this lobby
+     */
+    public String getWorldName() {
+        return "lobby-" + group.getSimpleName().toLowerCase(Locale.ENGLISH) + "-" + uuid;
+    }
+
+    public UUID getUuid() {
+        return uuid;
     }
 
 }

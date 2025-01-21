@@ -4,6 +4,9 @@ import me.notsodelayed.simmygameapi.api.team.GameTeam;
 
 public interface TeamVsTeamGame<T extends GameTeam> extends TeamGame<T> {
 
+    T getTeamAlpha();
+    T getTeamBeta();
+
     @Override
     default void ready() throws IllegalStateException {
         String[] exception = new String[2];
@@ -30,8 +33,5 @@ public interface TeamVsTeamGame<T extends GameTeam> extends TeamGame<T> {
             throw new IllegalArgumentException("team is neither alpha nor beta");
         }
     }
-
-    T getTeamAlpha();
-    T getTeamBeta();
 
 }

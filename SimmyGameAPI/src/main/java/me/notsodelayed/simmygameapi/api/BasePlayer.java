@@ -6,6 +6,7 @@ import java.util.UUID;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
@@ -51,9 +52,14 @@ public interface BasePlayer {
      * @param volume the volume
      * @param pitch the pitch
      */
-    default void playSound(Sound sound, int volume, int pitch) {
+    default void playSound(Sound sound, float volume, float pitch) {
         if (getPlayer() != null)
             getPlayer().playSound(getPlayer().getLocation(), sound, volume, pitch);
+    }
+
+    default void playSound(Location location, Sound sound, float volume, float pitch) {
+        if (getPlayer() != null)
+            getPlayer().playSound(location, sound, volume, pitch);
     }
 
     /**

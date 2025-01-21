@@ -10,6 +10,7 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
 import me.notsodelayed.simmygameapi.util.Util;
@@ -19,13 +20,11 @@ import me.notsodelayed.simmygameapi.util.Util;
  */
 public class GameTeamManager<T extends GameTeam> {
 
-    private final Map<String, T> teams;
-    private final Map<T, Team> teamsPair;
+    private final Map<String, T> teams = new HashMap<>();
+    private final Map<T, Team> teamsPair = new HashMap<>();
     private final Scoreboard scoreboard;
 
     public GameTeamManager() {
-        teams = new HashMap<>();
-        teamsPair = new HashMap<>();
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
     }
 
@@ -44,14 +43,17 @@ public class GameTeamManager<T extends GameTeam> {
     }
 
     /**
+     * Assigns a player to a random team (prioritising smaller teams). Nothing will happen if the player is already in a team.
      * @param player the player
      * @return the chosen team
-     * @throws IllegalStateException if
+     * @throws IllegalStateException if there are no teams registered
      */
     public T joinRandom(TeamPlayer<T> player) { // TODO account for team size
         Preconditions.checkState(!teams.isEmpty(), "no teams available");
+        if (player.getTeam() != null)
+            return player.getTeam();
         List<T> teams = this.teams.values().stream().sorted().toList();
-        // Prioritize lowest team
+        // Prioritize the lowest team
         T team = Util.getRandomInt(2) != 2 ? teams.getFirst() : teams.get(Util.getRandomInt(teams.size()));
         joinTeam(team, player);
         return team;
@@ -66,6 +68,7 @@ public class GameTeamManager<T extends GameTeam> {
         Preconditions.checkArgument(teamsPair.containsKey(team), "team is not registered in the manager");
         Preconditions.checkState(player.getTeam() == null, "player is already assigned to a team");
         team.addPlayer(player);
+        player.message("You have joined team " + SimmyGameAPI.miniMessage().serialize(team.getDisplayName()) + "<reset>!");
     }
 
     public @Nullable T getTeam(TeamPlayer<T> player) {
@@ -106,8 +109,8 @@ public class GameTeamManager<T extends GameTeam> {
     /**
      * @return an immutable copy of registered teams
      */
-    public Map<String, T> getTeams() {
-        return Map.copyOf(teams);
+    public Collection<T> getTeams() {
+        return Collections.unmodifiableCollection(teams.values());
     }
 
     /**

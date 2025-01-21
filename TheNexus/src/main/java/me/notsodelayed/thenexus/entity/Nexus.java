@@ -4,23 +4,33 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import me.notsodelayed.simmygameapi.util.Position;
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
 import me.notsodelayed.thenexus.TheNexus;
+import me.notsodelayed.thenexus.event.NexusDestroyedEvent;
 import me.notsodelayed.thenexus.game.NexusPlayer;
 import me.notsodelayed.thenexus.game.NexusGame;
+import me.notsodelayed.thenexus.map.NexusMap;
+import me.notsodelayed.thenexus.team.NexusTeam;
 
 /**
  * Represents a core entity of a team base of a {@link NexusGame}.
  */
 public class Nexus {
 
-    private static final Map<Position, Nexus> NEXUSES = new HashMap<>();
-
+    private static final Map<Location, Nexus> NEXUSES = new HashMap<>();
+    private final NexusGame<? extends NexusMap, ? extends NexusTeam> game;
     private int health, maxHealth;
-    private final Position position;
+    private final Location location;
     private @Nullable NexusPlayer lastDamager = null;
     private boolean damageable;
 
@@ -29,16 +39,17 @@ public class Nexus {
      * @param maxHealth the max health
      * @param damageable whether to allow damage to this nexus by a player
      */
-    public Nexus(Position position, int health, int maxHealth, boolean damageable) {
-        if (NEXUSES.containsKey(position)) {
-            TheNexus.instance.getLogger().severe(position + " is already bound to a nexus.");
+    public Nexus(NexusGame<? extends NexusMap, ? extends NexusTeam> game, Location location, int health, int maxHealth, boolean damageable) {
+        if (NEXUSES.containsKey(location)) {
+            TheNexus.instance.getLogger().severe(location + " is already bound to a nexus!");
             throw new IllegalStateException("block is already bound to a nexus");
         }
-        this.position = position;
+        this.game = game;
+        this.location = location;
         this.health = health;
         this.maxHealth = maxHealth;
         this.damageable = damageable;
-        NEXUSES.put(position, this);
+        NEXUSES.put(location, this);
     }
 
     /**
@@ -46,42 +57,77 @@ public class Nexus {
      * @return the nexus associated, otherwise null
      */
     public static @Nullable Nexus get(Block block) {
-        return NEXUSES.get(block);
+        return NEXUSES.get(block.getLocation());
     }
 
     /**
-     * Damages the nexus by the provided player, where the default implemented task will be executed.
-     * @param player the player, or null
+     * Damages the nexus by the provided damager, where the task executes with the new nexus health.
+     * @param damager the damager, or null
+     * @param task the task to execute
      * @return whether the operation is successful
-     * @see #damage(NexusPlayer, Consumer)
+     * @see #damage()
+     * @see #damage(NexusPlayer)
      */
-    public boolean damage(@Nullable NexusPlayer player) {
-        return damage(player, postHealth -> {
-            if (player != null) {
-                // todo add this damage thing
+    public boolean damage(@Nullable NexusPlayer damager, Consumer<Integer> task) {
+        if (!damageable)
+            return false;
+        health--;
+        lastDamager = damager;
+        task.accept(health);
+        if (health <= 0) {
+            damageable = false;
+            location.getBlock().setType(Material.BEDROCK);
+            NexusTeam team = game.getNexusTeam(this);
+            game.dispatchPrefixedMessage(team.getDisplayName().append(SimmyGameAPI.miniMessage().deserialize("<red> nexus has been destroyed!")));
+            // TODO listen to this to end game
+            new NexusDestroyedEvent(game, this).callEvent();
+        }
+        return true;
+    }
+
+    /**
+     * Damages the nexus by the provided damager.
+     * @param damager the damager
+     * @return whether the operation is successful
+     * @see #damage()
+     */
+    public boolean damage(@NotNull NexusPlayer damager) {
+        return damage(damager, newHealth -> {
+            // Skill issue if its null
+            assert damager.getTeam() != null;
+            NexusTeam victimTeam = game.getNexusTeam(this);
+            if (victimTeam == damager.getTeam()) {
+                damager.playSound(Sound.ENTITY_ITEM_BREAK, 1, 0);
+                damager.message(SimmyGameAPI.miniMessage().deserialize("<red><bold>STOP!<red> This is your team's nexus!"));
+                return;
             }
+            game.getTeamManager().getTeams().forEach(team -> {
+                // TODO verify that team = team actually works otherwise its just stupid
+                if (team == victimTeam) {
+                    team.dispatchSound(location, Sound.BLOCK_ANVIL_LAND, 2, 1);
+                    team.dispatchMessage(SimmyGameAPI.miniMessage().deserialize("<red>Your nexus is under attack by ").append(Component.text(damager.getName(), damager.getTeam().getColor()).append(Component.text("!"))));
+                } else {
+                    team.dispatchSound(location, Sound.ENTITY_ITEM_BREAK, 2, 2);
+                    team.dispatchMessage(Component.text(damager.getName(), damager.getTeam().getColor()).appendSpace().append(Component.text(" has damaged the ", NamedTextColor.WHITE)).append(victimTeam.getDisplayName()).append(Component.text(" nexus!", NamedTextColor.WHITE)));
+                }
+            });
         });
     }
 
     /**
-     * Damages the nexus by the provided player, where the task executes with the new nexus health.
-     * @param player the player, or null
-     * @param task the task to execute
+     * Damages the nexus naturally.
      * @return whether the operation is successful
-     * @see #damage(NexusPlayer)
      */
-    public boolean damage(@Nullable NexusPlayer player, Consumer<Integer> task) {
-        if (health > 0) {
-            health--;
-            lastDamager = player;
-            task.accept(health);
-            return true;
-        }
-        return false;
+    public boolean damage() {
+        return damage(null, newHealth -> {
+            NexusTeam victimTeam = game.getNexusTeam(this);
+            for (TeamPlayer<?> player : victimTeam.getPlayers())
+                player.message("<red>Your nexus has lost 1 health!");
+        });
     }
 
-    public Position getPosition() {
-        return position;
+    public Location getLocation() {
+        return location.clone();
     }
 
     public int getHealth() {
@@ -93,6 +139,15 @@ public class Nexus {
      */
     public void setHealth(int health) {
         this.health = health;
+    }
+
+    /**
+     * @param health the health to add
+     * @return the new health
+     */
+    public int addHealth(int health) {
+        this.health += health;
+        return this.health;
     }
 
     public int getMaxHealth() {

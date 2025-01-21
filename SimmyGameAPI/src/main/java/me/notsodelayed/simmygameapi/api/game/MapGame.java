@@ -9,10 +9,7 @@ import java.util.logging.Level;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
-import org.bukkit.Bukkit;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
-import org.bukkit.WorldType;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,6 +17,7 @@ import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.map.GameMap;
 import me.notsodelayed.simmygameapi.api.map.GameMapManager;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
+import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 
 public abstract class MapGame<M extends GameMap> extends Game {
@@ -73,7 +71,8 @@ public abstract class MapGame<M extends GameMap> extends Game {
                     }
                 }
                 lockMap();
-                dispatchMessage("Map of the game: <gold>" + map.getDisplayName().orElse(map.getId()));
+                // TODO fix prefix trailing color
+                dispatchPrefixedMessage("Map of the game: <gold>" + map.getDisplayName().orElse(map.getId()));
             });
             setupCountdown = false;
         }
@@ -93,13 +92,14 @@ public abstract class MapGame<M extends GameMap> extends Game {
                FileUtils.copyDirectory(getMap().getDirectory(), worldDirectory);
                worldDirectory.deleteOnExit();
            } catch (IOException ex) {
-               dispatchMessage("&c(!) An error occurred whilst setting up the map. This game has been terminated.");
+               dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
                LoggerUtil.verbose(this, "An error occurred whilst copying " + map.getDisplayName().orElse(map.getId()) + ":");
                ex.printStackTrace(System.err);
                delete();
            }
         }).thenRun(() -> {
             // World loading must be synced
+            // TODO modify gamerules, disable raids etc
             SimmyGameAPI.scheduler().runTask(() -> {
                 world = new WorldCreator(worldName)
                         .type(WorldType.FLAT)
@@ -108,17 +108,18 @@ public abstract class MapGame<M extends GameMap> extends Game {
                         .createWorld();
                 long timeTaken = started.get() - System.currentTimeMillis();
                 if (world == null) {
-                    dispatchMessage("&c(!) An error occurred whilst setting up the map. This game has been terminated.");
+                    dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
                     LoggerUtil.verbose(this, "Game world of map '" + map.getDisplayName().orElse(map.getId()) + "' is null after creation");
                     delete();
                     return;
                 }
+                getPlayers().forEach(gamePlayer -> PlayerUtil.clean(gamePlayer, GameMode.SURVIVAL));
+                spawnPlayers();
                 if (timeTaken > 50) {
                     LoggerUtil.verbose(this, String.format("Map '%s' took %s ms to load", map.getDisplayName().orElse(map.getId()), timeTaken), Level.WARNING, true);
                 }
             });
         });
-        spawnPlayers();
     }
 
     /**
@@ -128,9 +129,12 @@ public abstract class MapGame<M extends GameMap> extends Game {
     protected void delete() {
         super.delete();
         if (world != null) {
-                world.getPlayers().forEach(player -> player.teleportAsync(Util.getMainWorld().getSpawnLocation()));
+                world.getPlayers().forEach(player -> {
+                    player.teleportAsync(Util.getMainWorld().getSpawnLocation());
+                });
             Bukkit.unloadWorld(world, false);
         }
+        getPlayers().forEach(gamePlayer -> PlayerUtil.clean(gamePlayer, GameMode.ADVENTURE));
         SimmyGameAPI.scheduler().runTaskAsynchronously(() -> {
             try {
                 FileUtils.deleteDirectory(worldDirectory);
@@ -210,13 +214,13 @@ public abstract class MapGame<M extends GameMap> extends Game {
     /**
      * @return the world of this game
      * @throws IllegalStateException if this game has not begun, as its world is not loaded yet
-     * @see #getWorldName()
+     * @see #getGameWorldName()
      */
     public @NotNull World getWorld() {
         return world;
     }
 
-    public String getWorldName() {
+    public String getGameWorldName() {
         return worldName;
     }
 

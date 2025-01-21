@@ -97,11 +97,11 @@ public abstract class Game implements BaseGame {
     protected boolean validate() {
         if (setupCountdown) {
             countdown.executeAt(seconds -> seconds == settings.startIn() || seconds % 10 == 0 || seconds <= 5, seconds -> {
-                dispatchMessage("&eGame will start in " + seconds + "...");
+                dispatchMessage("<yellow>Game will start in " + seconds + "...");
                 dispatchSound(Sound.BLOCK_NOTE_BLOCK_HAT, 1);
             }).executeAt(seconds -> seconds == 0, seconds -> {
                 gameState = GameState.INGAME;
-                dispatchMessage("&aGame has started!");
+                dispatchMessage("<green>Game has started!");
                 ingameTimer.start();
                 init();
             });
@@ -144,7 +144,7 @@ public abstract class Game implements BaseGame {
     public void end() {
         ingameTimer.end();
         ((DescendingTimer) new DescendingTimer()
-                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, seconds -> dispatchPrefixedMessage("Game ending in " + seconds + " seconds...")))
+                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, seconds -> dispatchPrefixedMessage("<yellow>Game ending in " + seconds + " seconds...")))
                 .executeAtEnd(seconds -> delete())
                 .start(settings.endIn());
     }
@@ -168,6 +168,7 @@ public abstract class Game implements BaseGame {
     public void showInfo(CommandSender sender) {
         Component info = Component.newline()
                 .append(Component.text(this.getFormattedName()))
+                .appendSpace()
                 .append(Component.text(StringUtil.smallText(gameState.toString()), gameState.getColor()))
                 .appendNewline()
                 .append(Component.text("Players: "))
@@ -198,7 +199,7 @@ public abstract class Game implements BaseGame {
      * @param message the message (supported by MiniMessage)
      */
     public void dispatchPrefixedMessage(@NotNull String message) {
-        dispatchPrefixedMessage(getPrefix().appendSpace().append(SimmyGameAPI.miniMessage().deserialize(message)));
+        dispatchPrefixedMessage(SimmyGameAPI.miniMessage().deserialize(message));
     }
 
     public void dispatchSound(Sound sound, float pitch) {
@@ -250,6 +251,10 @@ public abstract class Game implements BaseGame {
     public void addPlayer(GamePlayer gamePlayer) {
         if (!players.add(gamePlayer))
             throw new IllegalStateException(gamePlayer + " is already apart of this game");
+
+        // TODO add more waiting lobby stuff
+        PlayerUtil.clean(gamePlayer, GameMode.ADVENTURE);
+
         dispatchPrefixedMessage(String.format("<yellow>%s has joined! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
         if (settings.startWithMinimumPlayers() && hasMetGameRequirements())
             start();
@@ -263,6 +268,7 @@ public abstract class Game implements BaseGame {
     public void removePlayer(GamePlayer gamePlayer) {
         if (!players.remove(gamePlayer))
             throw new IllegalStateException(gamePlayer + " is not apart of this game");
+        dispatchPrefixedMessage(String.format("<yellow>%s has left! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
         if (isAboutToStart() && !hasMetGameRequirements())
             countdown.cancel();
     }

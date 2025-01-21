@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.notsodelayed.thenexus.config.Config;
+import me.notsodelayed.thenexus.game.DuelNexusGame;
 import me.notsodelayed.thenexus.game.TntNexusGame;
 
 public final class TheNexus extends JavaPlugin {
@@ -28,7 +29,7 @@ public final class TheNexus extends JavaPlugin {
         logger.info("Initialising...");
 
         Config.get();
-        TntNexusGame.register();
+        DuelNexusGame.register();
 
         logger.info("Welcome onboard! Nexus can now be damaged! (took " + (System.currentTimeMillis() - start) + "ms)");
 

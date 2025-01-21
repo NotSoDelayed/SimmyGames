@@ -27,7 +27,7 @@ import me.notsodelayed.thenexus.map.TntNexusMap;
 public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
 
     private static GameMapManager<TntNexusMap> MAP_MANAGER;
-    private static final Component PREFIX = SimmyGameAPI.miniMessage().deserialize("<dark_gray>[<dark_red><bold>TNT<gold>Wars<dark_gray>]<reset>");
+    private static final Component PREFIX = SimmyGameAPI.miniMessage().deserialize("<dark_gray>[<dark_red><bold>TNT<gold>Wars<dark_gray>]<white>");
     private final TntNexusTeam teamAlpha, teamBeta;
     private final WeakHashMap<Player, Inventory> virtualChest = new WeakHashMap<>();
 

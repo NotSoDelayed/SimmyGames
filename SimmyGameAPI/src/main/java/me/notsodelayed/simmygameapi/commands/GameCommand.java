@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
 
+import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.PlayerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
@@ -119,7 +120,7 @@ public class GameCommand {
                             sender.sendMessage(ComponentUtil.successMessage("Sent " + target.getName() + " to " + game.getFormattedName() + "!"));
                     }
                 });
-        CommandAPICommand gameStart = new CommandAPICommand("forcestart")
+        CommandAPICommand gameStart = new CommandAPICommand("start")
                 .withPermission(SimmyGameAPI.ADMIN_PERMISSION)
                 .withArguments(
                         new StringArgument("uuid"))
@@ -140,6 +141,28 @@ public class GameCommand {
                     }
                     sender.sendMessage(ComponentUtil.successMessage("Force starting " + game.getFormattedName() + "..."));
                     game.start(true);
+                });
+        CommandAPICommand gameStop = new CommandAPICommand("end")
+                .withPermission(SimmyGameAPI.ADMIN_PERMISSION)
+                .withArguments(
+                        new StringArgument("uuid"))
+                .executes((sender, args) -> {
+                    String inputUuid = (String) args.get("uuid");
+                    if (inputUuid == null) {
+                        sender.sendMessage(ComponentUtil.infoMessage("Please specify a UUID of a game to end."));
+                        return;
+                    }
+                    Game game = Game.getGame(inputUuid);
+                    if (game == null) {
+                        sender.sendMessage(ComponentUtil.errorMessage("No matching game of UUID " + inputUuid + "."));
+                        return;
+                    }
+                    if (!game.hasBegun()) {
+                        sender.sendMessage(ComponentUtil.errorMessage(game.getFormattedName() + " has not begin."));
+                        return;
+                    }
+                    sender.sendMessage(ComponentUtil.successMessage("Ending " + game.getFormattedName() + "..."));
+                    game.end();
                 });
         CommandAPICommand gameInfo = new CommandAPICommand("info")
                 .withPermission(SimmyGameAPI.ADMIN_PERMISSION)
@@ -174,7 +197,7 @@ public class GameCommand {
                             });
                 });
         CommandAPICommand gameCommand = new CommandAPICommand(label)
-                .withSubcommands(gameCreate, gameList, gameStart, gameInfo, gameJoin);
+                .withSubcommands(gameCreate, gameList, gameStart, gameStop, gameInfo, gameJoin);
         gameCommand.executes((sender, args) -> {
             sender.sendMessage(ComponentUtil.successMessage("Game command."));
             gameCommand.getSubcommands().forEach(sub -> sender.sendPlainMessage("- /" + label + " " + sub.getName()));
@@ -186,10 +209,10 @@ public class GameCommand {
     public void tabCompleteListener() {
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @EventHandler
-            public void tabComplete(TabCompleteEvent event) {
+            public void tabComplete(AsyncTabCompleteEvent event) {
                 if (!event.isCommand())
                     return;
-                String[] args = event.getBuffer().split(" ");
+                String[] args = event.getBuffer().trim().split(" ");
                 // TODO debug
                 if (event.getSender() instanceof Player player)
                     player.sendActionBar(Component.text("[" + args.length + "] " + event.getBuffer()));

@@ -22,7 +22,7 @@ public class NexusPlayer extends GamePlayer implements StatisticsPlayer, TeamPla
     private @Nullable NexusKit kit = null, nextKit = null;
     private final Statistics stats = new Statistics();
 
-    public NexusPlayer(Player player, NexusGame game) {
+    public NexusPlayer(Player player, NexusGame<?, ?> game) {
         super(player, game);
     }
 

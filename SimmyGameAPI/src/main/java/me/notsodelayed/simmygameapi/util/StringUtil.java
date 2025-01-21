@@ -1,6 +1,7 @@
 package me.notsodelayed.simmygameapi.util;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 
@@ -71,13 +72,13 @@ public class StringUtil {
     public static String smallText(String text) {
         if (ALPHABETS.isEmpty()) {
             String[] beg = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
-            String[] smol = "ᴀʙᴄᴅᴇғɢʜᴊɪᴋʟᴍɴᴏᴘᴏ̨ʀsᴛᴜᴠᴡxʏᴢ".split("");
+            String[] smol = "ᴀʙᴄᴅᴇғɢʜɪᴊᴋʟᴍɴᴏᴘᴏʀsᴛᴜᴠᴡxʏᴢ".split("");
             for (int i = 0; i < 26; i++)
                 ALPHABETS.put(beg[i], smol[i]);
         }
         StringBuilder output = new StringBuilder();
         for (String s : text.split(""))
-            output.append(ALPHABETS.getOrDefault(s, s));
+            output.append(ALPHABETS.getOrDefault(s.toUpperCase(Locale.ENGLISH), s));
         return output.toString();
     }
 

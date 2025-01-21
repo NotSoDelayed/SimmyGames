@@ -6,9 +6,11 @@ import java.util.stream.Collectors;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.BaseTeam;
 import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.api.player.GamePlayer;
@@ -32,29 +34,30 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
     private GameTeam(@NotNull NamedTextColor color, @NotNull String id) {
         this.id = id;
         this.color = color;
-        displayName = Component.text(color.toString())
-                .color(color);
+        displayName = Component.text(color.toString(), color);
         players = new HashSet<>();
     }
 
-    /**
-     * Sends a {@link org.bukkit.ChatColor} formatted message to the team members.
-     * @param message the message
-     */
-    public void message(String message) {
-        for (TeamPlayer<?> player : players)
-            player.message(StringUtil.color(message));
-    }
-
-    public void message(Component message) {
+    public void dispatchMessage(Component message) {
         for (TeamPlayer<?> player : players)
             player.message(message);
     }
 
-    public void dispatchSound(Sound sound, int volume, int pitch) {
-        for (TeamPlayer<?> player : players) {
+    /**
+     * @param message the message (supported by MiniMessage)
+     */
+    public void dispatchMessage(String message) {
+        dispatchMessage(SimmyGameAPI.miniMessage().deserialize(message));
+    }
+
+    public void dispatchSound(Sound sound, float volume, float pitch) {
+        for (TeamPlayer<?> player : players)
             player.playSound(sound, volume, pitch);
-        }
+    }
+
+    public void dispatchSound(Location location, Sound sound, float volume, float pitch) {
+        for (TeamPlayer<?> player : players)
+            player.playSound(location, sound, volume, pitch);
     }
 
     /**
@@ -73,7 +76,7 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
      * @throws ClassCastException if the object is not assignable to the provided class
      */
     protected <P extends GamePlayer> Set<P> getPlayers(Class<P> clazz) {
-        return getPlayers().stream()
+        return players.stream()
                 .map(clazz::cast)
                 .collect(Collectors.toUnmodifiableSet());
 
