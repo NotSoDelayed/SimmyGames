@@ -1,12 +1,15 @@
-package me.notsodelayed.simmygameapi.api.game;
+package me.notsodelayed.simmygameapi.api;
 
 import java.util.*;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -15,8 +18,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.BaseGame;
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.util.AscendingTimer;
 import me.notsodelayed.simmygameapi.api.util.DescendingTimer;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
@@ -26,17 +27,17 @@ import me.notsodelayed.simmygameapi.util.StringUtil;
 /**
  * Represents a game.
  */
+// TODO method for setup tasks
 public abstract class Game implements BaseGame {
 
     private static final Map<UUID, Game> GAMES = new HashMap<>();
-    private final long created;
-    private final UUID uuid;
-    private final GameSettings settings;
+    private final UUID uuid = UUID.randomUUID();
+    private final Set<GamePlayer> players = new HashSet<>();
     private GameState gameState = GameState.LOADING;
-    private final AscendingTimer ingameTimer;
-    private final DescendingTimer countdown;
-    private final Set<GamePlayer> players;
-    private boolean setupCountdown = true;
+    private final GameSettings settings;
+    private final DescendingTimer countdown = new DescendingTimer();
+    private final AscendingTimer ingameTimer = new AscendingTimer();
+    private final long created = System.currentTimeMillis();
 
     /**
      * @param minPlayers the minimum player count
@@ -45,14 +46,18 @@ public abstract class Game implements BaseGame {
      * @implSpec For custom game setup requirements, developers must override {@link #ready()} and call super before custom implementations.
      */
     protected Game(int minPlayers, int maxPlayers) {
-        this.created = System.currentTimeMillis();
-        this.uuid = UUID.randomUUID();
-        this.players = new HashSet<>();
         this.settings = new GameSettings(this)
                 .maxPlayers(maxPlayers)
                 .minPlayers(minPlayers);
-        this.ingameTimer = new AscendingTimer();
-        this.countdown = new DescendingTimer();
+        countdown.executeAt(seconds -> seconds == settings.startIn() || seconds % 10 == 0 || (seconds > 0 && seconds <= 5), seconds -> {
+            dispatchMessage("<yellow>Game will start in " + seconds + "...");
+            dispatchSound(Sound.BLOCK_NOTE_BLOCK_HAT, 2, 1);
+        }).executeAt(seconds -> seconds == 0, seconds -> {
+            gameState = GameState.INGAME;
+            dispatchMessage("<green>Game has started!");
+            init();
+            ingameTimer.start();
+        });
         GAMES.put(uuid, this);
     }
 
@@ -89,27 +94,6 @@ public abstract class Game implements BaseGame {
         gameState = GameState.WAITING_FOR_PLAYERS;
     }
 
-    /**
-     * @return whether this game's validation is successful. This doubles as a pre-start checks.
-     * @apiNote Called after {@link #hasMetGameRequirements()}. In event of unhandled exception occurred in this method, it will return false.
-     * @implNote Developers may implement custom pre-start check tasks. Ensure this method returns <b>true</b> (preferably, return super, unless for special reasons) to allow the game start sequence to proceed.
-     */
-    protected boolean validate() {
-        if (setupCountdown) {
-            countdown.executeAt(seconds -> seconds == settings.startIn() || seconds % 10 == 0 || seconds <= 5, seconds -> {
-                dispatchMessage("<yellow>Game will start in " + seconds + "...");
-                dispatchSound(Sound.BLOCK_NOTE_BLOCK_HAT, 1);
-            }).executeAt(seconds -> seconds == 0, seconds -> {
-                gameState = GameState.INGAME;
-                dispatchMessage("<green>Game has started!");
-                ingameTimer.start();
-                init();
-            });
-            setupCountdown = false;
-        }
-        return true;
-    }
-
     @Override
     public void start() {
         start(false);
@@ -121,30 +105,26 @@ public abstract class Game implements BaseGame {
 
     public void start(int startIn, boolean force) {
         Preconditions.checkState(gameState == GameState.WAITING_FOR_PLAYERS, "game is not in waiting state");
-        LoggerUtil.verbose(this, "Game called to start (force: " + force + ")");
         if (!force && !hasMetGameRequirements()) {
             LoggerUtil.verbose(this, "Game start countdown aborted due to game requirements not met.");
-            return;
-        }
-        try {
-            if (!validate()) {
-                LoggerUtil.verbose(this, "Game start countdown aborted due to validate() returns false.");
-                return;
-            }
-        } catch (Exception ex) {
-            LoggerUtil.verbose(this, "Game start countdown aborted due to an exception occurred in init()");
-            ex.printStackTrace(System.err);
             return;
         }
         gameState = GameState.STARTING;
         countdown.start(startIn);
     }
 
+    /**
+     * Initialise the game.
+     * @implNote Get {@link CompletableFuture super.init()}, implement in {@link CompletableFuture#thenRun(Runnable)}, and return it.
+     */
+    protected abstract void init();
+
     @Override
     public void end() {
+        gameState = GameState.ENDING;
         ingameTimer.end();
         ((DescendingTimer) new DescendingTimer()
-                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, seconds -> dispatchPrefixedMessage("<yellow>Game ending in " + seconds + " seconds...")))
+                .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, seconds -> dispatchPrefixedMessage("<yellow>Game ending in " + seconds + "...")))
                 .executeAtEnd(seconds -> delete())
                 .start(settings.endIn());
     }
@@ -157,25 +137,11 @@ public abstract class Game implements BaseGame {
     protected void delete() {
         LoggerUtil.verbose(this, "Deleting...");
         this.getPlayers().forEach(gamePlayer -> {
-            PlayerUtil.clean(gamePlayer, GameMode.ADVENTURE);
+            PlayerUtil.reset(gamePlayer, GameMode.ADVENTURE);
             gamePlayer.leaveGame();
         });
         gameState = GameState.DELETED;
         GAMES.remove(this.getUuid());
-    }
-
-    @Override
-    public void showInfo(CommandSender sender) {
-        Component info = Component.newline()
-                .append(Component.text(this.getFormattedName()))
-                .appendSpace()
-                .append(Component.text(StringUtil.smallText(gameState.toString()), gameState.getColor()))
-                .appendNewline()
-                .append(Component.text("Players: "))
-                .append(Component.text(playing(), NamedTextColor.GREEN))
-                .append(Component.text("/", NamedTextColor.GRAY))
-                .append(Component.text(settings.maxPlayers()));
-        sender.sendMessage(info);
     }
 
     public void dispatchMessage(Component message) {
@@ -192,7 +158,7 @@ public abstract class Game implements BaseGame {
     }
 
     public void dispatchPrefixedMessage(@NotNull Component message) {
-        dispatchMessage(getPrefix().appendSpace().append(message));
+        dispatchMessage(getPrefix().append(Component.text(" ", NamedTextColor.WHITE).append(message)));
     }
 
     /**
@@ -202,25 +168,74 @@ public abstract class Game implements BaseGame {
         dispatchPrefixedMessage(SimmyGameAPI.miniMessage().deserialize(message));
     }
 
-    public void dispatchSound(Sound sound, float pitch) {
-        dispatchSound(sound, 2, pitch);
-    }
-
-    public void dispatchSound(Sound sound, float volume, float pitch) {
+    /**
+     * @param location the location for the sound to be played at
+     * @param sound the sound
+     * @param volume the volume
+     * @param pitch the pitch
+     */
+    public void dispatchSound(Location location, Sound sound, float volume, float pitch) {
         for (Player player : getBukkitPlayers()) {
-            player.playSound(player.getLocation(), sound, volume, pitch);
+            Location loc = location != null ? location : player.getLocation();
+            player.playSound(loc, sound, volume, pitch);
         }
     }
 
-    public AscendingTimer getIngameTimer() {
-        return ingameTimer;
+    public void dispatchSound(Sound sound, float volume, float pitch) {
+        dispatchSound(null, sound, volume, pitch);
+    }
+
+    @Override
+    public void showInfo(CommandSender sender) {
+        Component info = Component.newline()
+                .append(Component.text(this.getFormattedName()))
+                .appendSpace()
+                .append(Component.text(StringUtil.smallText(gameState.toString()), gameState.getColor()))
+                .appendNewline()
+                .append(Component.text("Players: "))
+                .append(Component.text(playing(), NamedTextColor.GREEN))
+                .append(Component.text("/", NamedTextColor.GRAY))
+                .append(Component.text(settings.maxPlayers()));
+        sender.sendMessage(info);
+    }
+
+    @Override
+    public UUID getUuid() {
+        return uuid;
     }
 
     public int playing() {
         return players.size();
     }
 
-    public abstract @NotNull Component getPrefix();
+    /**
+     * @see GamePlayer#GamePlayer(Player, Game)
+     */
+    @ApiStatus.Internal
+    void addPlayer(GamePlayer gamePlayer) {
+        if (!players.add(gamePlayer))
+            throw new IllegalStateException(gamePlayer + " is already apart of this game");
+
+        // TODO add more waiting lobby stuff
+        PlayerUtil.reset(gamePlayer, GameMode.ADVENTURE);
+
+        dispatchPrefixedMessage(String.format("<yellow>%s has joined! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
+        if (settings.startWithMinimumPlayers() && hasMetGameRequirements())
+            start();
+    }
+
+    /**
+     * @param gamePlayer the player to remove
+     * @apiNote Use {@link GamePlayer#leaveGame()}
+     */
+    @ApiStatus.Internal
+    void removePlayer(GamePlayer gamePlayer) {
+        if (!players.remove(gamePlayer))
+            throw new IllegalStateException(gamePlayer + " is not apart of this game");
+        dispatchPrefixedMessage(String.format("<yellow>%s has left! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
+        if (isAboutToStart() && !hasMetGameRequirements())
+            countdown.cancel();
+    }
 
     /**
      * @return an immutable set of game players
@@ -245,33 +260,47 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @see GamePlayer#GamePlayer(Player, Game)
+     * @return a formatted name of this game (CLASS_NAME-PORTION_1_UUID)
      */
-    @ApiStatus.Internal
-    public void addPlayer(GamePlayer gamePlayer) {
-        if (!players.add(gamePlayer))
-            throw new IllegalStateException(gamePlayer + " is already apart of this game");
+    public String getFormattedName() {
+        return getClass().getSimpleName() + "-" + StringUtil.getDisplayUuid(uuid);
+    }
 
-        // TODO add more waiting lobby stuff
-        PlayerUtil.clean(gamePlayer, GameMode.ADVENTURE);
+    @Override
+    public GameState getGameState() {
+        return gameState;
+    }
 
-        dispatchPrefixedMessage(String.format("<yellow>%s has joined! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
-        if (settings.startWithMinimumPlayers() && hasMetGameRequirements())
-            start();
+    protected void setGameState(@NotNull GameState gameState) {
+        this.gameState = gameState;
+    }
+
+    @Override
+    public GameSettings getSettings() {
+        return settings;
     }
 
     /**
-     * @param gamePlayer the player to remove
-     * @apiNote Use {@link GamePlayer#leaveGame()}
+     * @return the game start countdown of this game
      */
-    @ApiStatus.Internal
-    public void removePlayer(GamePlayer gamePlayer) {
-        if (!players.remove(gamePlayer))
-            throw new IllegalStateException(gamePlayer + " is not apart of this game");
-        dispatchPrefixedMessage(String.format("<yellow>%s has left! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
-        if (isAboutToStart() && !hasMetGameRequirements())
-            countdown.cancel();
+    public DescendingTimer getCountdown() {
+        return countdown;
     }
+
+    public AscendingTimer getIngameTimer() {
+        return ingameTimer;
+    }
+
+    /**
+     * @return the time in millis from epoch, of this game's creation
+     */
+    public long createdAt() {
+        return created;
+    }
+
+    public abstract @NotNull GameMode getGameMode();
+
+    public abstract @NotNull Component getPrefix();
 
     /**
      * @return whether the minimum player requirements for this game has met
@@ -321,50 +350,8 @@ public abstract class Game implements BaseGame {
      * @return whether this game is about to start (game start countdown is ticking)
      */
     public boolean isAboutToStart() {
-        return gameState == GameState.STARTING;
+        return gameState == GameState.STARTING && countdown.isActive();
     }
-
-    @Override
-    public GameState getGameState() {
-        return gameState;
-    }
-
-    protected void setGameState(@NotNull GameState gameState) {
-        this.gameState = gameState;
-    }
-
-    /**
-     * @return the time in millis from epoch, of this game's creation
-     */
-    public long createdAt() {
-        return created;
-    }
-
-    @Override
-    public UUID getUuid() {
-        return uuid;
-    }
-
-    /**
-     * @return a formatted name of this game (CLASS_NAME-PORTION_1_UUID)
-     */
-    public String getFormattedName() {
-        return getClass().getSimpleName() + "-" + StringUtil.getDisplayUuid(uuid);
-    }
-
-    @Override
-    public GameSettings getSettings() {
-        return settings;
-    }
-
-    /**
-     * @return the game start countdown of this game
-     */
-    public DescendingTimer getCountdown() {
-        return countdown;
-    }
-
-    public abstract @NotNull GameMode getGameMode();
 
     /**
      * @return whether this game is in setup state.

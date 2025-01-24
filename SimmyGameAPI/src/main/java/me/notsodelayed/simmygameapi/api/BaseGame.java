@@ -9,11 +9,6 @@ import com.google.common.base.Preconditions;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.game.GameSettings;
-import me.notsodelayed.simmygameapi.api.game.GameState;
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
-
 public interface BaseGame {
 
     /**
@@ -31,11 +26,6 @@ public interface BaseGame {
      * @see Game#hasMetGameRequirements()
      */
     void start();
-
-    /**
-     * Called upon game start countdown depletion, executing tasks to trigger the game systems.
-     */
-    void init();
 
     /**
      * Ends the game.

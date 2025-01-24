@@ -28,7 +28,7 @@ import me.notsodelayed.thenexus.team.NexusTeam;
 public class Nexus {
 
     private static final Map<Location, Nexus> NEXUSES = new HashMap<>();
-    private final NexusGame<? extends NexusMap, ? extends NexusTeam> game;
+    private final NexusGame<?, ?> game;
     private int health, maxHealth;
     private final Location location;
     private @Nullable NexusPlayer lastDamager = null;
@@ -39,7 +39,7 @@ public class Nexus {
      * @param maxHealth the max health
      * @param damageable whether to allow damage to this nexus by a player
      */
-    public Nexus(NexusGame<? extends NexusMap, ? extends NexusTeam> game, Location location, int health, int maxHealth, boolean damageable) {
+    public Nexus(NexusGame<?, ?> game, Location location, int health, int maxHealth, boolean damageable) {
         if (NEXUSES.containsKey(location)) {
             TheNexus.instance.getLogger().severe(location + " is already bound to a nexus!");
             throw new IllegalStateException("block is already bound to a nexus");
@@ -56,6 +56,7 @@ public class Nexus {
      * @param block the block
      * @return the nexus associated, otherwise null
      */
+    // TODO this is brokey pls check
     public static @Nullable Nexus get(Block block) {
         return NEXUSES.get(block.getLocation());
     }
@@ -78,9 +79,8 @@ public class Nexus {
             damageable = false;
             location.getBlock().setType(Material.BEDROCK);
             NexusTeam team = game.getNexusTeam(this);
-            game.dispatchPrefixedMessage(team.getDisplayName().append(SimmyGameAPI.miniMessage().deserialize("<red> nexus has been destroyed!")));
-            // TODO listen to this to end game
-            new NexusDestroyedEvent(game, this).callEvent();
+            game.dispatchPrefixedMessage(team.getDisplayName().append(SimmyGameAPI.miniMessage().deserialize("<gold> nexus has been destroyed!")));
+            new NexusDestroyedEvent(game, team, this).callEvent();
         }
         return true;
     }
@@ -96,11 +96,8 @@ public class Nexus {
             // Skill issue if its null
             assert damager.getTeam() != null;
             NexusTeam victimTeam = game.getNexusTeam(this);
-            if (victimTeam == damager.getTeam()) {
-                damager.playSound(Sound.ENTITY_ITEM_BREAK, 1, 0);
-                damager.message(SimmyGameAPI.miniMessage().deserialize("<red><bold>STOP!<red> This is your team's nexus!"));
+            if (victimTeam == damager.getTeam())
                 return;
-            }
             game.getTeamManager().getTeams().forEach(team -> {
                 // TODO verify that team = team actually works otherwise its just stupid
                 if (team == victimTeam) {
@@ -108,7 +105,7 @@ public class Nexus {
                     team.dispatchMessage(SimmyGameAPI.miniMessage().deserialize("<red>Your nexus is under attack by ").append(Component.text(damager.getName(), damager.getTeam().getColor()).append(Component.text("!"))));
                 } else {
                     team.dispatchSound(location, Sound.ENTITY_ITEM_BREAK, 2, 2);
-                    team.dispatchMessage(Component.text(damager.getName(), damager.getTeam().getColor()).appendSpace().append(Component.text(" has damaged the ", NamedTextColor.WHITE)).append(victimTeam.getDisplayName()).append(Component.text(" nexus!", NamedTextColor.WHITE)));
+                    team.dispatchMessage(Component.text(damager.getName(), damager.getTeam().getColor()).append(Component.text(" has damaged the ", NamedTextColor.WHITE)).append(victimTeam.getDisplayName()).append(Component.text(" nexus!", NamedTextColor.WHITE)));
                 }
             });
         });
@@ -124,6 +121,10 @@ public class Nexus {
             for (TeamPlayer<?> player : victimTeam.getPlayers())
                 player.message("<red>Your nexus has lost 1 health!");
         });
+    }
+
+    public NexusGame<?, ?> getGame() {
+        return game;
     }
 
     public Location getLocation() {

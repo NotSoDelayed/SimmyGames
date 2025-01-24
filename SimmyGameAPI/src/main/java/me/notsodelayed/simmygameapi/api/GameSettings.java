@@ -1,4 +1,4 @@
-package me.notsodelayed.simmygameapi.api.game;
+package me.notsodelayed.simmygameapi.api;
 
 import me.notsodelayed.simmygameapi.util.CompareUtil;
 
@@ -11,7 +11,8 @@ public class GameSettings {
 
     private final Game game;
     private int endIn = 20;
-    private int startIn = 30;
+    // TODO revert startIn
+    private int startIn = 15;
     private int minPlayers, maxPlayers;
     private boolean startWithMinimumPlayers = true;
 

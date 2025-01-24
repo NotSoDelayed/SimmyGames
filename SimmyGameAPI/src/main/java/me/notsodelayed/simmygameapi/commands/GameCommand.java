@@ -5,35 +5,59 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 
-import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent;
 import dev.jorel.commandapi.CommandAPICommand;
+import dev.jorel.commandapi.arguments.ArgumentSuggestions;
 import dev.jorel.commandapi.arguments.PlayerArgument;
 import dev.jorel.commandapi.arguments.StringArgument;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.Bukkit;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.server.TabCompleteEvent;
+import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Matchmaking;
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.util.ComponentUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.simmygameapi.util.Symbol;
 
 public class GameCommand {
 
+    /**
+     * Helper function for handling game UUID argument
+     */
+    private static final BiFunction<CommandSender, String, @Nullable Game> PARSE_GAME = (sender, uuid) -> {
+        if (uuid.equals("this")) {
+            if (!(sender instanceof Player player)) {
+                sender.sendMessage(ComponentUtil.errorMessage("You are a console. Consider specifying a game UUID to proceed. ;)"));
+                return null;
+            }
+            GamePlayer gamePlayer = GamePlayer.get(player);
+            if (gamePlayer == null) {
+                sender.sendMessage(ComponentUtil.errorMessage("You must be in a game to use keyword '<white>this<red>'."));
+                return null;
+            }
+            return gamePlayer.getGame();
+        }
+        Game game = Game.getGame(uuid);
+        if (game == null)
+            sender.sendMessage(ComponentUtil.errorMessage("No matching game of UUID '<white>" + sender + "<red>."));
+        return game;
+    };
+
     public GameCommand(String label) {
+        ArgumentSuggestions<CommandSender> suggestionsActiveGames = ArgumentSuggestions.strings(info -> Game.getGames().keySet().stream().map(UUID::toString).toArray(String[]::new));
+
         CommandAPICommand gameCreate = new CommandAPICommand("create")
                 .withPermission(SimmyGameAPI.ADMIN_PERMISSION)
-                .withArguments(new StringArgument("gametype"))
+                .withArguments(
+                        new StringArgument("gametype").replaceSuggestions(ArgumentSuggestions.strings(info -> Matchmaking.getRegisteredGamesList().toArray(new String[0]))))
                 .executes((sender, args) -> {
                    String gameType = (String) args.get("gametype");
 
@@ -72,20 +96,13 @@ public class GameCommand {
                 });
         CommandAPICommand gameJoin = new CommandAPICommand("join")
                 .withPermission(SimmyGameAPI.ADMIN_PERMISSION)
-                .withArguments(
-                        new StringArgument("uuid"))
+                .withArguments(new StringArgument("uuid").replaceSuggestions(suggestionsActiveGames))
                 .withOptionalArguments(new PlayerArgument("targetplayer"))
                 .executes((sender, args) -> {
-                    String inputUuid = (String) args.get("uuid");
-                    if (inputUuid == null) {
-                        sender.sendMessage(ComponentUtil.infoMessage("Please specify a UUID of a game to join."));
+                    String uuidInput = (String) args.get("uuid");
+                    Game game = PARSE_GAME.apply(sender, uuidInput);
+                    if (game == null)
                         return;
-                    }
-                    Game game = Game.getGame(inputUuid);
-                    if (game == null) {
-                        sender.sendMessage(ComponentUtil.errorMessage("No matching game of UUID " + inputUuid + "."));
-                        return;
-                    }
                     Player target = (Player) args.get("targetplayer");
                     if (target == null) {
                         if (!(sender instanceof Player player)) {
@@ -95,6 +112,7 @@ public class GameCommand {
                         target = player;
                     }
                     if (GamePlayer.get(target) != null) {
+                        // TODO fix
                         sender.sendMessage(ComponentUtil.errorMessage("You are already in a game!"));
                         return;
                     }
@@ -122,19 +140,16 @@ public class GameCommand {
                 });
         CommandAPICommand gameStart = new CommandAPICommand("start")
                 .withPermission(SimmyGameAPI.ADMIN_PERMISSION)
-                .withArguments(
-                        new StringArgument("uuid"))
+                .withArguments(new StringArgument("uuid").replaceSuggestions(suggestionsActiveGames))
                 .executes((sender, args) -> {
-                    String inputUuid = (String) args.get("uuid");
-                    if (inputUuid == null) {
+                    String uuidInput = (String) args.get("uuid");
+                    if (uuidInput == null) {
                         sender.sendMessage(ComponentUtil.infoMessage("Please specify a UUID of a game to force start."));
                         return;
                     }
-                    Game game = Game.getGame(inputUuid);
-                    if (game == null) {
-                        sender.sendMessage(ComponentUtil.errorMessage("No matching game of UUID " + inputUuid + "."));
+                    Game game = PARSE_GAME.apply(sender, uuidInput);
+                    if (game == null)
                         return;
-                    }
                     if (game.isAboutToStart() || game.hasBegun()) {
                         sender.sendMessage(ComponentUtil.errorMessage(game.getFormattedName() + " has already started."));
                         return;
@@ -145,18 +160,12 @@ public class GameCommand {
         CommandAPICommand gameStop = new CommandAPICommand("end")
                 .withPermission(SimmyGameAPI.ADMIN_PERMISSION)
                 .withArguments(
-                        new StringArgument("uuid"))
+                        new StringArgument("uuid").replaceSuggestions(suggestionsActiveGames))
                 .executes((sender, args) -> {
-                    String inputUuid = (String) args.get("uuid");
-                    if (inputUuid == null) {
-                        sender.sendMessage(ComponentUtil.infoMessage("Please specify a UUID of a game to end."));
+                    String uuidInput = (String) args.get("uuid");
+                    Game game = PARSE_GAME.apply(sender, uuidInput);
+                    if (game == null)
                         return;
-                    }
-                    Game game = Game.getGame(inputUuid);
-                    if (game == null) {
-                        sender.sendMessage(ComponentUtil.errorMessage("No matching game of UUID " + inputUuid + "."));
-                        return;
-                    }
                     if (!game.hasBegun()) {
                         sender.sendMessage(ComponentUtil.errorMessage(game.getFormattedName() + " has not begin."));
                         return;
@@ -167,18 +176,12 @@ public class GameCommand {
         CommandAPICommand gameInfo = new CommandAPICommand("info")
                 .withPermission(SimmyGameAPI.ADMIN_PERMISSION)
                 .withArguments(
-                        new StringArgument("uuid"))
+                        new StringArgument("uuid").replaceSuggestions(suggestionsActiveGames))
                 .executes((sender, args) -> {
-                    String inputUuid = (String) args.get("uuid");
-                    if (inputUuid == null) {
-                        sender.sendMessage(ComponentUtil.infoMessage("Please specify a UUID of a game for info."));
+                    String uuidInput = (String) args.get("uuid");
+                    Game game = PARSE_GAME.apply(sender, uuidInput);
+                    if (game == null)
                         return;
-                    }
-                    Game game = Game.getGame(inputUuid);
-                    if (game == null) {
-                        sender.sendMessage(ComponentUtil.errorMessage("No matching game of UUID " + inputUuid + "."));
-                        return;
-                    }
                     game.showInfo(sender);
                 });
         CommandAPICommand gameList = new CommandAPICommand("list")
@@ -203,32 +206,6 @@ public class GameCommand {
             gameCommand.getSubcommands().forEach(sub -> sender.sendPlainMessage("- /" + label + " " + sub.getName()));
         });
         gameCommand.register();
-    }
-
-    // CommandAPI tab suggestions doesn't dynamically reflect changes :(
-    public void tabCompleteListener() {
-        Bukkit.getPluginManager().registerEvents(new Listener() {
-            @EventHandler
-            public void tabComplete(AsyncTabCompleteEvent event) {
-                if (!event.isCommand())
-                    return;
-                String[] args = event.getBuffer().trim().split(" ");
-                // TODO debug
-                if (event.getSender() instanceof Player player)
-                    player.sendActionBar(Component.text("[" + args.length + "] " + event.getBuffer()));
-                if (args.length < 2)
-                    return;
-                if (args[0].equals("game")) {
-                    if (args[1].equals("join")) {
-                        event.setCompletions(Game.getGames().keySet().stream().map(UUID::toString).toList());
-                        return;
-                    }
-                    if (args[1].equals("create")) {
-                        event.setCompletions(Matchmaking.getRegisteredGamesList());
-                    }
-                }
-            }
-        }, SimmyGameAPI.instance);
     }
 
 }

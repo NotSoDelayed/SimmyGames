@@ -3,8 +3,8 @@ package me.notsodelayed.towerdefense.game;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 
 public class DefensePlayer extends GamePlayer {
 

@@ -10,7 +10,6 @@ import org.jetbrains.annotations.NotNull;
  * Represents a location without a {@link World}.
  */
 public class Position implements Cloneable {
-
     private double x, y, z;
     private float yaw, pitch;
 
@@ -56,6 +55,7 @@ public class Position implements Cloneable {
      * @return the bukkit location
      */
     public Location toBukkitLocation(World world) {
+        Preconditions.checkArgument(world != null, "world is null");
         return new Location(world, x, y, z, yaw, pitch);
     }
 
@@ -123,6 +123,17 @@ public class Position implements Cloneable {
 
     public float getPitch() {
         return pitch;
+    }
+
+    @Override
+    public String toString() {
+        return "Position{" +
+                "x=" + x +
+                ", y=" + y +
+                ", z=" + z +
+                ", yaw=" + yaw +
+                ", pitch=" + pitch +
+                '}';
     }
 
     @Override

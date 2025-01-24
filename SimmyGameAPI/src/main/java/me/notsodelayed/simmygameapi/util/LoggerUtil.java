@@ -5,7 +5,7 @@ import java.util.logging.Level;
 
 import me.notsodelayed.simmygameapi.Config;
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.Game;
 
 /**
  * Utility class for logging.

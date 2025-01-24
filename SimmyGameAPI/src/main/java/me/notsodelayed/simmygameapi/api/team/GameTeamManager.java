@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.Game;
 import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
 import me.notsodelayed.simmygameapi.util.Util;
 

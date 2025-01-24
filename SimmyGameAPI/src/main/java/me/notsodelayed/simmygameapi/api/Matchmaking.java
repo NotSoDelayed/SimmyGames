@@ -10,7 +10,6 @@ import org.bukkit.scheduler.BukkitTask;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 
 public class Matchmaking {

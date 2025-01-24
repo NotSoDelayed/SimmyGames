@@ -2,7 +2,7 @@ package me.notsodelayed.simmygameapi.api.event;
 
 import org.bukkit.event.Event;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.Game;
 
 public abstract class GameEvent extends Event {
 

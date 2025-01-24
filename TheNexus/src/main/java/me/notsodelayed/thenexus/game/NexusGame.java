@@ -1,25 +1,25 @@
 package me.notsodelayed.thenexus.game;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
-import me.notsodelayed.simmygameapi.api.game.GameState;
+import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
+import me.notsodelayed.simmygameapi.api.GameState;
 import me.notsodelayed.simmygameapi.api.game.MapGame;
 import me.notsodelayed.simmygameapi.api.game.TeamVsTeamGame;
 import me.notsodelayed.simmygameapi.api.map.GameMap;
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
 import me.notsodelayed.simmygameapi.api.team.GameTeamManager;
 import me.notsodelayed.thenexus.TheNexus;
 import me.notsodelayed.thenexus.entity.Nexus;
+import me.notsodelayed.thenexus.event.NexusDestroyedEvent;
 import me.notsodelayed.thenexus.map.NexusMap;
 import me.notsodelayed.thenexus.team.NexusTeam;
 
@@ -54,14 +54,18 @@ public abstract class NexusGame<M extends NexusMap, T extends NexusTeam> extends
         return nexus;
     }
 
+    public List<Nexus> getNexuses() {
+        return List.copyOf(teamNexus.values());
+    }
+
     /**
      * @param nexus the nexus
      * @return the associated team
-     * @throws
+     * @throws IllegalArgumentException if provided nexus is not registered in this game
      */
     public T getNexusTeam(Nexus nexus) {
         Optional<T> team = teamNexus.entrySet().stream()
-                .filter(entry -> entry.getValue().equals(nexus))
+                .filter(entry -> entry.getValue() == nexus)
                 .map(Map.Entry::getKey)
                 .findFirst();
         if (team.isEmpty()) {
@@ -90,16 +94,42 @@ public abstract class NexusGame<M extends NexusMap, T extends NexusTeam> extends
                 if (!(block.getType() == Material.END_STONE))
                     return;
                 // This shouldn't throw CCE
+                Nexus nexus = Nexus.get(block);
+                if (nexus == null)
+                    return;
+                event.setCancelled(true);
                 GamePlayer gamePlayer = GamePlayer.get(event.getPlayer());
                 if (!(gamePlayer instanceof NexusPlayer nexusPlayer))
                     return;
-                NexusGame<NexusMap, NexusTeam> nexusGame = (NexusGame<NexusMap, NexusTeam>) nexusPlayer.getGame();
-                // Gets the nexus of the breaker's team
-                Nexus nexus = nexusGame.getTeamNexus(nexusPlayer.getTeam());
-                // Checks whether the broken nexus is theirs
-                if (nexus.getLocation().equals(block.getLocation()))
+                // TODO enhance this nexus checker in future
+                NexusGame nexusGame = nexus.getGame();
+                if (!(nexusPlayer.getGame() == nexusGame))
                     return;
-                nexusGame.dispatchMessage(nexusPlayer.getName() + " broke nexus " + nexus.getLocation().toString());
+                if (nexusGame.getTeamNexus(nexusPlayer.getTeam()) == nexus) {
+                    nexusPlayer.playSound(Sound.ENTITY_ITEM_BREAK, 1, 0);
+                    nexusPlayer.message(SimmyGameAPI.miniMessage().deserialize("<red><bold>STOP!<reset><red> This is your team's nexus!"));
+                    return;
+                }
+                nexus.damage(nexusPlayer);
+//                nexusGame.getPlayers().forEach(np -> nexusGame.updateNexusBossBar(np, nexusGame.getNexusTeam(nexus)));
+            }
+
+            @EventHandler
+            public void nexusDestroyed(NexusDestroyedEvent event) {
+                NexusGame<?, ?> nexusGame = ((NexusGame<?, ?>) event.getGame());
+                List<Nexus> aliveNexuses = nexusGame.getNexuses().stream()
+                        .filter(nexus -> nexus.getHealth() > 0)
+                        .toList();
+                if (aliveNexuses.size() > 1)
+                    return;
+                if (!aliveNexuses.isEmpty()) {
+                    NexusTeam winner = nexusGame.getNexusTeam(aliveNexuses.getFirst());
+                    nexusGame.dispatchPrefixedMessage(winner.getDisplayName().append(SimmyGameAPI.miniMessage().deserialize("<green> is the winner!")));
+                } else {
+                    nexusGame.dispatchPrefixedMessage("Its a tie!");
+                }
+                // TODO override end() with integrated checks of above
+                nexusGame.end();
             }
         }, TheNexus.instance);
     }

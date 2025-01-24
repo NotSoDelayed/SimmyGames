@@ -2,6 +2,7 @@ package me.notsodelayed.simmygameapi.api;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.title.Title;
@@ -14,7 +15,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.Game;
 
 public interface BasePlayer {
 
@@ -60,6 +60,12 @@ public interface BasePlayer {
     default void playSound(Location location, Sound sound, float volume, float pitch) {
         if (getPlayer() != null)
             getPlayer().playSound(location, sound, volume, pitch);
+    }
+
+    default CompletableFuture<Boolean> teleport(Location location) {
+        if (getPlayer() != null)
+            return getPlayer().teleportAsync(location);
+        return CompletableFuture.completedFuture(false);
     }
 
     /**

@@ -7,8 +7,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.util.Util;
 
 public class PlayerProtectionHandler implements Listener {

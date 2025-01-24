@@ -3,20 +3,22 @@ package me.notsodelayed.simmygameapi.util;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 
 public class PlayerUtil {
 
-    public static void clean(Player player, GameMode gameMode) {
+    public static void reset(Player player, GameMode gameMode) {
         if (player == null)
             return;
         player.setGameMode(gameMode);
-        player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
         player.getInventory().clear();
+        player.setHealth(20f);
+        player.setSaturation(20f);
+        player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
     }
 
-    public static void clean(GamePlayer gamePlayer, GameMode gameMode) {
-        clean(gamePlayer.getPlayer(), gameMode);
+    public static void reset(GamePlayer gamePlayer, GameMode gameMode) {
+        reset(gamePlayer.getPlayer(), gameMode);
     }
 
 }

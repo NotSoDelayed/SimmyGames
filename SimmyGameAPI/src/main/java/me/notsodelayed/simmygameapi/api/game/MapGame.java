@@ -2,18 +2,24 @@ package me.notsodelayed.simmygameapi.api.game;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Consumer;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.*;
-import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.feature.Feature;
+import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.GameState;
 import me.notsodelayed.simmygameapi.api.map.GameMap;
 import me.notsodelayed.simmygameapi.api.map.GameMapManager;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
@@ -24,10 +30,10 @@ public abstract class MapGame<M extends GameMap> extends Game {
 
     private M map, queriedMap;
     private boolean lockMap = false;
+    private final String worldName;
     private final File worldDirectory;
     private World world;
-    private final String worldName;
-    private boolean setupCountdown = true;
+    private Set<Feature> features = new HashSet<>();
 
     /**
      * @param minPlayers the minimum player count
@@ -39,6 +45,18 @@ public abstract class MapGame<M extends GameMap> extends Game {
         super(minPlayers, maxPlayers);
         this.worldName = this.getClass().getSimpleName().toLowerCase(Locale.ENGLISH) + "-" + getUuid();
         this.worldDirectory = new File(worldName);
+        getCountdown().executeAt(10, seconds -> {
+            if (map == null) {
+                if (queriedMap != null) {
+                    map = queriedMap;
+                } else {
+                    map = getMapManager().randomChoices(1).getFirst();
+                }
+            }
+            lockMap();
+            // TODO VERIFY fix prefix trailing color
+            dispatchPrefixedMessage("Map of the game: <gold>" + map.getDisplayName().orElse(map.getId()));
+        });
     }
 
     /**
@@ -53,72 +71,83 @@ public abstract class MapGame<M extends GameMap> extends Game {
         this.map = map;
     }
 
-    @Override
-    protected boolean validate() {
-        if (map == null && queriedMap == null && getMapManager().size() == 0) {
-            SimmyGameAPI.logger.warning(getFormattedName() + " does not have a map, queried map, and idling maps in map manager.");
-            dispatchPrefixedMessage("The game could not be started due to no maps available.");
-            return false;
-        }
-        if (setupCountdown) {
-            // TODO make this voteable
-            getCountdown().executeAt(10, seconds -> {
-                if (map == null) {
-                    if (queriedMap != null) {
-                        map = queriedMap;
-                    } else {
-                        map = getMapManager().randomChoices(1).getFirst();
-                    }
-                }
-                lockMap();
-                // TODO fix prefix trailing color
-                dispatchPrefixedMessage("Map of the game: <gold>" + map.getDisplayName().orElse(map.getId()));
-            });
-            setupCountdown = false;
-        }
-        return super.validate();
+    public Set<Class<? extends Feature>> getFeatures() {
+        return features.stream()
+                .map(Feature::getClass)
+                .collect(Collectors.toSet());
+    }
+
+    public boolean hasFeature(Class<? extends Feature> feature) {
+        return features.stream().anyMatch(f -> f.getClass().equals(feature));
     }
 
     /**
-     * Overridden: to create a world of this map, before proceeding with the game.
-     * @implNote Developers must call super from this class before custom implementations.
+     * Enables a {@link Feature} and register it for this game.
+     * @param clazz the feature class
+     * @param utilise the provided feature to utilise
+     * @return this instance
      */
+    protected <T extends Feature> void enableFeature(Class<T> clazz, Consumer<T> utilise) {
+        T feature = Feature.newFeature(this, clazz);
+        features.add(feature);
+        utilise.accept(feature);
+    }
+
     @Override
-    public void init() {
+    public boolean hasMetGameRequirements() {
+        if (map == null && queriedMap == null && getMapManager().size() == 0) {
+            SimmyGameAPI.logger.warning(getFormattedName() + " does not have a map, queried map, and idling maps in map manager.");
+            dispatchPrefixedMessage("<red>The game could not be started due to no maps available.");
+            return false;
+        }
+        return super.hasMetGameRequirements();
+    }
+
+    /**
+     * @return the loaded game world of {@link #getMap()}
+     */
+    protected CompletableFuture<World> loadGameWorld() {
+        if (world != null)
+            return CompletableFuture.completedFuture(world);
         AtomicLong started = new AtomicLong();
         CompletableFuture.runAsync(() -> {
-           try {
-               started.set(System.currentTimeMillis());
-               FileUtils.copyDirectory(getMap().getDirectory(), worldDirectory);
-               worldDirectory.deleteOnExit();
-           } catch (IOException ex) {
-               dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
-               LoggerUtil.verbose(this, "An error occurred whilst copying " + map.getDisplayName().orElse(map.getId()) + ":");
-               ex.printStackTrace(System.err);
-               delete();
-           }
-        }).thenRun(() -> {
-            // World loading must be synced
-            // TODO modify gamerules, disable raids etc
-            SimmyGameAPI.scheduler().runTask(() -> {
-                world = new WorldCreator(worldName)
-                        .type(WorldType.FLAT)
-                        .generator("VoidGen")
-                        .generateStructures(false)
-                        .createWorld();
-                long timeTaken = started.get() - System.currentTimeMillis();
-                if (world == null) {
-                    dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
-                    LoggerUtil.verbose(this, "Game world of map '" + map.getDisplayName().orElse(map.getId()) + "' is null after creation");
-                    delete();
-                    return;
-                }
-                getPlayers().forEach(gamePlayer -> PlayerUtil.clean(gamePlayer, GameMode.SURVIVAL));
-                spawnPlayers();
-                if (timeTaken > 50) {
-                    LoggerUtil.verbose(this, String.format("Map '%s' took %s ms to load", map.getDisplayName().orElse(map.getId()), timeTaken), Level.WARNING, true);
-                }
-            });
+            try {
+                started.set(System.currentTimeMillis());
+                FileUtils.copyDirectory(getMap().getDirectory(), worldDirectory);
+                worldDirectory.deleteOnExit();
+            } catch (IOException ex) {
+                dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
+                LoggerUtil.verbose(this, "An error occurred whilst copying " + map.getDisplayName().orElse(map.getId()) + ":");
+                ex.printStackTrace(System.err);
+                delete();
+            }
+        }).join();
+        world = new WorldCreator(worldName)
+                .type(WorldType.FLAT)
+                .generator("VoidGen:{}")
+                .generateStructures(false)
+                .createWorld();
+        long timeTaken = started.get() - System.currentTimeMillis();
+        if (timeTaken > 50)
+            LoggerUtil.verbose(this, String.format("Map '%s' took %s ms to load", map.getDisplayName().orElse(map.getId()), timeTaken), Level.WARNING, true);
+        if (world == null) {
+            dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
+            LoggerUtil.verbose(this, "Game world of map '" + map.getDisplayName().orElse(map.getId()) + "' is null after creation");
+            delete();
+            return CompletableFuture.failedFuture(new RuntimeException("world is null after creation"));
+        }
+        return CompletableFuture.completedFuture(world);
+    }
+
+    @Override
+    protected void init() {
+        loadGameWorld().thenAccept(world -> {
+           SimmyGameAPI.scheduler().runTask(() -> {
+               getPlayers().forEach(gamePlayer -> {
+                   gamePlayer.teleport(world.getSpawnLocation());
+                   PlayerUtil.reset(gamePlayer, GameMode.SURVIVAL);
+               });
+           });
         });
     }
 
@@ -134,28 +163,13 @@ public abstract class MapGame<M extends GameMap> extends Game {
                 });
             Bukkit.unloadWorld(world, false);
         }
-        getPlayers().forEach(gamePlayer -> PlayerUtil.clean(gamePlayer, GameMode.ADVENTURE));
+        getPlayers().forEach(gamePlayer -> PlayerUtil.reset(gamePlayer, GameMode.ADVENTURE));
         SimmyGameAPI.scheduler().runTaskAsynchronously(() -> {
             try {
                 FileUtils.deleteDirectory(worldDirectory);
             } catch (IOException ex) {
                 LoggerUtil.verbose(this, "Failed to delete the world directory. It will be removed on JVM shutdown.", Level.WARNING, true);
             }
-        });
-    }
-
-    /**
-     * Teleports the game players into the game world.
-     * @throws IllegalStateException if the game world is not loaded
-     */
-    public void spawnPlayers() {
-        if (world == null)
-            throw new IllegalStateException("game world is not loaded");
-        getPlayers().forEach(gamePlayer -> {
-            Player player = gamePlayer.getPlayer();
-            if (player == null)
-                return;
-            player.teleportAsync(world.getSpawnLocation());
         });
     }
 
@@ -229,6 +243,16 @@ public abstract class MapGame<M extends GameMap> extends Game {
      */
     protected void checkMapLock() {
         Preconditions.checkState(!lockMap, "map is locked from modifications");
+    }
+
+    static {
+        // TODO check why map game worlds are being leftover
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Game.getGames().values().forEach(game -> {
+                if (game instanceof MapGame<?> mapGame)
+                    mapGame.delete();
+            });
+        }));
     }
 
 }

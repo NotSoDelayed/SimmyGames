@@ -4,13 +4,12 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.api.player.KitPlayer;
 import me.notsodelayed.simmygameapi.api.player.StatisticsPlayer;
 import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
 import me.notsodelayed.simmygameapi.api.statistics.Statistics;
 import me.notsodelayed.thenexus.team.NexusTeam;
-import me.notsodelayed.thenexus.game.NexusGame;
 import me.notsodelayed.thenexus.kit.NexusKit;
 import me.notsodelayed.thenexus.map.NexusMap;
 

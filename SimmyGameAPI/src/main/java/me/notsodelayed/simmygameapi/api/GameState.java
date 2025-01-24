@@ -1,4 +1,4 @@
-package me.notsodelayed.simmygameapi.api.game;
+package me.notsodelayed.simmygameapi.api;
 
 import net.kyori.adventure.text.format.NamedTextColor;
 

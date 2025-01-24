@@ -11,7 +11,7 @@ import org.bukkit.WorldType;
 import org.bukkit.entity.Player;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.Game;
 
 public class Lobby {
 

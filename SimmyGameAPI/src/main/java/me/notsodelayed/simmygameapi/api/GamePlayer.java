@@ -1,4 +1,4 @@
-package me.notsodelayed.simmygameapi.api.player;
+package me.notsodelayed.simmygameapi.api;
 
 import java.util.UUID;
 import java.util.WeakHashMap;
@@ -22,8 +22,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.BasePlayer;
-import me.notsodelayed.simmygameapi.api.game.Game;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
 
 /**
@@ -83,11 +81,11 @@ public class GamePlayer implements BasePlayer {
         if (getPlayer() == null)
             return;
         if (respawnAfter == 0) {
-            PlayerUtil.clean(this, game.getGameMode());
+            PlayerUtil.reset(this, game.getGameMode());
             postRespawn.accept(this);
             return;
         }
-        PlayerUtil.clean(getPlayer(), GameMode.SPECTATOR);
+        PlayerUtil.reset(getPlayer(), GameMode.SPECTATOR);
         AtomicInteger seconds = new AtomicInteger(respawnAfter);
         int fRespawnAfter = respawnAfter;
         SimmyGameAPI.scheduler().runTaskTimer(task -> {
@@ -111,7 +109,7 @@ public class GamePlayer implements BasePlayer {
                 title(Title.title(Component.empty(), subtitle, Title.Times.times(Ticks.duration(0), Ticks.duration(21), Ticks.duration(0))));
             } else {
                 respawnTask.cancel();
-                PlayerUtil.clean(this, game.getGameMode());
+                PlayerUtil.reset(this, game.getGameMode());
                 postRespawn.accept(this);
             }
             seconds.getAndDecrement();

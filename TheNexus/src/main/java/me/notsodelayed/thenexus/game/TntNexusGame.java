@@ -21,8 +21,8 @@ import me.notsodelayed.simmygameapi.api.map.GameMapManager;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 import me.notsodelayed.thenexus.TheNexus;
-import me.notsodelayed.thenexus.team.TntNexusTeam;
 import me.notsodelayed.thenexus.map.TntNexusMap;
+import me.notsodelayed.thenexus.team.TntNexusTeam;
 
 public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
 
@@ -55,6 +55,7 @@ public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
         ready();
     }
 
+    // TODO make this work
     @Override
     public void init() {
         super.init();

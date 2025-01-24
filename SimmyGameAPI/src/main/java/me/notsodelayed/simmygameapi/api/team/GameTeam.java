@@ -6,16 +6,16 @@ import java.util.stream.Collectors;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Location;
 import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.BaseTeam;
-import me.notsodelayed.simmygameapi.api.game.Game;
-import me.notsodelayed.simmygameapi.api.player.GamePlayer;
+import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
-import me.notsodelayed.simmygameapi.util.StringUtil;
 
 /**
  * Represents a team of a {@link Game}.
@@ -34,7 +34,7 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
     private GameTeam(@NotNull NamedTextColor color, @NotNull String id) {
         this.id = id;
         this.color = color;
-        displayName = Component.text(color.toString(), color);
+        displayName = Component.text(StringUtils.capitalize(color.toString()), color);
         players = new HashSet<>();
     }
 

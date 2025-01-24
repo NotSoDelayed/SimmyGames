@@ -10,7 +10,7 @@ import org.yaml.snakeyaml.error.YAMLException;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Map;
-import me.notsodelayed.simmygameapi.api.game.Game;
+import me.notsodelayed.simmygameapi.api.Game;
 
 /**
  * Represents a map for a {@link Game}.
