@@ -8,10 +8,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.WorldType;
-import org.bukkit.entity.Player;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 
 public class Lobby {
 
@@ -53,10 +53,13 @@ public class Lobby {
 
     /**
      * Summons a player into this lobby. The world will be loaded if not beforehand.
-     * @param player the player
+     * @param gamePlayer the player
      */
-    public void summon(Player player) {
-        load().thenAccept(world -> SimmyGameAPI.scheduler().runTask(() -> player.teleportAsync(world.getSpawnLocation())));
+    public void summon(GamePlayer gamePlayer) {
+        load().thenAccept(world -> SimmyGameAPI.scheduler().runTask(() -> {
+            if (gamePlayer.getPlayer() != null)
+                gamePlayer.teleport(world.getSpawnLocation());
+        }));
     }
 
     /**

@@ -5,8 +5,6 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 import org.jetbrains.annotations.NotNull;
 
-import me.notsodelayed.simmygameapi.SimmyGameAPI;
-
 public class ComponentUtil {
 
     public static Component errorMessage(String text, @NotNull TextColor color) {

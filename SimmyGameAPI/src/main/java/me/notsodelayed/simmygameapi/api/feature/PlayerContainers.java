@@ -86,6 +86,9 @@ public class PlayerContainers extends Feature {
                     SimmyGameAPI.logger.severe(mapGame.getFormattedName() + " has feature 'PlayerContainers' but does not have its instance.");
                     throw new IllegalStateException("registered feature without its instance");
                 }
+                if (!instance.supportType(event.getBlock().getType()))
+                    return;
+                // TODO detach teamplayer from this
                 if (!(gamePlayer instanceof TeamPlayer<?> teamPlayer))
                     return;
                 Location location = event.getBlock().getLocation();
@@ -100,7 +103,9 @@ public class PlayerContainers extends Feature {
 
             @EventHandler
             public void containerOpenEvent(PlayerInteractEvent event) {
-                if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getClickedBlock() == null)
+                if (event.getAction() != Action.RIGHT_CLICK_BLOCK)
+                    return;
+                if (event.getClickedBlock() == null)
                     return;
                 GamePlayer gamePlayer = GamePlayer.get(event.getPlayer());
                 if (gamePlayer == null)
@@ -115,11 +120,13 @@ public class PlayerContainers extends Feature {
                     SimmyGameAPI.logger.severe(mapGame.getFormattedName() + " has feature 'PlayerContainers' but does not have its instance.");
                     throw new IllegalStateException("registered feature without its instance");
                 }
+                if (!instance.supportType(event.getClickedBlock().getType()))
+                    return;
                 // Stop the container from being accessed
                 event.setCancelled(true);
                 PlayerContainer container = PlayerContainer.CONTAINERS.get(event.getClickedBlock().getLocation());
                 GamePlayer userPlayer = GamePlayer.get(event.getPlayer());
-                if (userPlayer == null || !userPlayer.isValid()) {
+                if (userPlayer == null) {
                     event.getPlayer().sendMessage(ComponentUtil.errorMessage("You are not a part of this game to use this."));
                     return;
                 }

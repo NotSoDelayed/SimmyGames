@@ -6,7 +6,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import com.google.common.base.Preconditions;
-import org.bukkit.Bukkit;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 

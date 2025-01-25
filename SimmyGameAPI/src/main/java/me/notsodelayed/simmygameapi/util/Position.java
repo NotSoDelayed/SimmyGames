@@ -11,7 +11,7 @@ import org.jetbrains.annotations.NotNull;
  */
 public class Position implements Cloneable {
     private double x, y, z;
-    private float yaw, pitch;
+    private final float yaw, pitch;
 
     public Position(double x, double y, double z, float yaw, float pitch) {
         this.x = x;

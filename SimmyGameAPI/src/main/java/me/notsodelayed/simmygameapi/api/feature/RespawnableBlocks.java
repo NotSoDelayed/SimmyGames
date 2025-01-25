@@ -21,25 +21,33 @@ import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Game;
 import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.api.game.MapGame;
+import me.notsodelayed.simmygameapi.api.map.GameMap;
 
 // TODO Test this
 public class RespawnableBlocks extends Feature {
 
-    private static final WeakHashMap<MapGame, RespawnableBlocks> INSTANCES = new WeakHashMap<>();
+    private static final WeakHashMap<MapGame<? extends GameMap> , RespawnableBlocks> INSTANCES = new WeakHashMap<>();
 
-    private record RespawnData(Material gracePeriodType, int respawnDelay) {}
+    private record BlockRespawnData(Material gracePeriodType, int respawnDelay) {}
 
-    private final Map<Material, RespawnData> respawnData = new HashMap<>();
+    private final Map<Material, BlockRespawnData> blockRespawnData = new HashMap<>();
 
-    private RespawnableBlocks(MapGame game) {
+    private RespawnableBlocks(MapGame<? extends GameMap> game) {
         super(game);
         if (INSTANCES.containsKey(game))
             throw new IllegalStateException("attempted to reinitialise RespawnableBlocks for game " + game.getFormattedName());
         INSTANCES.put(game, this);
     }
 
+    /**
+     * @param type the block type
+     * @param gracePeriodType the block type during respawning
+     * @param respawn the duration, in seconds, to respawn
+     */
     public void registerBlock(Material type, Material gracePeriodType, int respawn) {
-        respawnData.put(type, new RespawnData(gracePeriodType, respawn));
+        if (!type.isBlock())
+            throw new IllegalArgumentException(type + " is not a block type");
+        blockRespawnData.put(type, new BlockRespawnData(gracePeriodType, respawn));
     }
 
     static {
@@ -50,13 +58,17 @@ public class RespawnableBlocks extends Feature {
                 if (gamePlayer == null)
                     return;
                 Game game = gamePlayer.getGame();
-                if (!(game instanceof MapGame mapGame))
+                if (!(game instanceof MapGame<? extends GameMap> mapGame))
                     return;
-                RespawnableBlocks manager = INSTANCES.get(mapGame);
-                if (manager == null)
+                if (!mapGame.hasFeature(RespawnableBlocks.class))
                     return;
+                RespawnableBlocks instance = INSTANCES.get(mapGame);
+                if (instance == null) {
+                    SimmyGameAPI.logger.severe(mapGame.getFormattedName() + " has feature 'RespawnableBlocks' but does not have its instance.");
+                    throw new IllegalStateException("registered feature without its instance");
+                }
                 Block block = event.getBlock();
-                RespawnData respawn = manager.respawnData.get(block.getType());
+                BlockRespawnData respawn = instance.blockRespawnData.get(block.getType());
                 if (respawn == null)
                     return;
                 Material currentType = block.getType();
@@ -66,17 +78,17 @@ public class RespawnableBlocks extends Feature {
                     stand.setSmall(true);
                     stand.setMarker(true);
                     stand.setCanMove(false);
+                    stand.setCustomNameVisible(true);
                     stand.setVisible(false);
                 });
                 AtomicInteger seconds = new AtomicInteger(respawn.respawnDelay);
                 SimmyGameAPI.scheduler().runTaskTimer(task -> {
-                    if (seconds.get() == 0) {
+                    holo.customName(Component.text(seconds.getAndDecrement()));
+                    if (seconds.getAndDecrement() == 0) {
                         holo.remove();
                         block.setType(currentType);
                         task.cancel();
-                        return;
                     }
-                    holo.customName(Component.text(seconds.getAndDecrement()));
                 }, 0, 20);
             }
         }, SimmyGameAPI.instance);

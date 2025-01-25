@@ -45,10 +45,10 @@ public abstract class NexusGame<M extends NexusMap, T extends NexusTeam> extends
         teamNexus.put(team, nexus);
     }
 
-    public Nexus getTeamNexus(T team) {
+    public Nexus getTeamNexus(NexusTeam team) {
         if (team != getTeamAlpha() && team != getTeamBeta())
             throw new IllegalArgumentException(team.getDisplayName() + " is not a part of " + getFormattedName());
-        Nexus nexus = teamNexus.get(team);
+        Nexus nexus = teamNexus.get((T) team);
         if (nexus == null)
             throw new IllegalArgumentException(team.getDisplayName() + " in " + getFormattedName() + " does not have a nexus");
         return nexus;
@@ -102,7 +102,7 @@ public abstract class NexusGame<M extends NexusMap, T extends NexusTeam> extends
                 if (!(gamePlayer instanceof NexusPlayer nexusPlayer))
                     return;
                 // TODO enhance this nexus checker in future
-                NexusGame nexusGame = nexus.getGame();
+                NexusGame<? extends NexusMap, ? extends NexusTeam> nexusGame = nexus.getGame();
                 if (!(nexusPlayer.getGame() == nexusGame))
                     return;
                 if (nexusGame.getTeamNexus(nexusPlayer.getTeam()) == nexus) {

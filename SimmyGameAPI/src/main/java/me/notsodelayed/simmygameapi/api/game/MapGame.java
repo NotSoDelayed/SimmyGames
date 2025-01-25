@@ -2,9 +2,7 @@ package me.notsodelayed.simmygameapi.api.game;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -17,9 +15,9 @@ import org.bukkit.*;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.feature.Feature;
 import me.notsodelayed.simmygameapi.api.Game;
 import me.notsodelayed.simmygameapi.api.GameState;
+import me.notsodelayed.simmygameapi.api.feature.Feature;
 import me.notsodelayed.simmygameapi.api.map.GameMap;
 import me.notsodelayed.simmygameapi.api.map.GameMapManager;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
@@ -33,7 +31,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
     private final String worldName;
     private final File worldDirectory;
     private World world;
-    private Set<Feature> features = new HashSet<>();
+    private final Set<Feature> features = new HashSet<>();
 
     /**
      * @param minPlayers the minimum player count
@@ -85,7 +83,6 @@ public abstract class MapGame<M extends GameMap> extends Game {
      * Enables a {@link Feature} and register it for this game.
      * @param clazz the feature class
      * @param utilise the provided feature to utilise
-     * @return this instance
      */
     protected <T extends Feature> void enableFeature(Class<T> clazz, Consumer<T> utilise) {
         T feature = Feature.newFeature(this, clazz);
@@ -248,6 +245,7 @@ public abstract class MapGame<M extends GameMap> extends Game {
     static {
         // TODO check why map game worlds are being leftover
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            Map<String, Integer> m = new HashMap<>();
             Game.getGames().values().forEach(game -> {
                 if (game instanceof MapGame<?> mapGame)
                     mapGame.delete();

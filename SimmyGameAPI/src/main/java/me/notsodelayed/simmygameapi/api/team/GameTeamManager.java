@@ -12,6 +12,7 @@ import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
 import me.notsodelayed.simmygameapi.util.Util;
 
@@ -55,7 +56,7 @@ public class GameTeamManager<T extends GameTeam> {
         List<T> teams = this.teams.values().stream().sorted().toList();
         // Prioritize the lowest team
         T team = Util.getRandomInt(2) != 2 ? teams.getFirst() : teams.get(Util.getRandomInt(teams.size()));
-        joinTeam(team, player);
+        joinTeam(team, (GamePlayer) player);
         return team;
     }
 
@@ -64,14 +65,14 @@ public class GameTeamManager<T extends GameTeam> {
      * @throws IllegalArgumentException if the provided team is not registered in this manager
      * @throws IllegalStateException if the provided player is already assigned to a team
      */
-    public void joinTeam(T team, TeamPlayer<T> player) {
+    public void joinTeam(T team, GamePlayer player) {
         Preconditions.checkArgument(teamsPair.containsKey(team), "team is not registered in the manager");
-        Preconditions.checkState(player.getTeam() == null, "player is already assigned to a team");
         team.addPlayer(player);
         player.message("You have joined team " + SimmyGameAPI.miniMessage().serialize(team.getDisplayName()) + "<reset>!");
     }
 
-    public @Nullable T getTeam(TeamPlayer<T> player) {
+    public @Nullable T getTeam(GamePlayer player) {
+        Map<String,Integer> map = new HashMap<>();
         Optional<T> qTeam = teams.values().stream()
                 .filter(team -> team.getPlayers().contains(player))
                 .findFirst();

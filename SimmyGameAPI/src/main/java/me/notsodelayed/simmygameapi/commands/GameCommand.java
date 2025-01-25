@@ -20,9 +20,9 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.Matchmaking;
 import me.notsodelayed.simmygameapi.api.Game;
 import me.notsodelayed.simmygameapi.api.GamePlayer;
+import me.notsodelayed.simmygameapi.api.Matchmaking;
 import me.notsodelayed.simmygameapi.util.ComponentUtil;
 import me.notsodelayed.simmygameapi.util.StringUtil;
 import me.notsodelayed.simmygameapi.util.Symbol;
@@ -134,8 +134,12 @@ public class GameCommand {
                     joinTask.accept(target, game);
                     if (!sender.equals(target)) {
                         GamePlayer gamePlayer = GamePlayer.get(target);
-                        if (gamePlayer != null && gamePlayer.getGame().equals(game))
+                        if (gamePlayer != null && gamePlayer.getGame() == game) {
                             sender.sendMessage(ComponentUtil.successMessage("Sent " + target.getName() + " to " + game.getFormattedName() + "!"));
+                        } else {
+                            sender.sendMessage(ComponentUtil.errorMessage("An unexpected internal error occurred!"));
+                            throw new IllegalStateException("possible GamePlayer data desynced");
+                        }
                     }
                 });
         CommandAPICommand gameStart = new CommandAPICommand("start")

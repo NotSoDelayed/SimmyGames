@@ -15,7 +15,7 @@ public class Util {
      * @return the main world of the server
      */
     public static World getMainWorld() {
-        return Bukkit.getWorlds().get(0);
+        return Bukkit.getWorlds().getFirst();
     }
 
     public static int getRandomInt(int max) {

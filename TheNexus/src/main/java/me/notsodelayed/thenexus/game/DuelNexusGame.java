@@ -44,9 +44,16 @@ public class DuelNexusGame extends NexusGame<DuelNexusMap, NexusTeam> {
         teamBeta = new NexusTeam(NamedTextColor.BLUE);
         getTeamManager().registerTeam(teamAlpha);
         getTeamManager().registerTeam(teamBeta);
-        enableFeature(PlayerContainers.class, containers -> {});
+        enableFeature(PlayerContainers.class, containers -> {
+            containers.addType(Material.CHEST, Material.FURNACE, Material.SMOKER, Material.BLAST_FURNACE);
+        });
         enableFeature(RespawnableBlocks.class, blocks -> {
-            blocks.registerBlock(Material.COAL, Material.BEDROCK, 10);
+            blocks.registerBlock(Material.COAL_ORE, Material.BEDROCK, 12);
+            blocks.registerBlock(Material.IRON_ORE, Material.BEDROCK, 20);
+            blocks.registerBlock(Material.GOLD_ORE, Material.BEDROCK, 25);
+            blocks.registerBlock(Material.DIAMOND_ORE, Material.BEDROCK, 30);
+            blocks.registerBlock(Material.REDSTONE_ORE, Material.BEDROCK, 25);
+            blocks.registerBlock(Material.LAPIS_ORE, Material.BEDROCK, 25);
         });
         ready();
     }

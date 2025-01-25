@@ -8,10 +8,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.GameMode;
 import org.jetbrains.annotations.NotNull;
 
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.api.game.MapGame;
 import me.notsodelayed.simmygameapi.api.game.TeamVsTeamGame;
 import me.notsodelayed.simmygameapi.api.map.GameMapManager;
-import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.api.team.GameTeam;
 import me.notsodelayed.simmygameapi.api.team.GameTeamManager;
 import me.notsodelayed.towerdefense.TowerDefense;

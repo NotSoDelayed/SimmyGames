@@ -1,7 +1,8 @@
 package me.notsodelayed.simmygameapi.api;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
-import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -29,13 +30,12 @@ import me.notsodelayed.simmygameapi.util.PlayerUtil;
  */
 public class GamePlayer implements BasePlayer {
 
-    private static final WeakHashMap<Player, GamePlayer> GAME_PLAYERS = new WeakHashMap<>();
+    private static final Map<Player, GamePlayer> GAME_PLAYERS = new HashMap<>();
     private final UUID uuid;
     private Game game;
     private BukkitTask respawnTask = null;
 
     static {
-        // TODO maybe this event listener is not needed?
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @EventHandler
             public void onQuit(PlayerQuitEvent event) {
@@ -61,9 +61,18 @@ public class GamePlayer implements BasePlayer {
      * @param player the player
      * @return the associated instance, otherwise null
      */
-    @Nullable
-    public static GamePlayer get(Player player) {
-        return GAME_PLAYERS.get(player);
+    public static @Nullable GamePlayer get(Player player) {
+        if (player == null)
+            return null;
+        GamePlayer gamePlayer = GAME_PLAYERS.get(player);
+        if (gamePlayer == null)
+            return null;
+        // This shouldn't happen
+        if (!gamePlayer.isValid()) {
+            SimmyGameAPI.logger.severe(player.getName() + " has GamePlayer instance without a game");
+            throw new IllegalStateException("valid GamePlayer instance without a game");
+        }
+        return gamePlayer;
     }
 
     @Override
@@ -135,7 +144,7 @@ public class GamePlayer implements BasePlayer {
 
     @Override
     public boolean isValid() {
-        return game == null;
+        return game != null;
     }
 
     /**

@@ -9,8 +9,8 @@ import org.jetbrains.annotations.Nullable;
 import org.yaml.snakeyaml.error.YAMLException;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.Map;
 import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.Map;
 
 /**
  * Represents a map for a {@link Game}.
@@ -50,16 +50,5 @@ public class GameMap extends Map {
     protected YamlConfiguration getYaml() {
         return yaml;
     }
-
-//    @Override
-//    public GameMap clone() {
-//        try {
-//            GameMap clone = (GameMap) super.clone();
-//            clone.loadYaml();
-//            return clone;
-//        } catch (CloneNotSupportedException e) {
-//            throw new AssertionError();
-//        }
-//    }
 
 }

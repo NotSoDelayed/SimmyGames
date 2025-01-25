@@ -14,12 +14,11 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.thenexus.TheNexus;
 import me.notsodelayed.thenexus.event.NexusDestroyedEvent;
-import me.notsodelayed.thenexus.game.NexusPlayer;
 import me.notsodelayed.thenexus.game.NexusGame;
-import me.notsodelayed.thenexus.map.NexusMap;
+import me.notsodelayed.thenexus.game.NexusPlayer;
 import me.notsodelayed.thenexus.team.NexusTeam;
 
 /**
@@ -118,7 +117,7 @@ public class Nexus {
     public boolean damage() {
         return damage(null, newHealth -> {
             NexusTeam victimTeam = game.getNexusTeam(this);
-            for (TeamPlayer<?> player : victimTeam.getPlayers())
+            for (GamePlayer player : victimTeam.getPlayers())
                 player.message("<red>Your nexus has lost 1 health!");
         });
     }

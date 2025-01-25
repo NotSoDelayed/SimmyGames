@@ -15,7 +15,6 @@ import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.BaseTeam;
 import me.notsodelayed.simmygameapi.api.Game;
 import me.notsodelayed.simmygameapi.api.GamePlayer;
-import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
 
 /**
  * Represents a team of a {@link Game}.
@@ -25,7 +24,7 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
     private final String id;
     private final Component displayName;
     private final NamedTextColor color;
-    private final Set<TeamPlayer<?>> players;
+    private final Set<GamePlayer> players;
 
     public GameTeam(@NotNull NamedTextColor color) {
         this(color, color.toString());
@@ -39,7 +38,7 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
     }
 
     public void dispatchMessage(Component message) {
-        for (TeamPlayer<?> player : players)
+        for (GamePlayer player : players)
             player.message(message);
     }
 
@@ -51,12 +50,12 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
     }
 
     public void dispatchSound(Sound sound, float volume, float pitch) {
-        for (TeamPlayer<?> player : players)
+        for (GamePlayer player : players)
             player.playSound(sound, volume, pitch);
     }
 
     public void dispatchSound(Location location, Sound sound, float volume, float pitch) {
-        for (TeamPlayer<?> player : players)
+        for (GamePlayer player : players)
             player.playSound(location, sound, volume, pitch);
     }
 
@@ -64,7 +63,7 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
      * @return an immutable set of the players
      */
     @Override
-    public Set<? extends TeamPlayer<?>> getPlayers() {
+    public Set<? extends GamePlayer> getPlayers() {
         return Set.copyOf(players);
     }
 
@@ -82,11 +81,11 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
 
     }
 
-    public void addPlayer(TeamPlayer<?> player) {
+    public void addPlayer(GamePlayer player) {
         players.add(player);
     }
 
-    public void removePlayer(TeamPlayer<?> player) {
+    public void removePlayer(GamePlayer player) {
         players.remove(player);
     }
 

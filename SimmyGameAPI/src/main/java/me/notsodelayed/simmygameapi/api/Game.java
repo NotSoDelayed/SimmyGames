@@ -1,7 +1,7 @@
 package me.notsodelayed.simmygameapi.api;
 
-import java.util.*;
 import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -158,7 +158,7 @@ public abstract class Game implements BaseGame {
     }
 
     public void dispatchPrefixedMessage(@NotNull Component message) {
-        dispatchMessage(getPrefix().append(Component.text(" ", NamedTextColor.WHITE).append(message)));
+        dispatchMessage(getPrefix().append(SimmyGameAPI.miniMessage().deserialize("<reset> ")).append(message));
     }
 
     /**
