@@ -1,10 +1,11 @@
-package me.notsodelayed.simmygameapi.api.team;
+package me.notsodelayed.simmygameapi.api;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Location;
@@ -12,17 +13,15 @@ import org.bukkit.Sound;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
-import me.notsodelayed.simmygameapi.api.BaseTeam;
-import me.notsodelayed.simmygameapi.api.Game;
-import me.notsodelayed.simmygameapi.api.GamePlayer;
+import me.notsodelayed.simmygameapi.api.util.Identifiable;
 
 /**
  * Represents a team of a {@link Game}.
  */
-public class GameTeam implements BaseTeam, Comparable<GameTeam> {
+public class GameTeam implements BaseTeam, Identifiable, Comparable<GameTeam> {
 
     private final String id;
-    private final Component displayName;
+    private final TextComponent displayName;
     private final NamedTextColor color;
     private final Set<GamePlayer> players;
 
@@ -46,7 +45,7 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
      * @param message the message (supported by MiniMessage)
      */
     public void dispatchMessage(String message) {
-        dispatchMessage(SimmyGameAPI.miniMessage().deserialize(message));
+        dispatchMessage(SimmyGameAPI.mini().deserialize(message));
     }
 
     public void dispatchSound(Sound sound, float volume, float pitch) {
@@ -93,12 +92,24 @@ public class GameTeam implements BaseTeam, Comparable<GameTeam> {
         return color;
     }
 
-    public Component getDisplayName() {
+    @Override
+    public @NotNull String id() {
+        return id;
+    }
+
+    /**
+     * @return the component with the name formatted with {@link #getColor()}
+     */
+    public @NotNull TextComponent componentDisplayName() {
         return displayName;
     }
 
-    public String getId() {
-        return id;
+    /**
+     * @return the string only version of {@link #componentDisplayName()}
+     */
+    @Override
+    public String displayName() {
+        return displayName.content();
     }
 
     @Override

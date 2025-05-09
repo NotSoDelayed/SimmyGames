@@ -1,5 +1,8 @@
 package me.notsodelayed.simmygameapi.api;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import me.notsodelayed.simmygameapi.util.CompareUtil;
 
 /**
@@ -11,13 +14,17 @@ public class GameSettings {
 
     private final Game game;
     private int endIn = 20;
-    // TODO revert startIn
-    private int startIn = 15;
+    // TODO startIn reset
+    private int startIn = 10;
     private int minPlayers, maxPlayers;
     private boolean startWithMinimumPlayers = true;
+    private final Set<GameState> joinableStates = new HashSet<>();
 
     GameSettings(Game game) {
         this.game = game;
+        joinableStates.add(GameState.WAITING_FOR_PLAYERS);
+        joinableStates.add(GameState.STARTING);
+        joinableStates.add(GameState.INGAME);
     }
 
     /**
@@ -34,6 +41,41 @@ public class GameSettings {
     public GameSettings endIn(int endIn) {
         checkSafeForSettingsModifications();
         this.endIn = endIn;
+        return this;
+    }
+
+    /**
+     * @return the game states where players can join.
+     * <p>
+     * Default values: {@link GameState#WAITING_FOR_PLAYERS}, {@link GameState#STARTING}, {@link GameState#INGAME}
+     * @see #allowJoinDuring(GameState)
+     * @see #disallowJoinDuring(GameState)
+     */
+    public Set<GameState> joinableStates() {
+        return Set.copyOf(joinableStates);
+    }
+
+    /**
+     * @param gameState the game state to allow player joins
+     * @return this instance, for chaining
+     * @see #disallowJoinDuring(GameState)
+     * @see #joinableStates()
+     */
+    public GameSettings allowJoinDuring(GameState gameState) {
+        checkSafeForSettingsModifications();
+        joinableStates.add(gameState);
+        return this;
+    }
+
+    /**
+     * @param gameState the game state to disallow player joins
+     * @return this instance, for chaining
+     * @see #allowJoinDuring(GameState)
+     * @see #joinableStates()
+     */
+    public GameSettings disallowJoinDuring(GameState gameState) {
+        checkSafeForSettingsModifications();
+        joinableStates.remove(gameState);
         return this;
     }
 
@@ -84,7 +126,7 @@ public class GameSettings {
      */
     public GameSettings startIn(int startIn) {
         checkSafeForSettingsModifications();
-        this.startIn = Math.max(startIn, 5);
+        this.startIn = Math.max(startIn, 6);
         return this;
     }
 

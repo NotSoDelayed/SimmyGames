@@ -11,15 +11,21 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.GameMap;
 import me.notsodelayed.simmygameapi.util.FileUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 
 public class GameMapManager<M extends GameMap> {
 
     private static final List<GameMapManager<?>> MANAGERS = new ArrayList<>();
+    private final String displayName;
     private final Map<String, M> maps = new HashMap<>();
 
-    public GameMapManager() {
+    /**
+     * @param displayName a name for this manager (usually for loggers)
+     */
+    public GameMapManager(@NotNull String displayName) {
+        this.displayName = displayName;
         MANAGERS.add(this);
     }
 
@@ -39,7 +45,7 @@ public class GameMapManager<M extends GameMap> {
             try {
                 registerMap(register.apply(sub));
             } catch (Exception ex) {
-                SimmyGameAPI.logger.warning("[MapManager] Skipping map loading for '" + sub.getPath() + "' due to " + ex.getClass().getSimpleName() + ": " + ex.getMessage());
+                SimmyGameAPI.logger.warning(String.format("[%s] Skipping map loading for '%s' due to %s: %s", displayName, sub.getPath(), ex.getClass().getSimpleName(), ex.getMessage()));
             }
         }
         return maps;
@@ -47,18 +53,18 @@ public class GameMapManager<M extends GameMap> {
 
     /**
      * @param map the map
-     * @throws IllegalStateException if registering a map with an existing id, or ,map directory is missing
+     * @throws IllegalStateException if registering a map with an existing id, or map directory is missing
      */
     public void registerMap(M map) {
-        if (maps.containsKey(map.getId()))
-            throw new IllegalStateException("map '" + map.getId() + "' already exists");
-        if (!map.getDirectory().isDirectory())
-            throw new IllegalStateException("directory of map '" + map.getId() + "' is missing");
-        maps.put(map.getId(), map);
+        if (maps.containsKey(map.id()))
+            throw new IllegalStateException("map '" + map.id() + "' already exists");
+        if (map instanceof FixedMap fixedMap && !fixedMap.fileLocation().isDirectory())
+            throw new IllegalStateException("directory of map '" + map.id() + "' is missing");
+        maps.put(map.id(), map);
     }
 
     public void unregisterMap(M map) {
-        maps.remove(map.getId());
+        maps.remove(map.id());
     }
 
     public int size() {
@@ -98,7 +104,7 @@ public class GameMapManager<M extends GameMap> {
      * @return an immutable list of managers of the map type
      * @apiNote Managers without any elements will be ignored, as there's no way to validate its type without a value to check with
      */
-    public static <T extends GameMap> @NotNull List<GameMapManager<T>> getManagers(Class<T> mapType) {
+    public static <T extends FixedMap> @NotNull List<GameMapManager<T>> getManagers(Class<T> mapType) {
         return getManagers().stream()
                 .filter(manager -> {
                     if (manager.size() == 0)

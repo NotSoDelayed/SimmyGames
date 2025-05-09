@@ -27,12 +27,12 @@ import me.notsodelayed.thenexus.team.TntNexusTeam;
 public class TntNexusGame extends NexusGame<TntNexusMap, TntNexusTeam> {
 
     private static GameMapManager<TntNexusMap> MAP_MANAGER;
-    private static final Component PREFIX = SimmyGameAPI.miniMessage().deserialize("<dark_gray>[<dark_red><bold>TNT<gold>Wars<dark_gray>]<white>");
+    private static final Component PREFIX = SimmyGameAPI.mini().deserialize("<dark_gray>[<dark_red><bold>TNT<gold>Wars<dark_gray>]<white>");
     private final TntNexusTeam teamAlpha, teamBeta;
     private final WeakHashMap<Player, Inventory> virtualChest = new WeakHashMap<>();
 
     public static void register() {
-        MAP_MANAGER = new GameMapManager<>();
+        MAP_MANAGER = new GameMapManager<>("TntWars");
         File mapsDir = new File(TheNexus.instance.getDataFolder(), "maps");
         if (!mapsDir.mkdir()) {
             TheNexus.logger.info("Registering maps...");

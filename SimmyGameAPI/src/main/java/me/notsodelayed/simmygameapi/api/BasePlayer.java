@@ -1,6 +1,5 @@
 package me.notsodelayed.simmygameapi.api;
 
-import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
@@ -11,40 +10,46 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.Inventory;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 
+/**
+ * Foundation for {@link GamePlayer}.
+ */
 public interface BasePlayer {
 
     default void message(@NotNull Component message) {
-        if (getPlayer() != null)
-            getPlayer().sendMessage(message);
+        asBukkitPlayer().sendMessage(message);
     }
 
     /**
      * @param message the message (supported by MiniMessage)
      */
     default void message(@NotNull String message) {
-        message(SimmyGameAPI.miniMessage().deserialize(message));
+        message(SimmyGameAPI.mini().deserialize(message));
     }
 
     default void actionbar(@NotNull Component message) {
-        if (getPlayer() != null)
-            getPlayer().sendActionBar(message);
+        asBukkitPlayer().sendActionBar(message);
     }
 
     /**
      * @param message the message (supported by MiniMessage)
      */
     default void actionbar(@NotNull String message) {
-        actionbar(SimmyGameAPI.miniMessage().deserialize(message));
+        actionbar(SimmyGameAPI.mini().deserialize(message));
     }
 
     default void title(Title title) {
-        if (getPlayer() != null)
-            getPlayer().showTitle(title);
+        asBukkitPlayer().showTitle(title);
+    }
+
+    default void openInventory(Inventory inv) {
+        Player player = asBukkitPlayer();
+        player.closeInventory();
+        player.openInventory(inv);
     }
 
     /**
@@ -53,19 +58,15 @@ public interface BasePlayer {
      * @param pitch the pitch
      */
     default void playSound(Sound sound, float volume, float pitch) {
-        if (getPlayer() != null)
-            getPlayer().playSound(getPlayer().getLocation(), sound, volume, pitch);
+        asBukkitPlayer().playSound(asBukkitPlayer().getLocation(), sound, volume, pitch);
     }
 
     default void playSound(Location location, Sound sound, float volume, float pitch) {
-        if (getPlayer() != null)
-            getPlayer().playSound(location, sound, volume, pitch);
+        asBukkitPlayer().playSound(location, sound, volume, pitch);
     }
 
     default CompletableFuture<Boolean> teleport(Location location) {
-        if (getPlayer() != null)
-            return getPlayer().teleportAsync(location);
-        return CompletableFuture.completedFuture(false);
+        return asBukkitPlayer().teleportAsync(location);
     }
 
     /**
@@ -83,26 +84,23 @@ public interface BasePlayer {
     /**
      * @return the bukkit offline player
      */
-    default OfflinePlayer getBukkitPlayer() {
+    default OfflinePlayer asOfflinePlayer() {
         return Bukkit.getOfflinePlayer(getUuid());
     }
 
     /**
-     * @return the optional online player
+     * @return the bukkit player
+     * @throws IllegalStateException if the player is offline
      */
-    default Optional<Player> getOptionalPlayer() {
-        return Optional.ofNullable(getBukkitPlayer().getPlayer());
-    }
-
-    /**
-     * @return the online player, if this player is online
-     */
-    default @Nullable Player getPlayer() {
-        return getBukkitPlayer().getPlayer();
+    default @NotNull Player asBukkitPlayer() throws IllegalStateException {
+        Player player = asOfflinePlayer().getPlayer();
+        if (player == null)
+            throw new IllegalStateException("player is offline");
+        return player;
     }
 
     default String getName() {
-        return getBukkitPlayer().getName();
+        return asOfflinePlayer().getName();
     }
 
     /**

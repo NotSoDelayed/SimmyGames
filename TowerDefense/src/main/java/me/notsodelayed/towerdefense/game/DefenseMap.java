@@ -3,14 +3,13 @@ package me.notsodelayed.towerdefense.game;
 import java.io.File;
 
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
-import me.notsodelayed.simmygameapi.api.map.GameMap;
+import me.notsodelayed.simmygameapi.api.map.FixedMap;
 
-public class DefenseMap extends GameMap {
+public class DefenseMap extends FixedMap {
 
-    public DefenseMap(@NotNull String id, @Nullable String displayName, @NotNull File mapDirectory) {
-        super(id, displayName, mapDirectory);
+    public DefenseMap(@NotNull String id, @NotNull File mapDirectory) {
+        super(id, mapDirectory);
     }
 
 }

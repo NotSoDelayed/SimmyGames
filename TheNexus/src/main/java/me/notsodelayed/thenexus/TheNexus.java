@@ -5,7 +5,7 @@ import java.util.logging.Logger;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.notsodelayed.thenexus.config.Config;
-import me.notsodelayed.thenexus.game.DuelNexusGame;
+import me.notsodelayed.thenexus.game.duelnexusgame.DuelNexusGame;
 
 public final class TheNexus extends JavaPlugin {
 

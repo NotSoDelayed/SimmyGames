@@ -6,7 +6,7 @@ import me.notsodelayed.simmygameapi.api.Game;
 
 public abstract class GameEvent extends Event {
 
-    private final Game game;
+    protected final Game game;
 
     protected GameEvent(Game game) {
         this.game = game;

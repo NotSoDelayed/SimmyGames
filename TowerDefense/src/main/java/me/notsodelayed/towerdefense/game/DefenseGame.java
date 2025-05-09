@@ -9,23 +9,23 @@ import org.bukkit.GameMode;
 import org.jetbrains.annotations.NotNull;
 
 import me.notsodelayed.simmygameapi.api.GamePlayer;
+import me.notsodelayed.simmygameapi.api.GameTeam;
 import me.notsodelayed.simmygameapi.api.game.MapGame;
 import me.notsodelayed.simmygameapi.api.game.TeamVsTeamGame;
 import me.notsodelayed.simmygameapi.api.map.GameMapManager;
-import me.notsodelayed.simmygameapi.api.team.GameTeam;
 import me.notsodelayed.simmygameapi.api.team.GameTeamManager;
 import me.notsodelayed.towerdefense.TowerDefense;
 
 public class DefenseGame extends MapGame<DefenseMap> implements TeamVsTeamGame<GameTeam> {
 
-    private static final GameMapManager<DefenseMap> MAP_MANAGER = new GameMapManager<>();
+    private static final GameMapManager<DefenseMap> MAP_MANAGER = new GameMapManager<>("TowerDefense");
     private final GameTeamManager<GameTeam> teamManager = new GameTeamManager<>();
     private final GameTeam teamAlpha, teamBeta;
 
     public static void register() {
         // TODO proper registrations
         try {
-            MAP_MANAGER.registerMap(new DefenseMap("testmap", "Test Map", new File(TowerDefense.instance.getDataFolder(), "maps/testmap")));
+            MAP_MANAGER.registerMap(new DefenseMap("testmap", new File(TowerDefense.instance.getDataFolder(), "maps/testmap")));
         } catch (Exception ex) {
             TowerDefense.logger.warning("Load in a fuking map please.");
         }

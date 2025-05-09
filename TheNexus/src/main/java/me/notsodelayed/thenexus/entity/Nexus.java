@@ -15,7 +15,9 @@ import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.GamePlayer;
+import me.notsodelayed.thenexus.NexusMap;
 import me.notsodelayed.thenexus.TheNexus;
+import me.notsodelayed.thenexus.event.NexusDamagedEvent;
 import me.notsodelayed.thenexus.event.NexusDestroyedEvent;
 import me.notsodelayed.thenexus.game.NexusGame;
 import me.notsodelayed.thenexus.game.NexusPlayer;
@@ -27,7 +29,7 @@ import me.notsodelayed.thenexus.team.NexusTeam;
 public class Nexus {
 
     private static final Map<Location, Nexus> NEXUSES = new HashMap<>();
-    private final NexusGame<?, ?> game;
+    private final NexusGame<? extends NexusMap, ? extends NexusTeam> game;
     private int health, maxHealth;
     private final Location location;
     private @Nullable NexusPlayer lastDamager = null;
@@ -55,7 +57,6 @@ public class Nexus {
      * @param block the block
      * @return the nexus associated, otherwise null
      */
-    // TODO this is brokey pls check
     public static @Nullable Nexus get(Block block) {
         return NEXUSES.get(block.getLocation());
     }
@@ -74,12 +75,13 @@ public class Nexus {
         health--;
         lastDamager = damager;
         task.accept(health);
+        new NexusDamagedEvent(game, damager, this);
         if (health <= 0) {
             damageable = false;
             location.getBlock().setType(Material.BEDROCK);
             NexusTeam team = game.getNexusTeam(this);
-            game.dispatchPrefixedMessage(team.getDisplayName().append(SimmyGameAPI.miniMessage().deserialize("<gold> nexus has been destroyed!")));
-            new NexusDestroyedEvent(game, team, this).callEvent();
+            game.dispatchPrefixedMessage(team.componentDisplayName().append(SimmyGameAPI.mini().deserialize("<gold> nexus has been destroyed!")));
+            new NexusDestroyedEvent(game, damager, this, team).callEvent();
         }
         return true;
     }
@@ -101,10 +103,10 @@ public class Nexus {
                 // TODO verify that team = team actually works otherwise its just stupid
                 if (team == victimTeam) {
                     team.dispatchSound(location, Sound.BLOCK_ANVIL_LAND, 2, 1);
-                    team.dispatchMessage(SimmyGameAPI.miniMessage().deserialize("<red>Your nexus is under attack by ").append(Component.text(damager.getName(), damager.getTeam().getColor()).append(Component.text("!"))));
+                    team.dispatchMessage(SimmyGameAPI.mini().deserialize("<red>Your nexus is under attack by ").append(Component.text(damager.getName(), damager.getTeam().getColor()).append(Component.text("!"))));
                 } else {
                     team.dispatchSound(location, Sound.ENTITY_ITEM_BREAK, 2, 2);
-                    team.dispatchMessage(Component.text(damager.getName(), damager.getTeam().getColor()).append(Component.text(" has damaged the ", NamedTextColor.WHITE)).append(victimTeam.getDisplayName()).append(Component.text(" nexus!", NamedTextColor.WHITE)));
+                    team.dispatchMessage(Component.text(damager.getName(), damager.getTeam().getColor()).append(Component.text(" has damaged the ", NamedTextColor.WHITE)).append(victimTeam.componentDisplayName()).append(Component.text(" nexus!", NamedTextColor.WHITE)));
                 }
             });
         });

@@ -33,9 +33,9 @@ public interface KitPlayer<K extends GameKit> extends BasePlayer {
     default void giveCurrentKit() {
         if (getKit() == null)
             return;
-        if (getPlayer() == null)
+        if (asBukkitPlayer() == null)
             throw new IllegalStateException("player is offline");
-        getKit().give(getPlayer());
+        getKit().give(asBukkitPlayer());
     }
 
 }

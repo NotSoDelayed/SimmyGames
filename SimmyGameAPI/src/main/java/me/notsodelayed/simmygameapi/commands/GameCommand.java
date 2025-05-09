@@ -111,9 +111,11 @@ public class GameCommand {
                         }
                         target = player;
                     }
-                    if (GamePlayer.get(target) != null) {
-                        // TODO fix
-                        sender.sendMessage(ComponentUtil.errorMessage("You are already in a game!"));
+                    GamePlayer targetGamePlayer = GamePlayer.get(target);
+                    if (targetGamePlayer != null) {
+                        // TODO TEST fixed hopefully
+                        String ref = sender.equals(targetGamePlayer) ? "You" : StringUtil.senderName(sender);
+                        sender.sendMessage(ComponentUtil.errorMessage(ref + " are already in a game!"));
                         return;
                     }
                     //noinspection unchecked

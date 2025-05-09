@@ -4,12 +4,14 @@ import java.util.logging.Logger;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPIBukkitConfig;
+import fr.mrmicky.fastinv.FastInvManager;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import me.notsodelayed.simmygameapi.api.feature.PlayerContainers;
 import me.notsodelayed.simmygameapi.api.feature.RespawnableBlocks;
+import me.notsodelayed.simmygameapi.api.feature.Telekinesis;
 import me.notsodelayed.simmygameapi.commands.GameCommand;
 import me.notsodelayed.simmygameapi.handler.PlayerProtectionHandler;
 import me.notsodelayed.simmygameapi.util.Scheduler;
@@ -37,8 +39,11 @@ public final class SimmyGameAPI extends JavaPlugin {
             logger.warning("Plugin 'VoidGen' not found! It is required to load game worlds as void worlds!");
             logger.warning("Download at: https://github.com/xtkq-is-not-available/VoidGen/releases");
         }
+
+        // Libs onEnable
+        FastInvManager.register(this);
         CommandAPI.onEnable();
-        registerMapGameFeatures();
+        initGameFeatures();
 
         // TODO refractor this once Lobby API is made
         initProtectionListeners();
@@ -50,7 +55,7 @@ public final class SimmyGameAPI extends JavaPlugin {
         CommandAPI.onDisable();
     }
 
-    public static MiniMessage miniMessage() {
+    public static MiniMessage mini() {
         return MINI_MESSAGE;
     }
 
@@ -68,9 +73,10 @@ public final class SimmyGameAPI extends JavaPlugin {
         new GameCommand("game");
     }
 
-    private void registerMapGameFeatures() {
+    private void initGameFeatures() {
         RespawnableBlocks.init();
         PlayerContainers.init();
+        Telekinesis.init();
     }
 
 }

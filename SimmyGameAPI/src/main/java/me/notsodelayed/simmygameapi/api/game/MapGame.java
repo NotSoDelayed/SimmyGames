@@ -2,7 +2,9 @@ package me.notsodelayed.simmygameapi.api.game;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -13,19 +15,23 @@ import com.google.common.base.Preconditions;
 import org.apache.commons.io.FileUtils;
 import org.bukkit.*;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Game;
-import me.notsodelayed.simmygameapi.api.GameState;
+import me.notsodelayed.simmygameapi.api.GameMap;
+import me.notsodelayed.simmygameapi.api.GamePlayer;
 import me.notsodelayed.simmygameapi.api.feature.Feature;
-import me.notsodelayed.simmygameapi.api.map.GameMap;
+import me.notsodelayed.simmygameapi.api.map.FixedMap;
 import me.notsodelayed.simmygameapi.api.map.GameMapManager;
+import me.notsodelayed.simmygameapi.api.map.NaturalMap;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
 import me.notsodelayed.simmygameapi.util.PlayerUtil;
 import me.notsodelayed.simmygameapi.util.Util;
 
 public abstract class MapGame<M extends GameMap> extends Game {
 
+    private static final Set<MapGame<? extends GameMap>> MAP_GAMES = new HashSet<>();
     private M map, queriedMap;
     private boolean lockMap = false;
     private final String worldName;
@@ -33,16 +39,11 @@ public abstract class MapGame<M extends GameMap> extends Game {
     private World world;
     private final Set<Feature> features = new HashSet<>();
 
-    /**
-     * @param minPlayers the minimum player count
-     * @param maxPlayers the maximum player count
-     * @apiNote This returns a Game instance with state {@link GameState#LOADING}, where it is not joinable.
-     * @implSpec For custom game setup requirements, developers must override {@link #ready()} and call super before custom implementations.
-     */
     protected MapGame(int minPlayers, int maxPlayers) {
         super(minPlayers, maxPlayers);
         this.worldName = this.getClass().getSimpleName().toLowerCase(Locale.ENGLISH) + "-" + getUuid();
         this.worldDirectory = new File(worldName);
+        MAP_GAMES.add(this);
         getCountdown().executeAt(10, seconds -> {
             if (map == null) {
                 if (queriedMap != null) {
@@ -52,27 +53,35 @@ public abstract class MapGame<M extends GameMap> extends Game {
                 }
             }
             lockMap();
-            // TODO VERIFY fix prefix trailing color
-            dispatchPrefixedMessage("Map of the game: <gold>" + map.getDisplayName().orElse(map.getId()));
+            dispatchPrefixedMessage("Map of the game: <gold>" + map.displayNameOrId());
         });
     }
 
     /**
      * @param minPlayers the minimum player count
      * @param maxPlayers the maximum player count
-     * @param map the map
-     * @apiNote This returns a Game instance with state {@link GameState#LOADING}, where it is not joinable.
-     * @implSpec For custom game setup requirements, developers must override {@link #ready()} and call super before custom implementations.
+     * @param map the map to play
      */
     protected MapGame(int minPlayers, int maxPlayers, M map) {
         this(minPlayers, maxPlayers);
         this.map = map;
     }
 
-    public Set<Class<? extends Feature>> getFeatures() {
+    /**
+     * @param world the world
+     * @return the {@link MapGame} which manages the provided world
+     */
+    public static @Nullable MapGame<? extends GameMap> getGame(World world) {
+        return MAP_GAMES.stream()
+                .filter(game -> game.getGameWorldName().equals(world.getName()))
+                .findAny().orElse(null);
+    }
+
+
+    public Set<Class<? extends Feature>> features() {
         return features.stream()
                 .map(Feature::getClass)
-                .collect(Collectors.toSet());
+                .collect(Collectors.toUnmodifiableSet());
     }
 
     public boolean hasFeature(Class<? extends Feature> feature) {
@@ -82,12 +91,12 @@ public abstract class MapGame<M extends GameMap> extends Game {
     /**
      * Enables a {@link Feature} and register it for this game.
      * @param clazz the feature class
-     * @param utilise the provided feature to utilise
+     * @param instance the provided feature to utilise
      */
-    protected <T extends Feature> void enableFeature(Class<T> clazz, Consumer<T> utilise) {
+    protected <T extends Feature> void enableFeature(Class<T> clazz, Consumer<T> instance) {
         T feature = Feature.newFeature(this, clazz);
         features.add(feature);
-        utilise.accept(feature);
+        instance.accept(feature);
     }
 
     @Override
@@ -107,32 +116,40 @@ public abstract class MapGame<M extends GameMap> extends Game {
         if (world != null)
             return CompletableFuture.completedFuture(world);
         AtomicLong started = new AtomicLong();
-        CompletableFuture.runAsync(() -> {
-            try {
-                started.set(System.currentTimeMillis());
-                FileUtils.copyDirectory(getMap().getDirectory(), worldDirectory);
-                worldDirectory.deleteOnExit();
-            } catch (IOException ex) {
-                dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
-                LoggerUtil.verbose(this, "An error occurred whilst copying " + map.getDisplayName().orElse(map.getId()) + ":");
-                ex.printStackTrace(System.err);
-                delete();
-            }
-        }).join();
-        world = new WorldCreator(worldName)
-                .type(WorldType.FLAT)
-                .generator("VoidGen:{}")
-                .generateStructures(false)
-                .createWorld();
+        if (map instanceof FixedMap fixedMap) {
+            CompletableFuture.runAsync(() -> {
+                try {
+                    started.set(System.currentTimeMillis());
+                    FileUtils.copyDirectory(fixedMap.fileLocation(), worldDirectory);
+                    worldDirectory.deleteOnExit();
+                } catch (IOException ex) {
+                    dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
+                    LoggerUtil.verbose(this, "An error occurred whilst copying " + map.displayNameOrId() + ":");
+                    ex.printStackTrace(System.err);
+                    delete();
+                }
+            }).join();
+            world = new WorldCreator(worldName)
+                    .type(WorldType.FLAT)
+                    .generator("VoidGen:{}")
+                    .generateStructures(false)
+                    .createWorld();
+        } else if (map instanceof NaturalMap naturalMap) {
+            world = naturalMap.worldCreator().createWorld();
+        } else {
+            dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
+            LoggerUtil.verbose(this, String.format("Unknown map type from '%s' (type: %s)", map.displayNameOrId(), map.getClass().getSimpleName()));
+            delete();
+        }
         long timeTaken = started.get() - System.currentTimeMillis();
-        if (timeTaken > 50)
-            LoggerUtil.verbose(this, String.format("Map '%s' took %s ms to load", map.getDisplayName().orElse(map.getId()), timeTaken), Level.WARNING, true);
         if (world == null) {
             dispatchMessage("<red>(!) An error occurred whilst setting up the map. This game has been terminated.");
-            LoggerUtil.verbose(this, "Game world of map '" + map.getDisplayName().orElse(map.getId()) + "' is null after creation");
+            LoggerUtil.verbose(this, "Game world of map '" + map.displayNameOrId() + "' is null after creation");
             delete();
             return CompletableFuture.failedFuture(new RuntimeException("world is null after creation"));
         }
+        if (timeTaken > 50)
+            LoggerUtil.verbose(this, String.format("Map '%s' took %s ms to load", map.displayNameOrId(), timeTaken), Level.WARNING, true);
         return CompletableFuture.completedFuture(world);
     }
 
@@ -148,6 +165,14 @@ public abstract class MapGame<M extends GameMap> extends Game {
         });
     }
 
+    @Override
+    public void onPlayerJoin(GamePlayer player) {
+        if (hasBegun()) {
+            player.teleport(world.getSpawnLocation());
+            PlayerUtil.reset(player, GameMode.SURVIVAL);
+        }
+    }
+
     /**
      * Deletes the game with the game world.
      */
@@ -155,9 +180,9 @@ public abstract class MapGame<M extends GameMap> extends Game {
     protected void delete() {
         super.delete();
         if (world != null) {
-                world.getPlayers().forEach(player -> {
-                    player.teleportAsync(Util.getMainWorld().getSpawnLocation());
-                });
+            world.getPlayers().forEach(player -> {
+                player.teleportAsync(Util.getMainWorld().getSpawnLocation());
+            });
             Bukkit.unloadWorld(world, false);
         }
         getPlayers().forEach(gamePlayer -> PlayerUtil.reset(gamePlayer, GameMode.ADVENTURE));
@@ -245,10 +270,11 @@ public abstract class MapGame<M extends GameMap> extends Game {
     static {
         // TODO check why map game worlds are being leftover
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            Map<String, Integer> m = new HashMap<>();
             Game.getGames().values().forEach(game -> {
-                if (game instanceof MapGame<?> mapGame)
+                if (game instanceof MapGame<?> mapGame) {
+                    SimmyGameAPI.logger.info("Deleting game world for " + mapGame.getFormattedName());
                     mapGame.delete();
+                }
             });
         }));
     }

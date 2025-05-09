@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import org.bukkit.scheduler.BukkitTask;
-import org.jetbrains.annotations.Nullable;
 
 public abstract class Timer {
 
@@ -57,12 +56,13 @@ public abstract class Timer {
     }
 
     /**
-     * @return if <b>{@link #isActive()} = true</b>, the current seconds of this timer, else null
+     * @return the current seconds of this timer
+     * @throws IllegalStateException if the timer is not active
      */
-    public @Nullable Integer getSeconds() {
-        if (isActive())
-            return aSeconds.get();
-        return null;
+    public int getSeconds() {
+        if (!isActive())
+            throw new IllegalStateException("timer is not active");
+        return aSeconds.get();
     }
 
     public boolean isActive() {

@@ -4,6 +4,9 @@ import net.kyori.adventure.text.format.NamedTextColor;
 
 import me.notsodelayed.simmygameapi.util.CompareUtil;
 
+/**
+ * The game state of a {@link Game}.
+ */
 public enum GameState {
 
     LOADING("loading", "Loading", NamedTextColor.BLACK),

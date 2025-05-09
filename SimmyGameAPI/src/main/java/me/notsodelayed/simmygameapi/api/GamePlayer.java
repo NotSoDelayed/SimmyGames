@@ -80,26 +80,26 @@ public class GamePlayer implements BasePlayer {
         if (game == null)
             return;
         game.removePlayer(this);
-        GAME_PLAYERS.remove(getPlayer());
+        GAME_PLAYERS.remove(asBukkitPlayer());
         game = null;
     }
 
+    // TODO refractor this
     public void respawn(int respawnAfter, Consumer<GamePlayer> postRespawn) {
         validate();
         respawnAfter = Math.max(respawnAfter, 0);
-        if (getPlayer() == null)
-            return;
         if (respawnAfter == 0) {
             PlayerUtil.reset(this, game.getGameMode());
             postRespawn.accept(this);
             return;
         }
-        PlayerUtil.reset(getPlayer(), GameMode.SPECTATOR);
+        PlayerUtil.reset(asBukkitPlayer(), GameMode.SPECTATOR);
         AtomicInteger seconds = new AtomicInteger(respawnAfter);
         int fRespawnAfter = respawnAfter;
         SimmyGameAPI.scheduler().runTaskTimer(task -> {
             respawnTask = task;
-            if (getPlayer() == null || game == null) {
+            asBukkitPlayer();
+            if (game == null) {
                 respawnTask.cancel();
                 return;
             }
@@ -155,6 +155,11 @@ public class GamePlayer implements BasePlayer {
             SimmyGameAPI.logger.severe("Attempted to interact with outdated GamePlayer instance of " + getName());
             throw new IllegalStateException("outdated GamePlayer instance");
         }
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 
 }

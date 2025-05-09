@@ -1,6 +1,5 @@
 package me.notsodelayed.simmygameapi.api;
 
-import java.util.Map;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -8,16 +7,21 @@ import java.util.stream.Collectors;
 import com.google.common.base.Preconditions;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Sound;
+import net.kyori.adventure.title.Title;
+import org.bukkit.*;
 import org.bukkit.command.CommandSender;
+import org.bukkit.damage.DamageSource;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerRespawnEvent;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
+import me.notsodelayed.simmygameapi.api.player.RespawnablePlayer;
 import me.notsodelayed.simmygameapi.api.util.AscendingTimer;
 import me.notsodelayed.simmygameapi.api.util.DescendingTimer;
 import me.notsodelayed.simmygameapi.util.LoggerUtil;
@@ -122,6 +126,7 @@ public abstract class Game implements BaseGame {
     @Override
     public void end() {
         gameState = GameState.ENDING;
+        dispatchGameModeChange(GameMode.ADVENTURE);
         ingameTimer.end();
         ((DescendingTimer) new DescendingTimer()
                 .executeAt(seconds -> seconds == settings.endIn() || seconds % 10 == 0 || seconds <= 5, seconds -> dispatchPrefixedMessage("<yellow>Game ending in " + seconds + "...")))
@@ -144,6 +149,11 @@ public abstract class Game implements BaseGame {
         GAMES.remove(this.getUuid());
     }
 
+    public void dispatchGameModeChange(GameMode gameMode) {
+        for (Player player : getBukkitPlayers())
+            player.setGameMode(gameMode);
+    }
+
     public void dispatchMessage(Component message) {
         for (Player player : getBukkitPlayers())
             player.sendMessage(message);
@@ -154,18 +164,18 @@ public abstract class Game implements BaseGame {
      */
     public void dispatchMessage(String message) {
         for (Player player : getBukkitPlayers())
-            player.sendMessage(SimmyGameAPI.miniMessage().deserialize(message));
+            player.sendMessage(SimmyGameAPI.mini().deserialize(message));
     }
 
     public void dispatchPrefixedMessage(@NotNull Component message) {
-        dispatchMessage(getPrefix().append(SimmyGameAPI.miniMessage().deserialize("<reset> ")).append(message));
+        dispatchMessage(getPrefix().append(SimmyGameAPI.mini().deserialize("<reset> ")).append(message));
     }
 
     /**
      * @param message the message (supported by MiniMessage)
      */
     public void dispatchPrefixedMessage(@NotNull String message) {
-        dispatchPrefixedMessage(SimmyGameAPI.miniMessage().deserialize(message));
+        dispatchPrefixedMessage(SimmyGameAPI.mini().deserialize(message));
     }
 
     /**
@@ -183,6 +193,11 @@ public abstract class Game implements BaseGame {
 
     public void dispatchSound(Sound sound, float volume, float pitch) {
         dispatchSound(null, sound, volume, pitch);
+    }
+
+    public void dispatchTitle(Title title) {
+        for (Player player : getBukkitPlayers())
+            player.showTitle(title);
     }
 
     @Override
@@ -220,9 +235,41 @@ public abstract class Game implements BaseGame {
         PlayerUtil.reset(gamePlayer, GameMode.ADVENTURE);
 
         dispatchPrefixedMessage(String.format("<yellow>%s has joined! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
-        if (settings.startWithMinimumPlayers() && hasMetGameRequirements())
+        if (!isAboutToStart() && !hasBegun() && settings.startWithMinimumPlayers() && hasMetGameRequirements()) {
             start();
+            return;
+        }
+        onPlayerJoin(gamePlayer);
     }
+
+    /**
+     * Called whenever a player joins the game.
+     * @param player the player who joined
+     * @implNote Developers may implement tasks by overriding this after calling super
+     */
+    public void onPlayerJoin(GamePlayer player) {}
+
+    /**
+     * Called whenever a player leaves the game.
+     * @param player the player who left
+     * @implNote Developers may implement tasks by overriding this after calling super
+     */
+    public void onPlayerLeave(GamePlayer player) {}
+
+    /**
+     * Called whenever a player dies. This method is called only when <b>{@link #getGameState()}  == {@link GameState#INGAME}</b>
+     * @param player the player who died
+     * @implNote Developers may implement tasks by overriding this after calling super
+     */
+    public void onPlayerDeath(GamePlayer player, DamageSource source) {}
+
+    // TODO implement on respawn
+    /**
+     * Called whenever a player respawns. This method is called only when <b>{@link #getGameState()} == {@link GameState#INGAME}</b>
+     * @param player the player who respawned.
+     * @implNote Developers may implement tasks by overriding this after calling super
+     */
+    public void onPlayerRespawn(GamePlayer player) {}
 
     /**
      * @param gamePlayer the player to remove
@@ -235,6 +282,7 @@ public abstract class Game implements BaseGame {
         dispatchPrefixedMessage(String.format("<yellow>%s has left! (%s/%s)", gamePlayer.getName(), players.size(), settings.maxPlayers()));
         if (isAboutToStart() && !hasMetGameRequirements())
             countdown.cancel();
+        onPlayerLeave(gamePlayer);
     }
 
     /**
@@ -311,7 +359,7 @@ public abstract class Game implements BaseGame {
 
     /**
      * @return whether this game has met game requirements to start
-     * @implNote Developers may override this for custom requirements.
+     * @implNote Developers may override this for custom implementations.
      */
     public boolean hasMetGameRequirements() {
         return hasMinimumPlayers();
@@ -325,7 +373,7 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @return whether this game is about to end, or has ended
+     * @return whether this game is {@link GameState#ENDING about to end}, or {@link GameState#DELETED has ended}
      */
     public boolean hasEnded() {
         return gameState == GameState.ENDING || gameState == GameState.DELETED;
@@ -354,7 +402,7 @@ public abstract class Game implements BaseGame {
     }
 
     /**
-     * @return whether this game is in setup state.
+     * @return whether this game is in setup mode.
      */
     public boolean isSetupMode() {
         return gameState == GameState.LOADING;
@@ -363,6 +411,7 @@ public abstract class Game implements BaseGame {
     /**
      * Removes games marked as {@link GameState#DELETED} from the registry.
      */
+    @ApiStatus.Internal
     protected static void garbageCollection() {
         // Prevent CCME
         Map<UUID, Game> games = new HashMap<>(GAMES);
@@ -370,6 +419,34 @@ public abstract class Game implements BaseGame {
             if (game.getGameState() == GameState.DELETED)
                 GAMES.remove(game.getUuid());
         }
+    }
+
+    static {
+        Bukkit.getPluginManager().registerEvents(new Listener() {
+            @EventHandler
+            public void onDeath(PlayerDeathEvent event) {
+                Player player = event.getPlayer();
+                GamePlayer gamePlayer = GamePlayer.get(player);
+                if (gamePlayer == null)
+                    return;
+                gamePlayer.getGame().onPlayerDeath(gamePlayer, event.getDamageSource());
+                World world = player.getWorld();
+                //noinspection DataFlowIssue
+                if (!world.getGameRuleValue(GameRule.DO_IMMEDIATE_RESPAWN)) {
+                    player.setRespawnLocation(world.getSpawnLocation(), true);
+                    player.spigot().respawn();
+                }
+            }
+
+            @EventHandler
+            public void onRespawn(PlayerRespawnEvent event) {
+                GamePlayer gamePlayer = GamePlayer.get(event.getPlayer());
+                if (gamePlayer instanceof RespawnablePlayer respawnablePlayer) {
+                    gamePlayer.getGame().onPlayerRespawn(gamePlayer);
+                    respawnablePlayer.respawn();
+                }
+            }
+        }, SimmyGameAPI.instance);
     }
 
 }

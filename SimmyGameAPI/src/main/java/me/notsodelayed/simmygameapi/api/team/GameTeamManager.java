@@ -3,6 +3,7 @@ package me.notsodelayed.simmygameapi.api.team;
 import java.util.*;
 
 import com.google.common.base.Preconditions;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
@@ -13,7 +14,7 @@ import org.jetbrains.annotations.Nullable;
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Game;
 import me.notsodelayed.simmygameapi.api.GamePlayer;
-import me.notsodelayed.simmygameapi.api.player.TeamPlayer;
+import me.notsodelayed.simmygameapi.api.GameTeam;
 import me.notsodelayed.simmygameapi.util.Util;
 
 /**
@@ -23,11 +24,9 @@ public class GameTeamManager<T extends GameTeam> {
 
     private final Map<String, T> teams = new HashMap<>();
     private final Map<T, Team> teamsPair = new HashMap<>();
-    private final Scoreboard scoreboard;
+    private final Scoreboard scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
 
-    public GameTeamManager() {
-        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-    }
+    public GameTeamManager() {}
 
     /**
      * Registers a team into this manager.
@@ -35,28 +34,30 @@ public class GameTeamManager<T extends GameTeam> {
      */
     @ApiStatus.Internal
     public void registerTeam(@NotNull T team) {
-        Preconditions.checkState(!teams.containsValue(team), "team '" + team.getId() + "' already registered");
-        Team bukkitTeam = scoreboard.registerNewTeam(team.getId());
+        Preconditions.checkState(!teams.containsValue(team), "team '" + team.id() + "' already registered");
+        Team bukkitTeam = scoreboard.registerNewTeam(team.id());
         bukkitTeam.color(team.getColor());
-        bukkitTeam.displayName(team.getDisplayName());
-        teams.put(team.getId(), team);
+        bukkitTeam.displayName(team.componentDisplayName());
+        teams.put(team.id(), team);
         teamsPair.put(team, bukkitTeam);
     }
 
     /**
-     * Assigns a player to a random team (prioritising smaller teams). Nothing will happen if the player is already in a team.
+     * Assigns a player to a random team. If the provided player is already in a team, that team will be returned.
      * @param player the player
      * @return the chosen team
      * @throws IllegalStateException if there are no teams registered
      */
-    public T joinRandom(TeamPlayer<T> player) { // TODO account for team size
+    public T joinRandom(GamePlayer player) {
         Preconditions.checkState(!teams.isEmpty(), "no teams available");
-        if (player.getTeam() != null)
-            return player.getTeam();
+        Optional<T> existingTeam = teams.values().stream()
+                .filter(team -> team.getPlayers().contains(player))
+                .findAny();
+        if (existingTeam.isPresent())
+            return existingTeam.get();
         List<T> teams = this.teams.values().stream().sorted().toList();
-        // Prioritize the lowest team
-        T team = Util.getRandomInt(2) != 2 ? teams.getFirst() : teams.get(Util.getRandomInt(teams.size()));
-        joinTeam(team, (GamePlayer) player);
+        T team = teams.get(Util.getRandomInt(teams.size() - 1));
+        joinTeam(team, player);
         return team;
     }
 
@@ -68,43 +69,23 @@ public class GameTeamManager<T extends GameTeam> {
     public void joinTeam(T team, GamePlayer player) {
         Preconditions.checkArgument(teamsPair.containsKey(team), "team is not registered in the manager");
         team.addPlayer(player);
-        player.message("You have joined team " + SimmyGameAPI.miniMessage().serialize(team.getDisplayName()) + "<reset>!");
+        player.message("You have joined team " + SimmyGameAPI.mini().serialize(team.componentDisplayName()) + "<reset>!");
     }
 
     public @Nullable T getTeam(GamePlayer player) {
-        Map<String,Integer> map = new HashMap<>();
-        Optional<T> qTeam = teams.values().stream()
+        return teams.values().stream()
                 .filter(team -> team.getPlayers().contains(player))
-                .findFirst();
-        return qTeam.orElse(null);
+                .findAny().orElse(null);
     }
 
     /**
-     * @return a team with the smallest players size
-     * @apiNote In case of multiple teams with the same smallest value is available, a random team from it will be picked.
+     * @param color the team color for lookup
+     * @return the team with associated color, otherwise null
      */
-    public T getSmallestTeam() {
-        if (teams.isEmpty())
-            throw new IllegalStateException("no teams to compute");
-        if (teams.size() == 1)
-            return teams.values().iterator().next();
-        List<T> sortedTeams = teams.values().stream().
-                sorted(Comparator.comparingInt(team -> team.getPlayers().size()))
-                .toList();
-        int index = 0;
-        int smallest = -1;
-        for (T team : sortedTeams) {
-            if (smallest == -1) {
-                smallest = team.getPlayers().size();
-                continue;
-            }
-            if (team.getPlayers().size() != smallest)
-                break;
-            index++;
-        }
-        if (index > 0)
-            return sortedTeams.get(Util.getRandomInt(index));
-        return sortedTeams.get(index);
+    public @Nullable T getTeam(NamedTextColor color) {
+        return teams.values().stream()
+                .filter(team -> team.getColor().equals(color))
+                .findAny().orElse(null);
     }
 
     /**
@@ -120,13 +101,6 @@ public class GameTeamManager<T extends GameTeam> {
     @ApiStatus.Internal
     public void unregisterAll() {
         teamsPair.values().forEach(Team::unregister);
-    }
-
-    /**
-     * @return the scoreboard for housing teams
-     */
-    public Scoreboard getScoreboard() {
-        return scoreboard;
     }
 
 }

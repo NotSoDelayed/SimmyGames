@@ -12,13 +12,14 @@ public class PlayerUtil {
             return;
         player.setGameMode(gameMode);
         player.getInventory().clear();
+        player.setLevel(0);
         player.setHealth(20f);
         player.setSaturation(20f);
         player.getActivePotionEffects().forEach(potionEffect -> player.removePotionEffect(potionEffect.getType()));
     }
 
     public static void reset(GamePlayer gamePlayer, GameMode gameMode) {
-        reset(gamePlayer.getPlayer(), gameMode);
+        reset(gamePlayer.asBukkitPlayer(), gameMode);
     }
 
 }

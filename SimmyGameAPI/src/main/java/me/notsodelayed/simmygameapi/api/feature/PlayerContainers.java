@@ -43,7 +43,7 @@ public class PlayerContainers extends Feature {
      * @param openCondition the condition for other players to use this container, otherwise null
      * @apiNote This method will silently fail if the provided block does not match with any of {@link #getTypes()}
      */
-    public void secure(Block container, BasePlayer owner, @Nullable Predicate<GamePlayer> openCondition) {
+    public void secureContainer(Block container, BasePlayer owner, @Nullable Predicate<GamePlayer> openCondition) {
         if (!supportType(container.getType()))
             return;
         new PlayerContainer(container, owner.getUuid(), openCondition);
@@ -72,7 +72,7 @@ public class PlayerContainers extends Feature {
         Bukkit.getPluginManager().registerEvents(new Listener() {
             @EventHandler
             public void containerPlaceEvent(BlockPlaceEvent event) {
-                // TODO put this in helper lambda
+                // TODO put this in helper lambda for other event listener to use
                 GamePlayer gamePlayer = GamePlayer.get(event.getPlayer());
                 if (gamePlayer == null)
                     return;
@@ -86,19 +86,19 @@ public class PlayerContainers extends Feature {
                     SimmyGameAPI.logger.severe(mapGame.getFormattedName() + " has feature 'PlayerContainers' but does not have its instance.");
                     throw new IllegalStateException("registered feature without its instance");
                 }
-                if (!instance.supportType(event.getBlock().getType()))
+                Block block = event.getBlock();
+                if (!instance.supportType(block.getType()))
                     return;
-                // TODO detach teamplayer from this
-                if (!(gamePlayer instanceof TeamPlayer<?> teamPlayer))
-                    return;
-                Location location = event.getBlock().getLocation();
-                instance.secure(event.getBlock(), teamPlayer, user -> {
-                    if (!(user instanceof TeamPlayer<?> userTeamPlayer))
-                        return false;
-                    return teamPlayer.getTeam() != userTeamPlayer.getTeam();
+                instance.secureContainer(block, gamePlayer, user -> {
+                    if (gamePlayer instanceof TeamPlayer<?> teamPlayer) {
+                        if (!(user instanceof TeamPlayer<?> userTeamPlayer))
+                            return false;
+                        return teamPlayer.getTeam() != userTeamPlayer.getTeam();
+                    }
+                    return gamePlayer.equals(user);
                 });
-                gamePlayer.playSound(location, Sound.BLOCK_CHEST_LOCKED, 1, 2);
-                gamePlayer.actionbar(SimmyGameAPI.miniMessage().deserialize("<gold>You have placed a personal container!"));
+                gamePlayer.playSound(block.getLocation(), Sound.BLOCK_CHEST_LOCKED, 1, 2);
+                gamePlayer.actionbar(SimmyGameAPI.mini().deserialize("<gold>Placed a personal " + block.getType().toString().replace("_", " ") + "!"));
             }
 
             @EventHandler
@@ -132,7 +132,7 @@ public class PlayerContainers extends Feature {
                 }
                 if (!container.canUse(userPlayer)) {
                     userPlayer.playSound(Sound.BLOCK_CHEST_LOCKED, 1, 2);
-                    userPlayer.message(SimmyGameAPI.miniMessage().deserialize("<red>You cannot open this container owned by another player!"));
+                    userPlayer.message(SimmyGameAPI.mini().deserialize("<red>You cannot open this container owned by another player!"));
                     return;
                 }
                 event.setCancelled(false);

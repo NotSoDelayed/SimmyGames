@@ -11,16 +11,20 @@ import org.bukkit.WorldType;
 
 import me.notsodelayed.simmygameapi.SimmyGameAPI;
 import me.notsodelayed.simmygameapi.api.Game;
+import me.notsodelayed.simmygameapi.api.GameMap;
 import me.notsodelayed.simmygameapi.api.GamePlayer;
 
+/**
+ * Represents a waiting lobby of a {@link Game}.
+ */
 public class Lobby {
 
     private static final Map<Class<? extends Game>, List<Lobby>> LOBBIES = new HashMap<>();
     private final Class<? extends Game> group;
-    private final LobbyMap map;
+    private final GameMap map;
     private final UUID uuid;
 
-    public Lobby(Class<? extends Game> group, LobbyMap map) {
+    public Lobby(Class<? extends Game> group, GameMap map) {
         this.group = group;
         this.map = map;
         this.uuid = UUID.randomUUID();
@@ -57,7 +61,7 @@ public class Lobby {
      */
     public void summon(GamePlayer gamePlayer) {
         load().thenAccept(world -> SimmyGameAPI.scheduler().runTask(() -> {
-            if (gamePlayer.getPlayer() != null)
+            if (gamePlayer.asBukkitPlayer() != null)
                 gamePlayer.teleport(world.getSpawnLocation());
         }));
     }
@@ -69,7 +73,7 @@ public class Lobby {
         return group;
     }
 
-    public LobbyMap getMap() {
+    public GameMap getMap() {
         return map;
     }
 

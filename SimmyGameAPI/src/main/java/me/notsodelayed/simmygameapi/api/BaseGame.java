@@ -1,6 +1,5 @@
 package me.notsodelayed.simmygameapi.api;
 
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -49,8 +48,7 @@ public interface BaseGame {
      */
     default Set<Player> getBukkitPlayers() {
         return getPlayers().stream()
-                .map(GamePlayer::getPlayer)
-                .filter(Objects::nonNull)
+                .map(GamePlayer::asBukkitPlayer)
                 .collect(Collectors.toUnmodifiableSet());
     }
 
